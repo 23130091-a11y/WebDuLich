@@ -1,0 +1,557 @@
+/* ==============================
+   CẤU HÌNH CHUNG
+============================== */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #fffbea;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+h2, h3, h5 {
+    font-weight: 600;
+}
+
+.pointer {
+    cursor: pointer;
+}
+
+/* ==============================
+   THANH NAVBAR
+============================== */
+.header .navbar {
+    box-shadow: none !important;
+}
+
+.navbar a.nav-link {
+    margin: 0 10px;
+    color: #333 !important;
+    transition: color 0.3s;
+}
+
+.navbar a.nav-link:hover {
+    color: #0078ff !important;
+}
+
+.userDropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 1000; /* đảm bảo popup nổi trên các phần khác */
+}
+
+/* ==============================
+   BANNER
+============================== */
+.hero-img {
+    width: 100%;
+    height: 500px;
+    object-fit: cover;
+    filter: brightness(0.85);
+    transition: transform 0.6s ease;
+}
+
+.hero-img:hover {
+    transform: scale(1.02);
+}
+
+/* ==============================
+   KHUNG TÌM KIẾM (2 tầng)
+============================== */
+.search-box {
+    width: 85%;
+    max-width: 1150px;
+    z-index: 10;
+    position: absolute;
+    top: 65%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    background-color: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(8px);
+    border: 3px solid #1e90ff;
+    border-radius: 25px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+    padding: 25px 30px;
+    transition: all 0.4s ease;
+    animation: floatUp 0.8s ease forwards;
+}
+
+.search-box:hover {
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.3);
+    transform: translate(-50%, -50%) scale(1.02);
+}
+
+/* Hiệu ứng nổi lên */
+@keyframes floatUp {
+    0% { opacity: 0; transform: translate(-50%, -40%) scale(0.9); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Ô tìm kiếm lớn */
+.main-search .form-control {
+    height: 55px;
+    font-size: 16px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    box-shadow: none;
+}
+
+.main-search .input-group-text {
+    border-radius: 10px 0 0 10px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+}
+
+/* Ô nhập nhỏ phía dưới */
+.search-box .input-group .form-control {
+    height: 45px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+}
+
+.search-box .input-group-text {
+    border-radius: 10px 0 0 10px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+}
+
+/* Nút tìm kiếm */
+.search-box .btn-warning {
+    height: 45px;
+    border-radius: 10px;
+    background-color: #f7b731;
+    border: none;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.search-box .btn-warning:hover {
+    background-color: #ff9f00;
+    transform: scale(1.05);
+}
+
+/* ==============================
+   DANH MỤC DU LỊCH
+============================== */
+.categories {
+    background-color: #eef6fa;
+    border-top: 2px solid #d8ecff;
+    border-bottom: 2px solid #d8ecff;
+    padding: 25px 0;
+    text-align: center;
+}
+
+.categories i {
+    color: #0078ff;
+    transition: all 0.3s ease;
+}
+
+.categories i:hover {
+    transform: scale(1.3);
+    color: #0056b3;
+}
+
+.categories p {
+    margin-top: 10px;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.categories .col:hover p {
+    color: #0078ff;
+}
+
+/* ==============================
+   GỢI Ý ĐỊA ĐIỂM
+============================== */
+.recommend {
+    padding: 60px 0;
+    text-align: center;
+    background-color: #fffbea;
+}
+
+.recommend h2 {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.recommend p {
+    color: #6c757d;
+    margin-bottom: 30px;
+}
+
+/* Thẻ địa điểm */
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+    border: none;
+    transition: all 0.3s ease;
+    background-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.card img {
+    height: 190px;
+    object-fit: cover;
+    border-radius: 15px 15px 0 0;
+}
+
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+}
+
+.card-body {
+    padding: 15px;
+}
+
+.card-title {
+    color: #0078ff;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.card-text {
+    color: #555;
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.btn-outline-primary {
+    border-radius: 8px;
+    border-color: #0078ff;
+    color: #0078ff;
+    transition: all 0.3s;
+}
+
+.btn-outline-primary:hover {
+    background-color: #0078ff;
+    color: white;
+    transform: scale(1.05);
+}
+
+/* ==============================
+   FOOTER
+============================== */
+.footer{
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    width: 100%;
+    height: 200px;
+    background: #0078ff;
+    color: white;
+    padding: 25px 40px;
+    font-size: 14px;
+    border-top: 1px solid #005fcc;
+
+}
+.footer-container{
+    width: 1150px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.footer-col{
+    min-width: 100px;
+}
+
+.footer-col h3{
+    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: white;
+}
+
+
+.footer-col ul li{
+    font-size: 16px;
+    margin: 6px 0;
+    cursor: pointer;
+    transition: 0.25s;
+
+    color: white;
+}
+
+.footer-col p{
+    font-size: 15px;
+    margin: 8px 0;
+    line-height: 1.6;
+    color: white;
+}
+
+.footer-icons{
+    display: flex;
+    gap: 15px;
+    font-size: 20px;
+    margin-top: 15px;
+
+    color: white;
+}
+.footer-icons i{
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+.footer-col ul li:hover{
+    color: #d8ecff;
+    text-underline: #d8ecff;
+}
+
+.footer-icons i:hover{
+    color: #d8ecff;
+}
+
+
+/* ============================
+   HIỆU ỨNG & HIGHLIGHT GỢI Ý
+============================ */
+.suggestions-box {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #dcdcdc;
+    border-radius: 10px;
+    margin-top: 5px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 9999;
+    display: none;
+    opacity: 0;
+    transform: translateY(-10px);
+    animation: slideDown 0.25s ease forwards;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.suggestion-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 15px;
+}
+
+.suggestion-item:hover {
+    background-color: #f8f9fa;
+}
+
+.highlight {
+    font-weight: bold;
+    color: #0078ff;
+}
+
+/* ============================
+   MODAL KHÁM PHÁ
+============================ */
+.explore-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.75); /* nền đậm hơn để che chữ phía sau */
+    backdrop-filter: blur(4px);          /* thêm hiệu ứng mờ nhẹ nền phía sau */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5000;                       /* đảm bảo nằm trên tất cả phần tử khác */
+    animation: fadeIn 0.3s ease;
+}
+
+/* Khung nội dung popup */
+.modal-content {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 15px;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    animation: popUp 0.3s ease;
+    position: relative;
+    z-index: 6000; /* chắc chắn nội dung ở trên nền mờ */
+}
+
+.modal-content img {
+    width: 100%;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    object-fit: cover;
+}
+
+.modal-content h3 {
+    margin-bottom: 10px;
+    color: #0078ff;
+    font-weight: 700;
+}
+
+.modal-content p {
+    color: #555;
+    font-size: 15px;
+    margin-bottom: 20px;
+}
+
+.close-btn {
+    background-color: #0078ff;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.close-btn:hover {
+    background-color: #005fcc;
+}
+
+/* Hiệu ứng xuất hiện */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes popUp {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.close-icon {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+    cursor: pointer;
+    color: #0078ff;
+    font-size: 20px;
+    transition: color 0.3s;
+}
+.close-icon:hover {
+    color: #ff4444;
+}
+
+
+/* -------------------------------
+   Hiển thị ảnh và hiệu ứng slideshow
+-------------------------------- */
+.image-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.image-wrapper img.card-img-top {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  transition: transform 0.6s ease, filter 0.4s ease;
+}
+
+.image-wrapper:hover img.card-img-top {
+  transform: scale(1.05);
+  filter: brightness(0.8);
+}
+
+/* Overlay khi hover */
+.image-overlay {
+  position: absolute;
+  inset: 0; /* phủ kín toàn khung */
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.image-wrapper:hover .image-overlay {
+  opacity: 1;
+}
+
+/* Slideshow */
+.slideshow {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.slideshow img.slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1.5s ease; /* 🔹 đổi chậm & mượt */
+}
+
+.slideshow img.active {
+  opacity: 1;
+  z-index: 2;
+}
+
+/* Nút điều hướng slideshow */
+.slideshow .prev,
+.slideshow .next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.85);
+  border: none;
+  color: #333;
+  font-size: 20px;
+  padding: 6px 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 3;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.slideshow .prev:hover,
+.slideshow .next:hover {
+  background: #0d6efd;
+  color: #fff;
+}
+
+.slideshow .prev { left: 10px; }
+.slideshow .next { right: 10px; }
+
+/* Modal */
+.modal-content {
+    border-radius: 8px;
+}
+
+.modal-body input {
+    margin-bottom: 0.75rem;
+}
+.modal-body span, .modal-body a {
+    font-size: 0.9rem;
+}
+.modal-body a {
+    cursor: pointer;
+}
+
+a {
+    font-size: 1rem !important;
+}
+
