@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="vi">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <title>Web Du Lịch</title>
+
+    <!-- CSS thư viện -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- CSS custom -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+</head>
+
+<body>
+<header class="header sticky-top bg-white shadow-sm"></header>
+    <div class ="container">
+        <nav class="navbar navbar-expand-lg px-4 py-2">
+            <a class="navbar-brand fw-bold text-primary" href="{% url 'travel:home' %}">
+                <i class="fa-solid fa-plane-departure me-2"></i>Du Lịch Việt
+            </a>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link active fw-bold" href="{% url 'travel:home' %}">
+                        <i class="fa-solid fa-home me-1"></i>Trang chủ
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'travel:search' %}">
+                        <i class="fa-solid fa-search me-1"></i>Tìm kiếm
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#recommend-section">
+                        <i class="fa-solid fa-star me-1"></i>Gợi ý
+                    </a>
+                </li>
+            </ul>
+
+            <div id="userBtn" class="ms-auto d-flex align-items-center">
+                <i class="bi bi-person fs-3 me-2"></i>
+                <span id="userText" class="fw-semibold pointer">
+                    Đăng ký / Đăng nhập
+                </span>
+                <!-- Dropdown chỉ hiển thị sau login -->
+                <ul class="dropdown-menu dropdown-menu-end userDropdown" id="userDropdown">
+                    <li>
+                        <a class="dropdown-item" href="#" id="logoutBtn">Đăng xuất</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+</header>
+
+<main>
+    <!-- Banner -->
+    <section class="hero position-relative text-center">
+        <img src="{% static 'images/banner.jpg' %}" class="hero-img">
+
+        <!-- Thanh tìm kiếm 2 chế độ -->
+        <div class="search-box container-fluid rounded-4 shadow-lg p-4 position-absolute top-50 start-50 translate-middle bg-white" style="max-width: 950px;">
+            
+            <!-- Tìm kiếm nhanh -->
+            <div class="quick-search mb-4">
+                <form method="GET" action="{% url 'travel:search' %}" class="position-relative" id="quickSearchForm">
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="fa-solid fa-magnifying-glass text-primary"></i>
+                        </span>
+                        <input type="text" name="q" id="quickSearchInput" class="form-control border-start-0" 
+                               placeholder="Tìm kiếm địa điểm... (VD: Hà Nội, Chùa Một Cột, Hồ Hoàn Kiếm)" 
+                               autocomplete="off">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="fa-solid fa-search me-1"></i>Tìm
+                        </button>
+                    </div>
+                    <div id="quickSuggestions" class="autocomplete-box"></div>
+                </form>
+            </div>
+
+            <!-- Tìm kiếm chi tiết -->
+            <form class="row align-items-center gx-3 justify-content-center" method="GET" action="{% url 'travel:search' %}" id="detailSearchForm">
+                <div class="col-md-3 position-relative">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="fa-solid fa-location-dot text-primary"></i>
+                        </span>
+                        <input type="text" name="from_location" id="fromLocationInput" class="form-control" 
+                               placeholder="Vị trí của bạn" autocomplete="off">
+                    </div>
+                    <div id="fromLocationSuggestions" class="autocomplete-box"></div>
+                </div>
+
+                <div class="col-md-3 position-relative">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="fa-solid fa-map-location-dot text-primary"></i>
+                        </span>
+                        <input type="text" name="q" id="toLocationInput" class="form-control" 
+                               placeholder="Nơi muốn đến" autocomplete="off">
+                    </div>
+                    <div id="toLocationSuggestions" class="autocomplete-box"></div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="fa-solid fa-calendar-days text-primary"></i>
+                        </span>
+                        <input type="date" name="travel_date" id="travelDateInput" class="form-control">
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-warning w-100 fw-bold py-2">
+                        <i class="fa-solid fa-route me-1"></i>Tìm kiếm chi tiết
+                    </button>
+                </div>
+            </form>
+
+            <!-- Gợi ý nhanh -->
+            <div class="quick-links mt-3 text-center">
+                <small class="text-muted me-2">Địa điểm phổ biến:</small>
+                <a href="{% url 'travel:search' %}?q=Hà Nội" class="badge bg-light text-dark me-2 text-decoration-none py-2 px-3">
+                    Hà Nội
+                </a>
+                <a href="{% url 'travel:search' %}?q=TP Hồ Chí Minh" class="badge bg-light text-dark me-2 text-decoration-none py-2 px-3">
+                    TP Hồ Chí Minh
+                </a>
+                <a href="{% url 'travel:search' %}?q=Đà Nẵng" class="badge bg-light text-dark me-2 text-decoration-none py-2 px-3">
+                    Đà Nẵng
+                </a>
+                <a href="{% url 'travel:search' %}?q=Đà Lạt" class="badge bg-light text-dark me-2 text-decoration-none py-2 px-3">
+                    Đà Lạt
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Danh mục du lịch -->
+    <section class="categories bg-light py-4">
+        <div class="container text-center">
+            <h3 class="mb-4 fw-bold">Khám phá theo danh mục</h3>
+            <div class="row g-4">
+                <div class="col">
+                    <a href="{% url 'travel:search' %}?type=Biển" class="category-card">
+                        <i class="fa-solid fa-umbrella-beach fa-3x text-info"></i>
+                        <p>Du lịch biển đảo</p>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{% url 'travel:search' %}?type=Núi" class="category-card">
+                        <i class="fa-solid fa-mountain fa-3x text-success"></i>
+                        <p>Du lịch núi & cao nguyên</p>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{% url 'travel:search' %}?type=Văn hóa" class="category-card">
+                        <i class="fa-solid fa-landmark fa-3x text-warning"></i>
+                        <p>Văn hóa - lịch sử</p>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{% url 'travel:search' %}?type=Sinh thái" class="category-card">
+                        <i class="fa-solid fa-leaf fa-3x text-success"></i>
+                        <p>Du lịch sinh thái</p>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{% url 'travel:search' %}?type=Ẩm thực" class="category-card">
+                        <i class="fa-solid fa-utensils fa-3x text-danger"></i>
+                        <p>Ẩm thực - chợ đêm</p>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{% url 'travel:search' %}?type=Lễ hội" class="category-card">
+                        <i class="fa-solid fa-gift fa-3x text-primary"></i>
+                        <p>Lễ hội - sự kiện</p>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{% url 'travel:search' %}?type=Thành phố" class="category-card">
+                        <i class="fa-solid fa-city fa-3x text-secondary"></i>
+                        <p>Thành phố - đô thị</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Địa điểm được gợi ý cao -->
+    {% if top_destinations %}
+    <section class="recommend py-5 bg-light" id="recommend-section">
+        <div class="container">
+            <h2 class="fw-bold mb-3 text-center">
+                <i class="fa-solid fa-star text-warning me-2"></i>Địa điểm được gợi ý
+            </h2>
+            <p class="text-muted mb-4 text-center">Dựa trên đánh giá và phân tích AI</p>
+            <div class="row g-4">
+                {% for dest in top_destinations %}
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="position-relative">
+                            {% if dest.image %}
+                            <img src="{{ dest.image.url }}" class="card-img-top" alt="{{ dest.name }}" style="height: 200px; object-fit: cover;">
+                            {% else %}
+                            <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="fa-solid fa-image fa-3x"></i>
+                            </div>
+                            {% endif %}
+                            <span class="badge bg-success position-absolute top-0 end-0 m-2">
+                                {{ dest.recommendation.overall_score|floatformat:0 }} điểm
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ dest.name }}</h5>
+                            <p class="text-muted small">
+                                <i class="fa-solid fa-location-dot"></i> {{ dest.location }}
+                            </p>
+                            <div class="mb-2">
+                                <span class="text-warning">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= dest.recommendation.avg_rating %}★{% else %}☆{% endif %}
+                                    {% endfor %}
+                                </span>
+                                <small class="text-muted">({{ dest.recommendation.total_reviews }} đánh giá)</small>
+                            </div>
+                            <p class="card-text small">{{ dest.description|truncatewords:15 }}</p>
+                            <a href="{% url 'travel:destination_detail' dest.id %}" class="btn btn-outline-primary btn-sm w-100">
+                                Xem chi tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="text-center mt-4">
+                <a href="{% url 'travel:search' %}" class="btn btn-primary">Xem tất cả địa điểm</a>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Gợi ý địa điểm từ thư mục ảnh -->
+    <section class="recommend py-5">
+        <div class="container text-center">
+            <h2 class="fw-bold mb-3">Dải Đất Hình Chữ S</h2>
+            <p class="text-muted mb-4">Khám phá Việt Nam theo cách riêng của bạn</p>
+            <div class="row justify-content-center g-4">
+                {% for r in results %}
+                <div class="col-md-3">
+                    <div class="card shadow-sm border-0 position-relative">
+                        <div class="image-wrapper">
+                            <!-- Ảnh đầu tiên -->
+                            <img src="{% static 'images/' %}{{ r.images.0 }}" class="card-img-top" alt="{{ r.name }}">
+
+                            <!-- Overlay slideshow -->
+                            <div class="image-overlay">
+                                <div class="slideshow">
+                                    {% for img in r.images %}
+                                    <img src="{% static 'images/' %}{{ img }}" class="slide {% if forloop.first %}active{% endif %}">
+                                    {% endfor %}
+                                    <button class="prev">&#10094;</button>
+                                    <button class="next">&#10095;</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body text-center">
+                            <h5 class="card-title fw-bold">{{ r.name }}</h5>
+                            <p class="card-text">{{ r.desc }}</p>
+                            <button class="btn btn-outline-primary explore-btn">Khám phá ngay</button>
+                        </div>
+                    </div>
+                </div>
+
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-col">
+            <h3>Hỗ trợ</h3>
+            <ul>
+                <li>Chính sách khách hàng</li>
+                <li>Chính sách bảo hành</li>
+                <li>Chính sách vận chuyển</li>
+                <li>Chính sách bảo mật</li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h3>Về chúng tôi</h3>
+            <ul>
+                <li>Giới thiệu</li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h3>Kết nối với chúng tôi</h3>
+            <p>Hotline: 10101010</p>
+            <div class="footer-icons">
+                <i class="fa-brands fa-facebook"></i>
+                <i class="fa-brands fa-instagram"></i>
+                <i class="fa-brands fa-tiktok"></i>
+                <i class="fa-brands fa-xmark"></i>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Modal đăng ký/đăng nhập -->
+<div class="modal fade" id="authModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-4 border-0">
+
+            <!-- Header modal -->
+            <div class="modal-header border-0 p-0 mb-3">
+                <h5 id="modalTitle" class="modal-title">Đăng nhập</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <!-- Body modal -->
+            <div class="modal-body">
+
+                <!-- Form Đăng nhập -->
+                <div id="loginForm">
+                    <div class="mb-3">
+                        <label for="loginEmail" class="form-label">Email đăng nhập</label>
+                        <input type="email" class="form-control" id="loginEmail" name="email" placeholder="Email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="loginPassword" class="form-label">Mật khẩu</label>
+                        <input type="password" name="password" id="loginPassword" class="form-control" placeholder="Mật khẩu">
+                    </div>
+                    <div class="mb-3 text-center fs-4">
+                        <span>Bạn chưa có tài khoản? </span>
+                        <a href="#" id="showRegisterLink">Đăng ký</a>
+                    </div>
+                    <button id="loginBtn" class="btn btn-primary w-100">Đăng nhập</button>
+                </div>
+
+                <!-- Form Đăng ký -->
+                <div id="registerForm" class="d-none">
+                    <div class="mb-3">
+                        <label for="registerUsername" class="form-label">Tên hiển thị</label>
+                        <input type="text" name="username" id="registerUsername" class="form-control" placeholder="Nhập tên hiển thị">
+                    </div>
+                    <div class="mb-3">
+                        <label for="registerEmail" class="form-label">Email đăng ký</label>
+                        <input type="email" name="email" id="registerEmail" class="form-control" placeholder="Email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="registerPassword" class="form-label">Mật khẩu</label>
+                        <input type="password" name="password" id="registerPassword" class="form-control" placeholder="Mật khẩu">
+                    </div>
+                    <div class="mb-3">
+                        <label for="registerConfirmPassword" class="form-label">Nhập lại mật khẩu</label>
+                        <input type="password" name="confirm_password" id="registerConfirmPassword" class="form-control" placeholder="Nhập lại mật khẩu">
+                    </div>
+                    <div class="mb-3 text-center fs-4">
+                        <span>Bạn đã có tài khoản? </span>
+                        <a href="#" id="showLoginLink">Đăng nhập</a>
+                    </div>
+                    <button id="registerBtn" class="btn btn-primary w-100">Đăng ký</button>
+                </div>
+
+                <!-- Form Sở thích / Địa điểm -->
+                <div id="preferencesForm" class="d-none card p-3 mt-3">
+
+                    <!-- Loại hình du lịch -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Loại hình du lịch yêu thích:</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="travelType" value="Biển" id="prefSea">
+                            <label class="form-check-label" for="prefSea">Biển</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="travelType" value="Núi" id="prefMountain">
+                            <label class="form-check-label" for="prefMountain">Núi</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="travelType" value="Thành phố" id="prefCity">
+                            <label class="form-check-label" for="prefCity">Thành phố</label>
+                        </div>
+                    </div>
+
+                    <!-- Địa điểm cụ thể -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Địa điểm bạn quan tâm:</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="locations" value="Hà Nội" id="locHN">
+                            <label class="form-check-label" for="locHN">Hà Nội</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="locations" value="Hồ Chí Minh" id="locHCM">
+                            <label class="form-check-label" for="locHCM">Hồ Chí Minh</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="locations" value="Đà Nẵng" id="locDN">
+                            <label class="form-check-label" for="locDN">Đà Nẵng</label>
+                        </div>
+                    </div>
+
+                    <button id="savePreferencesBtn" class="btn btn-success w-100">Hoàn tất</button>
+                </div>
+
+            </div> <!-- modal-body -->
+        </div>
+    </div>
+</div>
+</body>
+
+<script>
+// ===== AUTOCOMPLETE THÔNG MINH =====
+
+// Hàm loại bỏ dấu tiếng Việt
+function removeAccents(str) {
+    return str.normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .replace(/đ/g, 'd')
+              .replace(/Đ/g, 'D');
+}
+
+// Autocomplete cho tìm kiếm nhanh
+const quickSearchInput = document.getElementById('quickSearchInput');
+const quickSuggestions = document.getElementById('quickSuggestions');
+let quickSearchTimeout;
+
+quickSearchInput.addEventListener('input', function() {
+    clearTimeout(quickSearchTimeout);
+    const query = this.value.trim();
+    
+    if (query.length < 1) {
+        quickSuggestions.style.display = 'none';
+        return;
+    }
+    
+    quickSearchTimeout = setTimeout(() => {
+        fetch(`/api/search/?q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+                displayQuickSuggestions(data.results, query);
+            })
+            .catch(err => console.error('Error:', err));
+    }, 300);
+});
+
+function displayQuickSuggestions(results, query) {
+    quickSuggestions.innerHTML = '';
+    
+    if (results.length === 0) {
+        quickSuggestions.style.display = 'none';
+        return;
+    }
+    
+    results.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'autocomplete-item';
+        
+        // Highlight query trong kết quả
+        const queryNormalized = removeAccents(query.toLowerCase());
+        const nameNormalized = removeAccents(item.name.toLowerCase());
+        
+        let displayName = item.name;
+        if (nameNormalized.includes(queryNormalized)) {
+            const regex = new RegExp(`(${query})`, 'gi');
+            displayName = item.name.replace(regex, '<strong class="text-primary">$1</strong>');
+        }
+        
+        div.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div>${displayName}</div>
+                    <small class="text-muted">
+                        <i class="fa-solid fa-location-dot"></i> ${item.location} 
+                        <span class="ms-2"><i class="fa-solid fa-tag"></i> ${item.travel_type}</span>
+                    </small>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-success">${item.score} điểm</span>
+                    <div class="text-warning small">
+                        ${'★'.repeat(Math.round(item.avg_rating))}${'☆'.repeat(5 - Math.round(item.avg_rating))}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        div.addEventListener('click', () => {
+            quickSearchInput.value = item.name;
+            quickSuggestions.style.display = 'none';
+            document.getElementById('quickSearchForm').submit();
+        });
+        
+        quickSuggestions.appendChild(div);
+    });
+    
+    quickSuggestions.style.display = 'block';
+}
+
+// Autocomplete cho vị trí xuất phát
+const fromLocationInput = document.getElementById('fromLocationInput');
+const fromLocationSuggestions = document.getElementById('fromLocationSuggestions');
+let fromLocationTimeout;
+
+fromLocationInput.addEventListener('input', function() {
+    clearTimeout(fromLocationTimeout);
+    const query = this.value.trim();
+    
+    if (query.length < 1) {
+        fromLocationSuggestions.style.display = 'none';
+        return;
+    }
+    
+    fromLocationTimeout = setTimeout(() => {
+        fetch(`/api/provinces/?q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+                displayProvinceSuggestions(data.provinces, query, fromLocationInput, fromLocationSuggestions);
+            })
+            .catch(err => console.error('Error:', err));
+    }, 200);
+});
+
+// Autocomplete cho nơi muốn đến
+const toLocationInput = document.getElementById('toLocationInput');
+const toLocationSuggestions = document.getElementById('toLocationSuggestions');
+let toLocationTimeout;
+
+toLocationInput.addEventListener('input', function() {
+    clearTimeout(toLocationTimeout);
+    const query = this.value.trim();
+    
+    if (query.length < 1) {
+        toLocationSuggestions.style.display = 'none';
+        return;
+    }
+    
+    toLocationTimeout = setTimeout(() => {
+        fetch(`/api/provinces/?q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+                displayProvinceSuggestions(data.provinces, query, toLocationInput, toLocationSuggestions);
+            })
+            .catch(err => console.error('Error:', err));
+    }, 200);
+});
+
+function displayProvinceSuggestions(provinces, query, inputElement, suggestionsElement) {
+    suggestionsElement.innerHTML = '';
+    
+    if (provinces.length === 0) {
+        suggestionsElement.style.display = 'none';
+        return;
+    }
+    
+    provinces.forEach(province => {
+        const div = document.createElement('div');
+        div.className = 'autocomplete-item';
+        
+        // Highlight query
+        const queryNormalized = removeAccents(query.toLowerCase());
+        const provinceNormalized = removeAccents(province.toLowerCase());
+        
+        let displayName = province;
+        if (provinceNormalized.includes(queryNormalized)) {
+            const regex = new RegExp(`(${query})`, 'gi');
+            displayName = province.replace(regex, '<strong class="text-primary">$1</strong>');
+        }
+        
+        div.innerHTML = `
+            <i class="fa-solid fa-map-marker-alt text-primary me-2"></i>${displayName}
+        `;
+        
+        div.addEventListener('click', () => {
+            inputElement.value = province;
+            suggestionsElement.style.display = 'none';
+        });
+        
+        suggestionsElement.appendChild(div);
+    });
+    
+    suggestionsElement.style.display = 'block';
+}
+
+// Đóng suggestions khi click bên ngoài
+document.addEventListener('click', (e) => {
+    if (!quickSearchInput.contains(e.target) && !quickSuggestions.contains(e.target)) {
+        quickSuggestions.style.display = 'none';
+    }
+    if (!fromLocationInput.contains(e.target) && !fromLocationSuggestions.contains(e.target)) {
+        fromLocationSuggestions.style.display = 'none';
+    }
+    if (!toLocationInput.contains(e.target) && !toLocationSuggestions.contains(e.target)) {
+        toLocationSuggestions.style.display = 'none';
+    }
+});
+
+// Không cho chọn ngày trong quá khứ
+const travelDateInput = document.getElementById('travelDateInput');
+const today = new Date().toISOString().split('T')[0];
+travelDateInput.setAttribute('min', today);
+
+// Giới hạn tối đa 7 ngày (cho dự báo thời tiết)
+const maxDate = new Date();
+maxDate.setDate(maxDate.getDate() + 7);
+travelDateInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
+</script>
+
+<script>
+    // Xử lý nút "Khám phá ngay"
+    document.querySelectorAll(".btn-outline-primary").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+            const card = e.target.closest(".card");
+            const title = card.querySelector(".card-title").textContent;
+            const desc = card.querySelector(".card-text").textContent;
+            const imgSrc = card.querySelector("img").src;
+
+            // Tạo modal tạm thời
+            const modal = document.createElement("div");
+            modal.classList.add("explore-modal");
+            modal.innerHTML = `
+    <div class="modal-content">
+        <div class="close-icon"><i class="fa-solid fa-xmark"></i></div>
+        <img src="${imgSrc}" alt="${title}">
+        <h3>${title}</h3>
+        <p>${desc}</p>
+        <button class="close-btn">Đóng</button>
+    </div>
+    `;
+
+            document.body.appendChild(modal);
+
+            // Đóng modal
+            modal.querySelector(".close-btn").addEventListener("click", () => {
+                modal.remove();
+            });
+            modal.querySelector(".close-icon").addEventListener("click", () => {
+                modal.remove();
+            });
+
+        });
+    });
+</script>
+
+<script>
+    // Khi rê chuột vào hình → chạy slideshow
+    document.querySelectorAll('.image-wrapper').forEach(wrapper => {
+        let slides = wrapper.querySelectorAll('.slide');
+        let index = 0;
+        let interval;
+
+        function showSlide(n) {
+            slides.forEach(s => s.classList.remove('active'));
+            slides[n].classList.add('active');
+        }
+
+        // Bắt đầu slideshow khi hover
+        wrapper.addEventListener('mouseenter', () => {
+            interval = setInterval(() => {
+                index = (index + 1) % slides.length;
+                showSlide(index);
+            }, 2000);
+        });
+
+        // Dừng slideshow khi rời chuột
+        wrapper.addEventListener('mouseleave', () => {
+            clearInterval(interval);
+            index = 0;
+            showSlide(index);
+        });
+
+        // Điều khiển nút trái/phải
+        wrapper.querySelector('.prev').addEventListener('click', () => {
+            index = (index - 1 + slides.length) % slides.length;
+            showSlide(index);
+        });
+
+        wrapper.querySelector('.next').addEventListener('click', () => {
+            index = (index + 1) % slides.length;
+            showSlide(index);
+        });
+    });
+</script>
+
+<script>
+    document.querySelectorAll('.image-wrapper').forEach(wrapper => {
+        const slides = wrapper.querySelectorAll('.slide');
+        let index = 0;
+        let interval;
+
+        function showSlide(n) {
+            slides.forEach(s => s.classList.remove('active'));
+            slides[n].classList.add('active');
+        }
+
+        wrapper.addEventListener('mouseenter', () => {
+            interval = setInterval(() => {
+                index = (index + 1) % slides.length;
+                showSlide(index);
+            }, 10000);
+        });
+
+        wrapper.addEventListener('mouseleave', () => {
+            clearInterval(interval);
+            index = 0;
+            showSlide(index);
+        });
+
+        wrapper.querySelector('.prev').addEventListener('click', () => {
+            index = (index - 1 + slides.length) % slides.length;
+            showSlide(index);
+        });
+
+        wrapper.querySelector('.next').addEventListener('click', () => {
+            index = (index + 1) % slides.length;
+            showSlide(index);
+        });
+    });
+</script>
+
+<!-- Script chuyển popup cho modal -->
+<script>
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const modalTitle = document.getElementById('modalTitle');
+
+    document.getElementById('showRegisterLink').addEventListener('click', (e) => {
+        e.preventDefault();
+        loginForm.classList.add('d-none');
+        registerForm.classList.remove('d-none');
+        modalTitle.textContent = 'Đăng ký';
+    });
+
+    document.getElementById('showLoginLink').addEventListener('click', (e) => {
+        e.preventDefault();
+        registerForm.classList.add('d-none');
+        loginForm.classList.remove('d-none');
+        modalTitle.textContent = 'Đăng nhập';
+    });
+
+</script>
+
+<!-- Xử lý đăng ký đăng nhập -->
+<script>
+        // Đăng nhập
+        document.getElementById('loginBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email, password})
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Lưu token đúng
+                    localStorage.setItem('access', data.tokens.access);
+                    localStorage.setItem('refresh', data.tokens.refresh);
+
+                    localStorage.setItem('user', JSON.stringify(data.user));
+
+                    alert('Đăng nhập thành công!');
+
+                    window.location.reload();  // reload để cập nhật UI
+                } else {
+                    alert(data.detail || data.error || 'Đăng nhập thất bại');
+                }
+            } catch (err) {
+                alert('Lỗi kết nối server: ' + err);
+            }
+        });
+
+        // Đăng ký
+        document.getElementById('registerBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('registerUsername').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+
+            if (password !== confirmPassword) {
+                alert('Mật khẩu và xác nhận mật khẩu không trùng khớp!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/auth/register', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email, password, username})
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    // --- Lưu token vào localStorage ---
+                    localStorage.setItem('access', data.tokens.access);
+                    localStorage.setItem('refresh', data.tokens.refresh);
+
+                    alert('Đăng ký thành công!');
+
+                    document.getElementById('registerForm').classList.add('d-none');
+                    document.getElementById('preferencesForm').classList.remove('d-none');
+                    document.getElementById('modalTitle').textContent = 'Bạn muốn đến đâu?';
+                } else {
+                    alert(JSON.stringify(data));
+                }
+            } catch (err) {
+                alert('Lỗi kết nối server: ' + err);
+            }
+        });
+
+</script>
+
+<!-- Làm phần hiển thị user sau đăng nhập và đăng xuất -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const userText = document.getElementById('userText');
+        const userBtn = document.getElementById('userBtn');
+        const userDropdown = document.getElementById('userDropdown');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userDataRaw = localStorage.getItem('user');
+
+        let usernameToShow = "Đăng ký / Đăng nhập";
+
+        if (userDataRaw) {
+            try {
+                const user = JSON.parse(userDataRaw);
+                if (user.username) {
+                    usernameToShow = user.username;
+                }
+            } catch (err) {
+                console.error("Lỗi parse user từ localStorage:", err);
+            }
+        }
+
+        userText.textContent = usernameToShow;
+
+        if (usernameToShow !== "Đăng ký / Đăng nhập") {
+            // Bỏ modal, setup dropdown logout
+            userText.removeAttribute('data-bs-toggle');
+            userText.removeAttribute('data-bs-target');
+
+            userText.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block';
+            });
+
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.clear();
+                window.location.reload();
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!userBtn.contains(e.target)) {
+                    userDropdown.style.display = 'none';
+                }
+            });
+
+        } else {
+            // Chưa login -> mở modal
+            userText.setAttribute('data-bs-toggle', 'modal');
+            userText.setAttribute('data-bs-target', '#authModal');
+        }
+    });
+</script>
+
+<!---->
+<script>
+    document.getElementById('savePreferencesBtn').addEventListener('click', async () => {
+        const travelTypes = [];
+        if (document.getElementById('prefSea').checked) travelTypes.push('Biển');
+        if (document.getElementById('prefMountain').checked) travelTypes.push('Núi');
+        if (document.getElementById('prefCity').checked) travelTypes.push('Thành phố');
+
+        const locations = [];
+        if (document.getElementById('locHN').checked) locations.push('Hà Nội');
+        if (document.getElementById('locHCM').checked) locations.push('Hồ Chí Minh');
+        if (document.getElementById('locDN').checked) locations.push('Đà Nẵng');
+
+        if (travelTypes.length === 0 || locations.length === 0) {
+            alert('Bạn cần chọn ít nhất một loại hình du lịch và một địa điểm!');
+            return;
+        }
+
+        try {
+            const accessToken = localStorage.getItem('access')
+
+            const response = await fetch('/auth/preferences', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({ travelTypes, locations })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('Lưu sở thích thành công!');
+                document.getElementById('preferencesForm').classList.add('d-none');
+
+                // Chuyển trang
+                window.location.href = '/';
+            } else {
+                alert('Lỗi lưu sở thích: ' + JSON.stringify(data));
+            }
+        } catch (err) {
+            alert('Lỗi kết nối server: ' + err);
+        }
+    });
+</script>
+
+</html>

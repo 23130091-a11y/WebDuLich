@@ -1,0 +1,1005 @@
+/* ==============================
+   CẤU HÌNH CHUNG
+============================== */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #fffbea;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+h2, h3, h5 {
+    font-weight: 600;
+}
+
+.pointer {
+    cursor: pointer;
+}
+
+/* ==============================
+   THANH NAVBAR
+============================== */
+.header .navbar {
+    box-shadow: none !important;
+}
+
+.navbar a.nav-link {
+    margin: 0 10px;
+    color: #333 !important;
+    transition: color 0.3s;
+}
+
+.navbar a.nav-link:hover {
+    color: #0078ff !important;
+}
+
+.userDropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 1000; /* đảm bảo popup nổi trên các phần khác */
+}
+
+/* ==============================
+   BANNER
+============================== */
+.hero-img {
+    width: 100%;
+    height: 500px;
+    object-fit: cover;
+    filter: brightness(0.85);
+    transition: transform 0.6s ease;
+}
+
+.hero-img:hover {
+    transform: scale(1.02);
+}
+
+/* ==============================
+   KHUNG TÌM KIẾM (2 tầng)
+============================== */
+.search-box {
+    width: 85%;
+    max-width: 1150px;
+    z-index: 10;
+    position: absolute;
+    top: 65%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    background-color: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(8px);
+    border: 3px solid #1e90ff;
+    border-radius: 25px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+    padding: 25px 30px;
+    transition: all 0.4s ease;
+    animation: floatUp 0.8s ease forwards;
+}
+
+.search-box:hover {
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.3);
+    transform: translate(-50%, -50%) scale(1.02);
+}
+
+/* Hiệu ứng nổi lên */
+@keyframes floatUp {
+    0% { opacity: 0; transform: translate(-50%, -40%) scale(0.9); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Ô tìm kiếm lớn */
+.main-search .form-control {
+    height: 55px;
+    font-size: 16px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    box-shadow: none;
+}
+
+.main-search .input-group-text {
+    border-radius: 10px 0 0 10px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+}
+
+/* Ô nhập nhỏ phía dưới */
+.search-box .input-group .form-control {
+    height: 45px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+}
+
+.search-box .input-group-text {
+    border-radius: 10px 0 0 10px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+}
+
+/* Nút tìm kiếm */
+.search-box .btn-warning {
+    height: 45px;
+    border-radius: 10px;
+    background-color: #f7b731;
+    border: none;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.search-box .btn-warning:hover {
+    background-color: #ff9f00;
+    transform: scale(1.05);
+}
+
+/* ==============================
+   DANH MỤC DU LỊCH
+============================== */
+.categories {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-top: 2px solid #d8ecff;
+    border-bottom: 2px solid #d8ecff;
+    padding: 40px 0;
+    text-align: center;
+}
+
+.categories h3 {
+    color: #333;
+    margin-bottom: 2rem;
+}
+
+.category-card {
+    display: block;
+    padding: 30px 20px;
+    background: white;
+    border-radius: 16px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    height: 100%;
+}
+
+.category-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 120, 255, 0.2);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.category-card i {
+    transition: all 0.3s ease;
+    margin-bottom: 12px;
+}
+
+.category-card:hover i {
+    transform: scale(1.2) rotate(5deg);
+}
+
+.category-card p {
+    margin-top: 12px;
+    margin-bottom: 0;
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+    transition: color 0.3s;
+}
+
+.category-card:hover p {
+    color: #0078ff;
+}
+
+/* ==============================
+   GỢI Ý ĐỊA ĐIỂM
+============================== */
+.recommend {
+    padding: 60px 0;
+    text-align: center;
+    background-color: #fffbea;
+}
+
+.recommend h2 {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.recommend p {
+    color: #6c757d;
+    margin-bottom: 30px;
+}
+
+/* Thẻ địa điểm */
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+    border: none;
+    transition: all 0.3s ease;
+    background-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.card img {
+    height: 190px;
+    object-fit: cover;
+    border-radius: 15px 15px 0 0;
+}
+
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+}
+
+.card-body {
+    padding: 15px;
+}
+
+.card-title {
+    color: #0078ff;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.card-text {
+    color: #555;
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.btn-outline-primary {
+    border-radius: 8px;
+    border-color: #0078ff;
+    color: #0078ff;
+    transition: all 0.3s;
+}
+
+.btn-outline-primary:hover {
+    background-color: #0078ff;
+    color: white;
+    transform: scale(1.05);
+}
+
+/* ==============================
+   FOOTER
+============================== */
+.footer{
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    width: 100%;
+    height: 200px;
+    background: #0078ff;
+    color: white;
+    padding: 25px 40px;
+    font-size: 14px;
+    border-top: 1px solid #005fcc;
+
+}
+.footer-container{
+    width: 1150px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.footer-col{
+    min-width: 100px;
+}
+
+.footer-col h3{
+    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: white;
+}
+
+
+.footer-col ul li{
+    font-size: 16px;
+    margin: 6px 0;
+    cursor: pointer;
+    transition: 0.25s;
+
+    color: white;
+}
+
+.footer-col p{
+    font-size: 15px;
+    margin: 8px 0;
+    line-height: 1.6;
+    color: white;
+}
+
+.footer-icons{
+    display: flex;
+    gap: 15px;
+    font-size: 20px;
+    margin-top: 15px;
+
+    color: white;
+}
+.footer-icons i{
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+.footer-col ul li:hover{
+    color: #d8ecff;
+    text-underline: #d8ecff;
+}
+
+.footer-icons i:hover{
+    color: #d8ecff;
+}
+
+
+/* ============================
+   AUTOCOMPLETE THÔNG MINH
+============================ */
+.autocomplete-box {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #ffffff;
+    border: 2px solid #0078ff;
+    border-radius: 12px;
+    margin-top: 8px;
+    box-shadow: 0 8px 24px rgba(0, 120, 255, 0.2);
+    z-index: 9999;
+    display: none;
+    max-height: 400px;
+    overflow-y: auto;
+    animation: slideDown 0.3s ease forwards;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.autocomplete-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-item:hover {
+    background: linear-gradient(90deg, #f0f8ff 0%, #e6f2ff 100%);
+    transform: translateX(5px);
+    border-left: 3px solid #0078ff;
+}
+
+.autocomplete-item .badge {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+}
+
+.autocomplete-item small {
+    font-size: 0.85rem;
+}
+
+/* Scrollbar cho autocomplete */
+.autocomplete-box::-webkit-scrollbar {
+    width: 8px;
+}
+
+.autocomplete-box::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.autocomplete-box::-webkit-scrollbar-thumb {
+    background: #0078ff;
+    border-radius: 10px;
+}
+
+.autocomplete-box::-webkit-scrollbar-thumb:hover {
+    background: #005fcc;
+}
+
+.highlight {
+    font-weight: bold;
+    color: #0078ff;
+}
+
+/* Loading state */
+.autocomplete-loading {
+    padding: 12px 16px;
+    text-align: center;
+    color: #6c757d;
+}
+
+.autocomplete-loading i {
+    animation: spin 1s linear infinite;
+}
+
+/* Empty state */
+.autocomplete-empty {
+    padding: 12px 16px;
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* ============================
+   MODAL KHÁM PHÁ
+============================ */
+.explore-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.75); /* nền đậm hơn để che chữ phía sau */
+    backdrop-filter: blur(4px);          /* thêm hiệu ứng mờ nhẹ nền phía sau */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5000;                       /* đảm bảo nằm trên tất cả phần tử khác */
+    animation: fadeIn 0.3s ease;
+}
+
+/* Khung nội dung popup */
+.modal-content {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 15px;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    animation: popUp 0.3s ease;
+    position: relative;
+    z-index: 6000; /* chắc chắn nội dung ở trên nền mờ */
+}
+
+.modal-content img {
+    width: 100%;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    object-fit: cover;
+}
+
+.modal-content h3 {
+    margin-bottom: 10px;
+    color: #0078ff;
+    font-weight: 700;
+}
+
+.modal-content p {
+    color: #555;
+    font-size: 15px;
+    margin-bottom: 20px;
+}
+
+.close-btn {
+    background-color: #0078ff;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.close-btn:hover {
+    background-color: #005fcc;
+}
+
+/* Hiệu ứng xuất hiện */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes popUp {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.close-icon {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+    cursor: pointer;
+    color: #0078ff;
+    font-size: 20px;
+    transition: color 0.3s;
+}
+.close-icon:hover {
+    color: #ff4444;
+}
+
+
+/* -------------------------------
+   Hiển thị ảnh và hiệu ứng slideshow
+-------------------------------- */
+.image-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.image-wrapper img.card-img-top {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  transition: transform 0.6s ease, filter 0.4s ease;
+}
+
+.image-wrapper:hover img.card-img-top {
+  transform: scale(1.05);
+  filter: brightness(0.8);
+}
+
+/* Overlay khi hover */
+.image-overlay {
+  position: absolute;
+  inset: 0; /* phủ kín toàn khung */
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.image-wrapper:hover .image-overlay {
+  opacity: 1;
+}
+
+/* Slideshow */
+.slideshow {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.slideshow img.slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1.5s ease; /* 🔹 đổi chậm & mượt */
+}
+
+.slideshow img.active {
+  opacity: 1;
+  z-index: 2;
+}
+
+/* Nút điều hướng slideshow */
+.slideshow .prev,
+.slideshow .next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.85);
+  border: none;
+  color: #333;
+  font-size: 20px;
+  padding: 6px 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 3;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.slideshow .prev:hover,
+.slideshow .next:hover {
+  background: #0d6efd;
+  color: #fff;
+}
+
+.slideshow .prev { left: 10px; }
+.slideshow .next { right: 10px; }
+
+/* Modal */
+.modal-content {
+    border-radius: 8px;
+}
+
+.modal-body input {
+    margin-bottom: 0.75rem;
+}
+.modal-body span, .modal-body a {
+    font-size: 0.9rem;
+}
+.modal-body a {
+    cursor: pointer;
+}
+
+a {
+    font-size: 1rem !important;
+}
+
+
+
+/* ==============================
+   GIAO DIỆN CHUYÊN NGHIỆP - NÂNG CẤP
+============================== */
+
+/* Header nâng cấp */
+.header.shadow-sm {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08) !important;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+.navbar-brand:hover {
+    transform: scale(1.05);
+}
+
+.nav-link.active {
+    color: #0078ff !important;
+    font-weight: 600;
+}
+
+/* Nút hành động */
+.action-buttons .btn {
+    transition: all 0.3s ease;
+}
+
+.action-buttons .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Breadcrumb đẹp hơn */
+.breadcrumb {
+    background: transparent;
+    padding: 0;
+}
+
+.breadcrumb-item a {
+    color: #0078ff;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.breadcrumb-item a:hover {
+    color: #005fcc;
+    text-decoration: underline;
+}
+
+/* Card nâng cấp */
+.card {
+    transition: all 0.3s ease;
+    border: 1px solid #e0e0e0;
+}
+
+.card:hover {
+    border-color: #0078ff;
+}
+
+.card-title {
+    color: #333;
+    font-size: 1.25rem;
+}
+
+/* Badge đẹp hơn */
+.badge {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    border-radius: 20px;
+}
+
+.badge.bg-success {
+    background-color: #28a745 !important;
+}
+
+.badge.bg-primary {
+    background-color: #0078ff !important;
+}
+
+/* Review section */
+.review-item {
+    transition: all 0.3s ease;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.review-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(5px);
+}
+
+.keywords .badge {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+    margin: 0.2rem;
+}
+
+/* Form đánh giá */
+#reviewForm .form-control,
+#reviewForm .form-select {
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    transition: border-color 0.3s;
+}
+
+#reviewForm .form-control:focus,
+#reviewForm .form-select:focus {
+    border-color: #0078ff;
+    box-shadow: 0 0 0 0.2rem rgba(0,120,255,0.15);
+}
+
+/* Thông tin đường đi và thời tiết */
+.trip-info {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 2rem;
+}
+
+.trip-info h5 {
+    color: white;
+    font-weight: 600;
+}
+
+.trip-info i {
+    font-size: 1.2rem;
+}
+
+/* Alert đẹp hơn */
+.alert {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+/* Button nâng cấp */
+.btn {
+    border-radius: 8px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: #0078ff;
+    border-color: #0078ff;
+}
+
+.btn-primary:hover {
+    background-color: #005fcc;
+    border-color: #005fcc;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,120,255,0.3);
+}
+
+.btn-outline-primary:hover {
+    background-color: #0078ff;
+    border-color: #0078ff;
+    color: white;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #333;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+    transform: translateY(-2px);
+}
+
+/* Loading spinner */
+.fa-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Bản đồ */
+#map, #routeMap {
+    border: 2px solid #e0e0e0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Rating stars */
+.text-warning {
+    color: #ffc107 !important;
+    font-size: 1.1rem;
+}
+
+/* Thông tin nhanh sidebar */
+.list-unstyled li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.list-unstyled li:last-child {
+    border-bottom: none;
+}
+
+.list-unstyled li i {
+    width: 25px;
+    text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .search-box {
+        width: 95%;
+        padding: 20px;
+    }
+    
+    .action-buttons {
+        margin-top: 1rem;
+    }
+    
+    .action-buttons .btn {
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Hiệu ứng fade in */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card, .alert, .trip-info {
+    animation: fadeIn 0.5s ease;
+}
+
+/* Scroll smooth */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Print styles */
+@media print {
+    .header, .footer, .action-buttons, #reviewForm, .btn {
+        display: none !important;
+    }
+}
+
+/* Tooltip custom */
+[data-bs-toggle="tooltip"] {
+    cursor: help;
+}
+
+/* Quick links */
+.quick-links .badge {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.quick-links .badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Search section nâng cấp */
+.search-section {
+    border: 2px solid #e0e0e0;
+    transition: border-color 0.3s;
+}
+
+.search-section:hover {
+    border-color: #0078ff;
+}
+
+.search-section h5 i {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Destination card hover effect */
+.col-md-4 .card {
+    position: relative;
+    overflow: hidden;
+}
+
+.col-md-4 .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s;
+}
+
+.col-md-4 .card:hover::before {
+    left: 100%;
+}
+
+/* Icon animations */
+.fa-plane-departure {
+    animation: fly 3s ease-in-out infinite;
+}
+
+@keyframes fly {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(10px); }
+}
+
+/* Weather icon size */
+.trip-info .fs-1 {
+    font-size: 3rem !important;
+}
+
+/* Collapse animation */
+.collapse {
+    transition: height 0.35s ease;
+}
+
+/* Form focus glow */
+.form-control:focus,
+.form-select:focus {
+    box-shadow: 0 0 0 0.25rem rgba(0,120,255,0.15);
+}
+
+/* Success badge subtle */
+.bg-success-subtle {
+    background-color: #d1e7dd !important;
+}
+
+.bg-danger-subtle {
+    background-color: #f8d7da !important;
+}
+
+.bg-info-subtle {
+    background-color: #cff4fc !important;
+}
