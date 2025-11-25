@@ -1,0 +1,74 @@
+{% extends "travel/base.html" %}
+{% load static %}
+
+{% block title %}{{ tour.name }}{% endblock %}
+
+{% block content %}
+
+<div class="container my-5">
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <h1 class="mb-2">{{ tour.name }}</h1>
+            <p class="lead text-muted">
+                <i class="fas fa-map-marker-alt"></i> 
+                {{ tour.destination.name }} - {{ tour.destination.location }}
+            </p>
+        </div>
+        <div class="col-lg-4 text-right">
+            <h2 class="text-primary">{{ tour.price|floatformat:0 }} VNĐ</h2>
+            <p class="text-muted">Giá tour</p>
+        </div>
+    </div>
+    <hr>
+
+    {% if tour.image_main %}
+        <img src="{{ tour.image_main.url }}" class="img-fluid rounded mb-4" alt="{{ tour.name }}" style="max-height: 500px; width: 100%; object-fit: cover;">
+    {% endif %}
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <p><strong>Category:</strong> {{ tour.category.name }}</p>
+        </div>
+        <div class="col-md-4">
+            <p><strong>Thời lượng:</strong> {{ tour.duration }}</p>
+        </div>
+        <div class="col-md-4">
+            <p><strong>Rating:</strong> {{ tour.destination.rating }} <i class="fas fa-star text-warning"></i></p>
+        </div>
+    </div>
+
+    <h3 class="mb-3">Chi tiết Tour</h3>
+    <p>{{ tour.details|linebreaksbr }}</p>
+
+    <h3 class="mb-3 mt-5">Các hoạt động chính</h3>
+    <div>
+        {% for tag in tour.tags.all %}
+            <a href="{% url 'category_detail' category_slug=tour.category.slug %}?tag={{ tag.slug }}" class="btn btn-outline-info btn-sm mb-2">
+                {{ tag.name }}
+            </a>
+        {% endfor %}
+    </div>
+
+    {% if related_tours %}
+        <h3 class="mt-5 mb-3">Tour liên quan</h3>
+        <div class="row">
+            {% for related_tour in related_tours %}
+                <div class="col-md-3">
+                    <div class="card mb-4">
+                        <a href="{% url 'tour_detail' tour_slug=related_tour.slug %}">
+                            <img src="{{ related_tour.image_main.url }}" class="card-img-top" alt="{{ related_tour.name }}">
+                        </a>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ related_tour.name }}</h5>
+                            <p class="card-text text-primary">{{ related_tour.price|floatformat:0 }} VNĐ</p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}
