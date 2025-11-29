@@ -16,8 +16,14 @@
             </p>
         </div>
         <div class="col-lg-4 text-right">
-            <h2 class="text-primary">{{ tour.price|floatformat:0 }} VNĐ</h2>
-            <p class="text-muted">Giá tour</p>
+            <p class="text-muted mb-2">Giá tour:</p>
+            <h2 class="text-primary mb-1">
+                {% if tour.price %}
+                {{ tour.price|floatformat:0 }} VNĐ
+                {% else %}
+                <a href="tel:+84123456789" class="text-decoration-none text-primary fs-4">Liên hệ: 0123-456-789</a>
+                {% endif %}
+            </h2>
         </div>
     </div>
     <hr>

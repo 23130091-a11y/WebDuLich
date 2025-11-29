@@ -313,23 +313,20 @@ def category_detail(request):
     today = datetime.date.today()
     selected_date = None
     if date_str:
-        if date_str == 'today':
-            qs = qs.filter(is_available_today=True)
-            selected_date = today.isoformat()
-        elif date_str == 'tomorrow':
-            tomorrow = today + datetime.timedelta(days=1)
-            selected_date = tomorrow.isoformat()
-        else:
-            try:
-                parsed_date = datetime.date.fromisoformat(date_str)
-                selected_date = parsed_date.isoformat()
-                if parsed_date == today:
-                    qs = qs.filter(is_available_today=True)
-            except ValueError:
-                selected_date = date_str
+        try:
+            selected_date = datetime.date.fromisoformat(date_str)
+            qs = qs.filter(
+                start_date__lte=selected_date,
+                end_date__gte=selected_date
+            )
+        except ValueError:
+            selected_date = date_str
     elif availability == 'today':
-        qs = qs.filter(is_available_today=True)
-        selected_date = today.isoformat()
+        today = datetime.date.today()
+        qs = qs.filter(
+            start_date__lte=today,
+            end_date__gte=today
+        )
 
     # Lọc theo giá
     if price_min:
@@ -339,7 +336,8 @@ def category_detail(request):
             pass
     if price_max:
         try:
-            qs = qs.filter(price__lte=int(price_max))
+            max_val = int(price_max)
+            qs = qs.filter(Q(price__lte=max_val) | Q(price__isnull=True))
         except ValueError:
             pass
 
@@ -365,6 +363,20 @@ def category_detail(request):
             print(f"DEBUG fallback tags filter used, count={len(category_tags_list)}")
         else:
             print("DEBUG no category_obj and no raw_tags from MAP")
+
+    # Lọc theo rating
+    rating_min = request.GET.get('rating_min')
+    if rating_min:
+        try:
+            rating_val = float(rating_min)
+            if rating_val < 5:
+                # Lọc từ rating_val đến nhỏ hơn rating_val+1, giới hạn max 5
+                qs = qs.filter(destination__rating__gte=rating_val, destination__rating__lt=min(rating_val+1, 5))
+            else:
+                # Chọn 5 sao chính xác
+                qs = qs.filter(destination__rating=5)
+        except ValueError:
+            pass
 
     # Chuẩn bị kết quả
     results = []
