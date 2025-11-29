@@ -247,8 +247,13 @@
                                     <span class="small fw-bold me-2 text-gray-700">{{ a.rating|floatformat:1 }}</span>
                                     <span class="badge bg-light text-muted fw-normal text-truncate" title="{{ a.tags_text }}">{{ a.tags_text|truncatechars:35 }}</span>
                                 </div>
-                                
-                                <p class="fw-bold text-red-600 fs-5 mt-auto mb-0" data-price="{{ a.price }}">{{ a.price|intcomma }}₫</p>
+                                {% if a.price %}
+                                <p class="fw-bold text-red-600 fs-5 mt-auto mb-0" data-price="{{ a.price }}">
+                                    {{ a.price|intcomma }}₫
+                                </p>
+                                {% else %}
+                                <p class="fw-bold text-red-600 fs-5 mt-auto mb-0">Liên hệ để biết giá</p>
+                                {% endif %}
                             </div>
                         </a>
                     </div>
@@ -643,31 +648,42 @@
             ratingStars.querySelectorAll('.rating-star').forEach(star => {
                 const rating = Number(star.dataset.rating);
                 if (rating <= minRating) {
-                    star.classList.add('active');
+                    star.classList.add('active'); // highlight sao
                 } else {
                     star.classList.remove('active');
                 }
             });
-            minRatingHidden.value = minRating;
+            minRatingHidden.value = minRating; // lưu giá trị gửi lên backend
         }
 
+        // Click chọn sao
         ratingStars.querySelectorAll('.rating-star').forEach(star => {
             star.addEventListener('click', function() {
                 const selectedRating = Number(this.dataset.rating);
                 syncRatingStars(selectedRating);
             });
         });
-        
-        // Sync initial rating from URL
-        // Cần thêm filter cho rating vào views.py (ví dụ: ?rating_min=4)
-        const ratingMinParam = params.get('rating_min') || 0; // Giả sử rating_min là tham số lọc
-        syncRatingStars(Number(ratingMinParam) || 4); // Default to 4 if no param
 
-        // --- OFFCANVAS: DATE & LOCATION SYNC ---
-        // Date: Sync date picker input (Offcanvas)
-        if (dateParam && dateParam !== 'today' && dateParam !== 'tomorrow' && offcanvasDatePicker) {
-            offcanvasDatePicker.value = dateParam;
-        }
+        // Lấy giá trị rating từ URL (nếu có) để sync hiển thị
+        const ratingMinParam = params.get('rating_min');
+        syncRatingStars(Number(ratingMinParam) || 4); // default 4 sao
+
+        // Khi nhấn "Apply Filters" => backend vẫn dùng minRatingHidden.value
+        applyOffcanvasBtn.addEventListener('click', function() {
+            const url = getCurrentURL();
+
+            // … các filter khác giữ nguyên …
+
+            // 5. Đánh giá tối thiểu
+            const minRating = minRatingHidden.value;
+            url.searchParams.delete('rating_min');
+            if (minRating && Number(minRating) > 0) url.searchParams.set('rating_min', minRating);
+
+            // Reload
+            if (url.searchParams.has('page')) url.searchParams.delete('page');
+            window.location.href = url.toString();
+        });
+
         // Location: Already synced by syncLocationButtons
         
         // --- OFFCANVAS: MAIN FILTER LOGIC ---
