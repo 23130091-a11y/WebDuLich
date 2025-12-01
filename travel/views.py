@@ -7,7 +7,8 @@ import urllib.parse
 import datetime
 from decimal import Decimal 
 from django.utils.text import slugify 
-from .models import TourPackage, Category
+# from .models import TourPackage, Category
+# from users.models import TravelPreference
 
 import urllib.parse
 
@@ -177,9 +178,9 @@ def home(request):
                     results.append({
                         "name": folder.title(),
                         "desc": f"Khám phá vẻ đẹp của {folder.title()}",
-                        "images": images, 
+                        "images": images,
                         "folder": folder,
-                        "img": images[0] 
+                        "img": images[0]
                     })
     except Exception as e:
         print(f"Lỗi khi đọc thư mục static/images: {e}")

@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
@@ -11,6 +11,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth import login, logout
 
 # Create your views here.
 class RegisterView(APIView) :
@@ -46,6 +47,10 @@ class LoginView(APIView) :
         if not is_check :
             raise AuthenticationFailed("Sai mật khẩu")
 
+        # LOGIN SESSION
+        login(request, user)
+
+        # Tạo JWT
         refresh = RefreshToken.for_user(user)
         #
         return Response({
@@ -102,3 +107,18 @@ def save_preferences(request):
 #         "travelTypes": travel_types,
 #         "locations": locations
 #     })
+
+# def index(request):
+#     # Debug: kiểm tra user
+#     print("User:", request.user, "Authenticated:", request.user.is_authenticated)
+#
+#     # Truyền context nếu cần
+#     context = {
+#         # các dữ liệu khác bạn muốn show trên index
+#     }
+#     return render(request, 'index.html', context)
+
+@api_view(['POST'])
+def logout_view(request):
+    logout(request)  # Xóa session Django
+    return Response({"message": "Logged out"}, status=200)
