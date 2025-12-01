@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 {% load static %}
+
+{% load humanize %}
+
 <head>
     <meta charset="UTF-8">
     <title>Web Du Lịch</title>
@@ -45,6 +49,9 @@
                 </span>
                 <!-- Dropdown chỉ hiển thị sau login -->
                 <ul class="dropdown-menu dropdown-menu-end userDropdown" id="userDropdown">
+                    <li>
+                        <a class="dropdown-item" href="#" id="infoPrivateBtn">Tài khoản của tôi</a>
+                    </li>
                     <li>
                         <a class="dropdown-item" href="#" id="logoutBtn">Đăng xuất</a>
                     </li>
@@ -112,7 +119,7 @@
     </section>
 
     <!-- Danh mục du lịch -->
-    <section class="categories bg-light">
+    <section id="categorySection" class="categories bg-light">
         <div class="container-fluid text-center py-5">
             <h3 class="fw-bold mb-5">Danh Mục Khám Phá</h3>
             <div class="row g-4 justify-content-center">
@@ -611,6 +618,10 @@
         const userDropdown = document.getElementById('userDropdown');
         const logoutBtn = document.getElementById('logoutBtn');
         const userDataRaw = localStorage.getItem('user');
+        const categorySection = document.getElementById('categorySection');
+
+        // 1. Ẩn mặc định
+        categorySection.style.display = 'none';
 
         let usernameToShow = "Đăng ký / Đăng nhập";
 
@@ -628,6 +639,9 @@
         userText.textContent = usernameToShow;
 
         if (usernameToShow !== "Đăng ký / Đăng nhập") {
+            // Show section khi login
+            categorySection.style.display = 'block';
+
             // Bỏ modal, setup dropdown logout
             userText.removeAttribute('data-bs-toggle');
             userText.removeAttribute('data-bs-target');
@@ -637,9 +651,17 @@
                 userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block';
             });
 
-            logoutBtn.addEventListener('click', (e) => {
+            logoutBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
+
+                await fetch("/api/logout/", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: { "Content-Type": "application/json" }
+                });
+
                 localStorage.clear();
+                categorySection.style.display = 'none';  // ẩn section khi logout
                 window.location.reload();
             });
 
