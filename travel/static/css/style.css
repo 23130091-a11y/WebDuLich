@@ -76,6 +76,7 @@ h2, h3, h5 {
     padding: 25px 30px;
     transition: all 0.4s ease;
     animation: floatUp 0.8s ease forwards;
+    overflow: visible;
 }
 
 .search-box:hover {
@@ -340,23 +341,25 @@ h2, h3, h5 {
     position: absolute;
     top: 100%;
     left: 0;
+    right: 0;
     width: 100%;
     background: #ffffff;
-    border: 2px solid #0078ff;
+    border: 1px solid #e0e0e0;
     border-radius: 12px;
     margin-top: 8px;
-    box-shadow: 0 8px 24px rgba(0, 120, 255, 0.2);
-    z-index: 9999;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    z-index: 99999 !important;
     display: none;
-    max-height: 400px;
-    overflow-y: auto;
-    animation: slideDown 0.3s ease forwards;
+    max-height: 500px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    animation: slideDown 0.25s ease forwards;
 }
 
 @keyframes slideDown {
     from {
         opacity: 0;
-        transform: translateY(-15px);
+        transform: translateY(-10px);
     }
     to {
         opacity: 1;
@@ -368,46 +371,94 @@ h2, h3, h5 {
     padding: 12px 16px;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-size: 15px;
-    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+    border-bottom: 1px solid #f5f5f5;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    word-spacing: normal;
+    letter-spacing: normal;
+    min-height: 44px;
+}
+
+.autocomplete-item:first-child {
+    border-radius: 12px 12px 0 0;
 }
 
 .autocomplete-item:last-child {
     border-bottom: none;
+    border-radius: 0 0 12px 12px;
 }
 
 .autocomplete-item:hover {
-    background: linear-gradient(90deg, #f0f8ff 0%, #e6f2ff 100%);
-    transform: translateX(5px);
-    border-left: 3px solid #0078ff;
+    background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%);
+    padding-left: 22px;
 }
 
-.autocomplete-item .badge {
-    font-size: 0.75rem;
-    padding: 0.3rem 0.6rem;
+.autocomplete-item > div:first-child {
+    flex: 1;
+}
+
+.autocomplete-item > div:first-child > div:first-child {
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 4px;
+    font-size: 15px;
+    word-spacing: normal;
+    letter-spacing: normal;
 }
 
 .autocomplete-item small {
-    font-size: 0.85rem;
+    font-size: 13px;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    word-spacing: normal;
+    letter-spacing: normal;
+}
+
+.autocomplete-item small i {
+    font-size: 12px;
+}
+
+.autocomplete-item > div:last-child {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.autocomplete-item .badge {
+    font-size: 12px;
+    padding: 4px 10px;
+    font-weight: 600;
+    border-radius: 6px;
+}
+
+.autocomplete-item .text-warning {
+    font-size: 14px;
+    letter-spacing: 1px;
 }
 
 /* Scrollbar cho autocomplete */
 .autocomplete-box::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
 }
 
 .autocomplete-box::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
+    background: transparent;
 }
 
 .autocomplete-box::-webkit-scrollbar-thumb {
-    background: #0078ff;
+    background: #d0d0d0;
     border-radius: 10px;
 }
 
 .autocomplete-box::-webkit-scrollbar-thumb:hover {
-    background: #005fcc;
+    background: #b0b0b0;
 }
 
 .highlight {
@@ -417,7 +468,7 @@ h2, h3, h5 {
 
 /* Loading state */
 .autocomplete-loading {
-    padding: 12px 16px;
+    padding: 16px;
     text-align: center;
     color: #6c757d;
 }
@@ -428,10 +479,11 @@ h2, h3, h5 {
 
 /* Empty state */
 .autocomplete-empty {
-    padding: 12px 16px;
+    padding: 16px;
     text-align: center;
-    color: #6c757d;
+    color: #999;
     font-style: italic;
+    font-size: 14px;
 }
 
 /* ============================

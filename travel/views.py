@@ -59,7 +59,7 @@ def search(request):
     """Trang tìm kiếm nâng cao với thời tiết và đường đi"""
     query = request.GET.get('q', '').strip()
     from_location = request.GET.get('from_location', '').strip()
-    to_location = request.GET.get('location', '').strip() or query
+    location_filter = request.GET.get('location', '').strip()  # Đổi tên để tránh nhầm lẫn
     travel_date = request.GET.get('travel_date', '').strip()
     travel_type = request.GET.get('type', '').strip()
     max_price = request.GET.get('max_price', '').strip()
@@ -67,8 +67,9 @@ def search(request):
     
     # Xây dựng filters
     filters = {}
-    if to_location:
-        filters['location'] = to_location
+    # Chỉ filter theo location nếu người dùng chọn từ dropdown, không phải từ query
+    if location_filter:
+        filters['location'] = location_filter
     if travel_type:
         filters['travel_type'] = travel_type
     if max_price:
@@ -82,8 +83,8 @@ def search(request):
         except ValueError:
             pass
     
-    # Tìm kiếm địa điểm
-    destinations = search_destinations(query or to_location, filters)
+    # Tìm kiếm địa điểm - chỉ dùng query, không dùng location_filter
+    destinations = search_destinations(query, filters)
     
     # Lưu lịch sử
     if query or to_location:
@@ -140,7 +141,7 @@ def search(request):
         'all_types': all_types,
         'filters': {
             'from_location': from_location,
-            'location': to_location,
+            'location': location_filter,
             'travel_date': travel_date,
             'travel_type': travel_type,
             'max_price': max_price,

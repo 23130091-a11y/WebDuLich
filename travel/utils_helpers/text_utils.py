@@ -65,18 +65,28 @@ VIETNAM_PROVINCES = [
 def search_provinces(query):
     """
     Tìm kiếm tỉnh thành theo query (hỗ trợ không dấu)
+    Sắp xếp: tỉnh bắt đầu bằng query lên trước, sau đó đến tỉnh chứa query
     """
     if not query:
-        return VIETNAM_PROVINCES[:10]  # Trả về 10 tỉnh đầu
+        return VIETNAM_PROVINCES  # Trả về tất cả tỉnh
     
     query_normalized = normalize_search_text(query)
-    results = []
+    
+    # Phân loại kết quả
+    starts_with = []  # Tỉnh bắt đầu bằng query
+    contains = []     # Tỉnh chứa query (nhưng không bắt đầu)
     
     for province in VIETNAM_PROVINCES:
         province_normalized = normalize_search_text(province)
         
-        # Kiểm tra nếu query xuất hiện trong tên tỉnh
-        if query_normalized in province_normalized:
-            results.append(province)
+        if province_normalized.startswith(query_normalized):
+            # Tỉnh bắt đầu bằng query
+            starts_with.append(province)
+        elif query_normalized in province_normalized:
+            # Tỉnh chứa query (nhưng không bắt đầu)
+            contains.append(province)
     
-    return results[:10]  # Giới hạn 10 kết quả
+    # Kết hợp: bắt đầu trước, chứa sau
+    results = starts_with + contains
+    
+    return results  # Trả về tất cả kết quả

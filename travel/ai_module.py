@@ -1,31 +1,64 @@
 # Module AI đơn giản cho phân tích và gợi ý
-# Sử dụng keyword extraction thay vì NLP phức tạp (tiết kiệm tài nguyên)
+# Sử dụng keyword extraction + negation handling
 
 import re
 from collections import Counter
 
-# Từ điển từ khóa tiếng Việt (có thể mở rộng)
+# ==================== TỪ ĐIỂN TỪ KHÓA ====================
+
+# Từ khóa tích cực
 POSITIVE_KEYWORDS = [
     'đẹp', 'tuyệt vời', 'tốt', 'ngon', 'sạch sẽ', 'thân thiện', 'chuyên nghiệp',
     'rẻ', 'hợp lý', 'thoải mái', 'yên tĩnh', 'tiện nghi', 'hiện đại', 'sang trọng',
     'view đẹp', 'phong cảnh', 'nên đi', 'recommend', 'khuyên', 'tuyệt', 'xuất sắc',
-    'ấn tượng', 'thích', 'hài lòng', 'ok', 'ổn', 'được', 'hay', 'nice', 'good'
+    'ấn tượng', 'thích', 'hài lòng', 'ok', 'ổn', 'được', 'hay', 'nice', 'good',
+    'tuyệt hảo', 'hoàn hảo', 'chu đáo', 'nhiệt tình', 'nhanh', 'sáng sủa',
+    'rộng rãi', 'thoáng mát', 'mát mẻ', 'trong lành', 'hùng vĩ', 'thơ mộng'
 ]
 
+# Từ khóa tiêu cực
 NEGATIVE_KEYWORDS = [
     'tệ', 'xấu', 'bẩn', 'dơ', 'đắt', 'chặt chém', 'lừa đảo', 'kém', 'tồi',
-    'không tốt', 'thất vọng', 'không nên', 'tránh', 'không đáng', 'lãng phí',
-    'kém chất lượng', 'tệ hại', 'không sạch', 'ồn ào', 'chật chội', 'cũ kỹ',
-    'hư hỏng', 'không chuyên nghiệp', 'thái độ', 'bad', 'poor'
+    'thất vọng', 'tránh', 'lãng phí', 'kém chất lượng', 'tệ hại', 'ồn ào',
+    'chật chội', 'cũ kỹ', 'hư hỏng', 'thái độ xấu', 'bad', 'poor', 'terrible',
+    'chán', 'nhàm', 'buồn', 'sợ', 'nguy hiểm', 'mệt', 'nóng', 'lạnh',
+    'đông đúc', 'chen chúc', 'chờ lâu', 'muộn', 'trễ', 'hỏng', 'gãy'
 ]
 
-# Stopwords tiếng Việt (từ phổ biến không mang ý nghĩa)
+# Từ phủ định (negation words) - QUAN TRỌNG cho sentiment analysis
+NEGATION_WORDS = [
+    'không', 'chẳng', 'chả', 'đừng', 'chưa', 'không phải', 'không hề',
+    'không bao giờ', 'chẳng bao giờ', 'không còn', 'chẳng còn', 'không thể',
+    'chưa bao giờ', 'chưa từng', 'không được', 'chẳng được', 'không có',
+    'thiếu', 'mất', 'hết', 'không thấy', 'chẳng thấy'
+]
+
+# Từ tăng cường (intensifiers)
+INTENSIFIERS = {
+    'rất': 1.5,
+    'cực kỳ': 2.0,
+    'vô cùng': 2.0,
+    'quá': 1.5,
+    'siêu': 1.8,
+    'hơi': 0.5,
+    'khá': 0.8,
+    'tương đối': 0.7,
+    'cũng': 0.6,
+    'thật sự': 1.5,
+    'thực sự': 1.5,
+    'hoàn toàn': 1.8,
+    'tuyệt đối': 2.0
+}
+
+# Stopwords tiếng Việt
 STOPWORDS = [
     'là', 'của', 'và', 'có', 'được', 'trong', 'với', 'cho', 'từ', 'này', 'đó',
     'một', 'các', 'những', 'để', 'khi', 'đã', 'sẽ', 'bị', 'nếu', 'như', 'thì',
-    'mà', 'hay', 'hoặc', 'nhưng', 'vì', 'nên', 'rất', 'lại', 'còn', 'đang'
+    'mà', 'hay', 'hoặc', 'nhưng', 'vì', 'nên', 'lại', 'còn', 'đang'
 ]
 
+
+# ==================== HÀM XỬ LÝ VĂN BẢN ====================
 
 def preprocess_text(text):
     """Tiền xử lý văn bản: chuyển thường, loại bỏ ký tự đặc biệt"""
@@ -38,38 +71,196 @@ def preprocess_text(text):
     return text
 
 
-def extract_keywords(text, keyword_list):
-    """Trích xuất từ khóa từ văn bản"""
+def split_sentences(text):
+    """Tách văn bản thành các câu"""
+    # Tách theo dấu chấm, chấm hỏi, chấm than, dấu phẩy (cho câu ngắn)
+    sentences = re.split(r'[.!?;,]', text)
+    return [s.strip() for s in sentences if s.strip()]
+
+
+def check_negation(sentence, keyword, window_size=3):
+    """
+    Kiểm tra xem từ khóa có bị phủ định không
+    
+    Thuật toán:
+    1. Tìm vị trí của keyword trong câu
+    2. Kiểm tra window_size từ phía trước keyword
+    3. Nếu có từ phủ định trong window -> keyword bị phủ định
+    
+    VD: "không đẹp" -> "đẹp" bị phủ định
+        "cảnh đẹp" -> "đẹp" không bị phủ định
+    """
+    words = sentence.lower().split()
+    
+    # Tìm vị trí keyword (có thể là cụm từ)
+    keyword_lower = keyword.lower()
+    sentence_lower = sentence.lower()
+    
+    if keyword_lower not in sentence_lower:
+        return False
+    
+    # Tìm index của keyword trong danh sách từ
+    keyword_start_idx = -1
+    for i, word in enumerate(words):
+        # Kiểm tra từ đơn hoặc bắt đầu của cụm từ
+        remaining = ' '.join(words[i:])
+        if remaining.startswith(keyword_lower):
+            keyword_start_idx = i
+            break
+    
+    if keyword_start_idx == -1:
+        return False
+    
+    # Kiểm tra window phía trước
+    start_idx = max(0, keyword_start_idx - window_size)
+    window_words = words[start_idx:keyword_start_idx]
+    window_text = ' '.join(window_words)
+    
+    # Kiểm tra từ phủ định trong window
+    for neg_word in NEGATION_WORDS:
+        if neg_word in window_text:
+            return True
+    
+    return False
+
+
+def get_intensifier_score(sentence, keyword):
+    """
+    Lấy hệ số tăng cường cho keyword
+    
+    VD: "rất đẹp" -> hệ số 1.5
+        "cực kỳ tốt" -> hệ số 2.0
+    """
+    words = sentence.lower().split()
+    keyword_lower = keyword.lower()
+    
+    # Tìm vị trí keyword
+    keyword_idx = -1
+    for i, word in enumerate(words):
+        if keyword_lower in ' '.join(words[i:i+3]):  # Cho phép cụm từ
+            keyword_idx = i
+            break
+    
+    if keyword_idx == -1:
+        return 1.0
+    
+    # Kiểm tra 2 từ phía trước
+    for i in range(max(0, keyword_idx - 2), keyword_idx):
+        word = words[i]
+        for intensifier, score in INTENSIFIERS.items():
+            if intensifier in word or word in intensifier:
+                return score
+    
+    return 1.0
+
+
+def extract_keywords_with_context(text, keyword_list, is_positive=True):
+    """
+    Trích xuất từ khóa với xử lý ngữ cảnh (phủ định + tăng cường)
+    
+    Returns:
+        - found_keywords: danh sách từ khóa tìm thấy
+        - negated_keywords: danh sách từ khóa bị phủ định
+        - total_score: điểm tổng (có tính hệ số)
+    """
     text = preprocess_text(text)
+    sentences = split_sentences(text)
+    
     found_keywords = []
+    negated_keywords = []
+    total_score = 0.0
     
     for keyword in keyword_list:
-        if keyword in text:
-            found_keywords.append(keyword)
+        keyword_lower = keyword.lower()
+        
+        if keyword_lower not in text:
+            continue
+        
+        # Kiểm tra trong từng câu
+        for sentence in sentences:
+            if keyword_lower not in sentence.lower():
+                continue
+            
+            # Kiểm tra phủ định
+            is_negated = check_negation(sentence, keyword)
+            
+            # Lấy hệ số tăng cường
+            intensifier = get_intensifier_score(sentence, keyword)
+            
+            if is_negated:
+                negated_keywords.append(keyword)
+                # Từ tích cực bị phủ định -> tiêu cực (và ngược lại)
+                if is_positive:
+                    total_score -= 1.0 * intensifier
+                else:
+                    total_score += 1.0 * intensifier
+            else:
+                found_keywords.append(keyword)
+                if is_positive:
+                    total_score += 1.0 * intensifier
+                else:
+                    total_score -= 1.0 * intensifier
+            
+            break  # Chỉ tính 1 lần cho mỗi keyword
     
-    return found_keywords
+    return found_keywords, negated_keywords, total_score
 
 
 def analyze_sentiment(text):
     """
-    Phân tích cảm xúc đơn giản dựa trên từ khóa
-    Trả về: (sentiment_score, positive_keywords, negative_keywords)
-    sentiment_score: -1 (tiêu cực) đến 1 (tích cực)
+    Phân tích cảm xúc nâng cao với xử lý phủ định (negation handling)
+    
+    Thuật toán:
+    1. Tách văn bản thành các câu
+    2. Với mỗi từ khóa, kiểm tra ngữ cảnh:
+       - Có bị phủ định không? (không, chẳng, chưa...)
+       - Có từ tăng cường không? (rất, cực kỳ, hơi...)
+    3. Tính điểm sentiment dựa trên:
+       - Từ tích cực: +1 (hoặc -1 nếu bị phủ định)
+       - Từ tiêu cực: -1 (hoặc +1 nếu bị phủ định)
+       - Nhân với hệ số tăng cường
+    
+    Returns:
+        - sentiment_score: điểm từ -1 (tiêu cực) đến 1 (tích cực)
+        - positive_keywords: từ khóa tích cực tìm thấy
+        - negative_keywords: từ khóa tiêu cực tìm thấy
+    
+    Ví dụ:
+        "Cảnh đẹp, dịch vụ tốt" -> score > 0
+        "Cảnh không đẹp, dịch vụ tệ" -> score < 0
+        "Không tệ, khá ổn" -> score > 0 (phủ định của tiêu cực = tích cực)
     """
-    positive_found = extract_keywords(text, POSITIVE_KEYWORDS)
-    negative_found = extract_keywords(text, NEGATIVE_KEYWORDS)
+    if not text:
+        return 0.0, [], []
     
-    pos_count = len(positive_found)
-    neg_count = len(negative_found)
+    # Phân tích từ khóa tích cực
+    pos_found, pos_negated, pos_score = extract_keywords_with_context(
+        text, POSITIVE_KEYWORDS, is_positive=True
+    )
     
-    # Tính điểm cảm xúc
-    total = pos_count + neg_count
-    if total == 0:
-        sentiment_score = 0.0
+    # Phân tích từ khóa tiêu cực
+    neg_found, neg_negated, neg_score = extract_keywords_with_context(
+        text, NEGATIVE_KEYWORDS, is_positive=False
+    )
+    
+    # Tổng điểm
+    total_score = pos_score + neg_score
+    
+    # Chuẩn hóa về [-1, 1]
+    # Sử dụng tanh để giới hạn giá trị
+    import math
+    if total_score != 0:
+        sentiment_score = math.tanh(total_score / 3)  # Chia 3 để làm mềm
     else:
-        sentiment_score = (pos_count - neg_count) / total
+        sentiment_score = 0.0
     
-    return sentiment_score, positive_found, negative_found
+    # Gộp từ khóa
+    # Từ tích cực = tìm thấy + tiêu cực bị phủ định
+    all_positive = pos_found + neg_negated
+    # Từ tiêu cực = tìm thấy + tích cực bị phủ định
+    all_negative = neg_found + pos_negated
+    
+    return sentiment_score, list(set(all_positive)), list(set(all_negative))
 
 
 def calculate_destination_score(destination):
@@ -166,33 +357,49 @@ def search_destinations(query, filters=None):
     """
     from django.db.models import Q, F, Case, When, IntegerField
     from .models import Destination, RecommendationScore
+    from .utils_helpers import normalize_search_text
     
-    # Tiền xử lý query
-    query_processed = preprocess_text(query)
-    
-    # Tìm kiếm cơ bản
+    # Bắt đầu với tất cả địa điểm
     destinations = Destination.objects.all()
     
-    # Tìm kiếm với nhiều điều kiện
-    if query_processed:
-        # Tìm kiếm chính xác (exact match) - ưu tiên cao nhất
+    # Tìm kiếm theo query
+    if query and query.strip():
+        query = query.strip()
+        query_normalized = normalize_search_text(query)
+        
+        # Tìm kiếm chính xác trước
         exact_match = destinations.filter(
             Q(name__iexact=query) | Q(location__iexact=query)
         )
         
-        # Tìm kiếm gần đúng (contains)
+        # Tìm kiếm gần đúng
         partial_match = destinations.filter(
             Q(name__icontains=query) |
             Q(location__icontains=query) |
             Q(description__icontains=query) |
             Q(travel_type__icontains=query)
-        ).exclude(id__in=exact_match.values_list('id', flat=True))
-        
-        # Kết hợp kết quả: exact match trước, partial match sau
-        destinations = list(exact_match) + list(partial_match)
-        destinations = Destination.objects.filter(
-            id__in=[d.id for d in destinations]
         )
+        
+        # Tìm kiếm không dấu (fallback)
+        if not partial_match.exists():
+            # Tìm kiếm thủ công với normalize
+            matching_ids = []
+            for dest in Destination.objects.all():
+                name_norm = normalize_search_text(dest.name)
+                location_norm = normalize_search_text(dest.location)
+                desc_norm = normalize_search_text(dest.description)
+                
+                if (query_normalized in name_norm or 
+                    query_normalized in location_norm or 
+                    query_normalized in desc_norm):
+                    matching_ids.append(dest.id)
+            
+            destinations = Destination.objects.filter(id__in=matching_ids)
+        else:
+            # Kết hợp exact và partial
+            all_ids = list(exact_match.values_list('id', flat=True)) + \
+                     list(partial_match.values_list('id', flat=True))
+            destinations = Destination.objects.filter(id__in=all_ids)
     
     # Áp dụng filters
     if filters:
@@ -215,25 +422,26 @@ def search_destinations(query, filters=None):
             destinations = destinations.filter(id__in=dest_ids)
     
     # Sắp xếp thông minh: Ưu tiên địa điểm nổi tiếng
-    # 1. Điểm gợi ý cao (overall_score)
-    # 2. Số lượng review nhiều (popularity)
-    # 3. Rating cao (avg_rating)
-    destinations = destinations.select_related('recommendation').annotate(
-        # Tính điểm ưu tiên
-        priority_score=Case(
-            # Địa điểm có điểm > 80: ưu tiên cao nhất
-            When(recommendation__overall_score__gte=80, then=3),
-            # Địa điểm có điểm 70-80: ưu tiên cao
-            When(recommendation__overall_score__gte=70, then=2),
-            # Địa điểm có điểm < 70: ưu tiên thấp
-            default=1,
-            output_field=IntegerField()
+    try:
+        destinations = destinations.select_related('recommendation').annotate(
+            # Tính điểm ưu tiên
+            priority_score=Case(
+                # Địa điểm có điểm > 80: ưu tiên cao nhất
+                When(recommendation__overall_score__gte=80, then=3),
+                # Địa điểm có điểm 70-80: ưu tiên cao
+                When(recommendation__overall_score__gte=70, then=2),
+                # Địa điểm có điểm < 70: ưu tiên thấp
+                default=1,
+                output_field=IntegerField()
+            )
+        ).order_by(
+            '-priority_score',  # Ưu tiên theo nhóm điểm
+            '-recommendation__overall_score',  # Điểm tổng thể
+            '-recommendation__total_reviews',  # Số lượng review
+            '-recommendation__avg_rating'  # Rating trung bình
         )
-    ).order_by(
-        '-priority_score',  # Ưu tiên theo nhóm điểm
-        '-recommendation__overall_score',  # Điểm tổng thể
-        '-recommendation__total_reviews',  # Số lượng review
-        '-recommendation__avg_rating'  # Rating trung bình
-    )
+    except:
+        # Nếu không có recommendation, sắp xếp theo tên
+        destinations = destinations.order_by('name')
     
     return destinations

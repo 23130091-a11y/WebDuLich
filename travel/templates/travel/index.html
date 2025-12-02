@@ -68,8 +68,8 @@
         <div class="search-box container-fluid rounded-4 shadow-lg p-4 position-absolute top-50 start-50 translate-middle bg-white" style="max-width: 950px;">
             
             <!-- Tìm kiếm nhanh -->
-            <div class="quick-search mb-4">
-                <form method="GET" action="{% url 'travel:search' %}" class="position-relative" id="quickSearchForm">
+            <div class="quick-search mb-4" style="overflow: visible;">
+                <form method="GET" action="{% url 'travel:search' %}" class="position-relative" id="quickSearchForm" style="overflow: visible;">
                     <div class="input-group input-group-lg">
                         <span class="input-group-text bg-white border-end-0">
                             <i class="fa-solid fa-magnifying-glass text-primary"></i>
@@ -87,7 +87,7 @@
 
             <!-- Tìm kiếm chi tiết -->
             <form class="row align-items-center gx-3 justify-content-center" method="GET" action="{% url 'travel:search' %}" id="detailSearchForm">
-                <div class="col-md-3 position-relative">
+                <div class="col-md-3 position-relative" style="overflow: visible;">
                     <div class="input-group">
                         <span class="input-group-text bg-white">
                             <i class="fa-solid fa-location-dot text-primary"></i>
@@ -98,7 +98,7 @@
                     <div id="fromLocationSuggestions" class="autocomplete-box"></div>
                 </div>
 
-                <div class="col-md-3 position-relative">
+                <div class="col-md-3 position-relative" style="overflow: visible;">
                     <div class="input-group">
                         <span class="input-group-text bg-white">
                             <i class="fa-solid fa-map-location-dot text-primary"></i>
@@ -150,46 +150,46 @@
             <h3 class="mb-4 fw-bold">Khám phá theo danh mục</h3>
             <div class="row g-4">
                 <div class="col">
-                    <a href="{% url 'travel:search' %}?type=Biển" class="category-card">
+                    <div class="category-card">
                         <i class="fa-solid fa-umbrella-beach fa-3x text-info"></i>
                         <p>Du lịch biển đảo</p>
-                    </a>
+                    </div>
                 </div>
                 <div class="col">
-                    <a href="{% url 'travel:search' %}?type=Núi" class="category-card">
+                    <div class="category-card">
                         <i class="fa-solid fa-mountain fa-3x text-success"></i>
                         <p>Du lịch núi & cao nguyên</p>
-                    </a>
+                    </div>
                 </div>
                 <div class="col">
-                    <a href="{% url 'travel:search' %}?type=Văn hóa" class="category-card">
+                    <div class="category-card">
                         <i class="fa-solid fa-landmark fa-3x text-warning"></i>
                         <p>Văn hóa - lịch sử</p>
-                    </a>
+                    </div>
                 </div>
                 <div class="col">
-                    <a href="{% url 'travel:search' %}?type=Sinh thái" class="category-card">
+                    <div class="category-card">
                         <i class="fa-solid fa-leaf fa-3x text-success"></i>
                         <p>Du lịch sinh thái</p>
-                    </a>
+                    </div>
                 </div>
                 <div class="col">
-                    <a href="{% url 'travel:search' %}?type=Ẩm thực" class="category-card">
+                    <div class="category-card">
                         <i class="fa-solid fa-utensils fa-3x text-danger"></i>
                         <p>Ẩm thực - chợ đêm</p>
-                    </a>
+                    </div>
                 </div>
                 <div class="col">
-                    <a href="{% url 'travel:search' %}?type=Lễ hội" class="category-card">
+                    <div class="category-card">
                         <i class="fa-solid fa-gift fa-3x text-primary"></i>
                         <p>Lễ hội - sự kiện</p>
-                    </a>
+                    </div>
                 </div>
                 <div class="col">
-                    <a href="{% url 'travel:search' %}?type=Thành phố" class="category-card">
+                    <div class="category-card">
                         <i class="fa-solid fa-city fa-3x text-secondary"></i>
                         <p>Thành phố - đô thị</p>
-                    </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -566,19 +566,17 @@ function displayProvinceSuggestions(provinces, query, inputElement, suggestionsE
         const div = document.createElement('div');
         div.className = 'autocomplete-item';
         
-        // Highlight query
-        const queryNormalized = removeAccents(query.toLowerCase());
-        const provinceNormalized = removeAccents(province.toLowerCase());
+        // Tạo icon
+        const icon = document.createElement('i');
+        icon.className = 'fa-solid fa-map-marker-alt text-primary me-2';
         
-        let displayName = province;
-        if (provinceNormalized.includes(queryNormalized)) {
-            const regex = new RegExp(`(${query})`, 'gi');
-            displayName = province.replace(regex, '<strong class="text-primary">$1</strong>');
-        }
+        // Tạo text node (không dùng innerHTML để tránh vấn đề spacing)
+        const textSpan = document.createElement('span');
+        textSpan.textContent = province;
+        textSpan.style.whiteSpace = 'nowrap';
         
-        div.innerHTML = `
-            <i class="fa-solid fa-map-marker-alt text-primary me-2"></i>${displayName}
-        `;
+        div.appendChild(icon);
+        div.appendChild(textSpan);
         
         div.addEventListener('click', () => {
             inputElement.value = province;

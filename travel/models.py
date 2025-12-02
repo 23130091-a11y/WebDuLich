@@ -20,7 +20,10 @@ class Destination(models.Model):
     avg_price = models.DecimalField(max_digits=10, decimal_places=0, null=True, blank=True, 
                                      verbose_name="Giá trung bình (VNĐ)")
     
-    # Metadata
+    # Metadata JSON (lưu thông tin bổ sung)
+    metadata = models.JSONField(default=dict, blank=True, verbose_name="Metadata")
+    
+    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
