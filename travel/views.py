@@ -1,451 +1,359 @@
-import os
-from django.conf import settings
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.db.models import Q
-import urllib.parse 
-import datetime
-from decimal import Decimal 
-from django.utils.text import slugify 
-# from .models import TourPackage, Category
-# from users.models import TravelPreference
+from django.core.paginator import Paginator
+import os
+from django.conf import settings
+from datetime import datetime
 
-import urllib.parse
+from .models import Destination, Review, RecommendationScore, SearchHistory
+from .ai_module import search_destinations, analyze_sentiment
+from .services import get_weather_forecast, get_current_weather, get_route, get_location_coordinates, calculate_distance
+import math
 
-def normalize_category_name(name: str) -> str | None:
-    """Chuẩn hóa tên Category từ URL/DB về format chuẩn đúng với MAP_THE_LOAI_TO_TAGS."""
-    if not name:
-        return None
 
-    raw = urllib.parse.unquote(name).strip().lower()
+def get_client_ip(request):
+    """Lấy IP của client"""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
-    # Bản đồ các biến thể -> key chuẩn trong MAP
-    mapping = {
-        # Biển & Đảo
-        "biển & đảo": "Biển & Đảo",
-        "bien & dao": "Biển & Đảo",
-        "biển đảo": "Biển & Đảo",
-        "bien dao": "Biển & Đảo",
-        "du lịch và biển đảo": "Biển & Đảo",
-        "du lich va bien dao": "Biển & Đảo",
 
-        # Núi & Cao nguyên
-        "núi & cao nguyên": "Núi & Cao nguyên",
-        "nui & cao nguyen": "Núi & Cao nguyên",
-        "núi cao nguyên": "Núi & Cao nguyên",
-        "nui cao nguyen": "Núi & Cao nguyên",
-        "du lịch núi & cao nguyên": "Núi & Cao nguyên",
-        "du lich nui & cao nguyen": "Núi & Cao nguyên",
-
-        # Văn hóa - Lịch sử
-        "văn hóa - lịch sử": "Văn hóa - Lịch sử",
-        "van hoa - lich su": "Văn hóa - Lịch sử",
-        "văn hóa lịch sử": "Văn hóa - Lịch sử",
-        "van hoa lich su": "Văn hóa - Lịch sử",
-
-        # Du lịch - Sinh thái
-        "du lịch - sinh thái": "Du lịch - Sinh thái",
-        "du lich - sinh thai": "Du lịch - Sinh thái",
-        "du lịch sinh thái": "Du lịch - Sinh thái",
-        "du lich sinh thai": "Du lịch - Sinh thái",
-        "sinh thái": "Du lịch - Sinh thái",
-        "sinh thai": "Du lịch - Sinh thái",
-
-        # Ẩm thực - Chợ đêm
-        "ẩm thực - chợ đêm": "Ẩm thực - Chợ đêm",
-        "am thuc - cho dem": "Ẩm thực - Chợ đêm",
-        "ẩm thực": "Ẩm thực - Chợ đêm",
-        "am thuc": "Ẩm thực - Chợ đêm",
-        "chợ đêm": "Ẩm thực - Chợ đêm",
-        "cho dem": "Ẩm thực - Chợ đêm",
-
-        # Lễ hội - Sự kiện
-        "lễ hội - sự kiện": "Lễ hội - Sự kiện",
-        "le hoi - su kien": "Lễ hội - Sự kiện",
-        "lễ hội": "Lễ hội - Sự kiện",
-        "le hoi": "Lễ hội - Sự kiện",
-        "sự kiện": "Lễ hội - Sự kiện",
-        "su kien": "Lễ hội - Sự kiện",
-
-        # Nghỉ dưỡng
-        "nghỉ dưỡng": "Nghỉ dưỡng",
-        "nghi duong": "Nghỉ dưỡng",
-        "thư giãn": "Nghỉ dưỡng",
-        "thu gian": "Nghỉ dưỡng",
-        "nghỉ dưỡng - thư giãn": "Nghỉ dưỡng",
-        "nghi duong - thu gian": "Nghỉ dưỡng",
-    }
-
-    # Chuẩn hóa chuỗi thô bằng cách bỏ extra khoảng trắng và các dấu đặc biệt nhẹ
-    normalized = raw.replace("  ", " ").replace("-", "-").replace("—", "-")
-
-    # Tra thẳng mapping
-    if normalized in mapping:
-        return mapping[normalized]
-
-    # Heuristic: khớp chứa cụm (phòng trường hợp có tiền tố/hậu tố)
-    contains_rules = [
-        (("biển", "đảo"), "Biển & Đảo"),
-        (("núi", "cao nguyên"), "Núi & Cao nguyên"),
-        (("văn hóa", "lịch sử"), "Văn hóa - Lịch sử"),
-        (("sinh thái",), "Du lịch - Sinh thái"),
-        (("ẩm thực",), "Ẩm thực - Chợ đêm"),
-        (("chợ đêm",), "Ẩm thực - Chợ đêm"),
-        (("lễ hội",), "Lễ hội - Sự kiện"),
-        (("sự kiện",), "Lễ hội - Sự kiện"),
-        (("nghỉ dưỡng",), "Nghỉ dưỡng"),
-        (("thư giãn",), "Nghỉ dưỡng"),
-    ]
-    for tokens, target in contains_rules:
-        if all(tok in normalized for tok in tokens):
-            return target
-
-    # Nếu không khớp, trả lại bản gốc (đã unquote, lowercase)
-    return name
-# Import models
-try:
-    # SỬA: Thay thế Activity bằng TourPackage. Gán alias Activity cho TourPackage
-    from .models import TourPackage, Destination, Category 
-    Activity = TourPackage 
-except Exception:
-    TourPackage = None
-    Destination = None
-    Category = None
-    Activity = None # Giữ alias Activity để tránh phải sửa quá nhiều code bên dưới
-
-# --- BẢNG ÁNH XẠ CÁC THỂ LOẠI TỪ BIỂU TƯỢNG (GIỮ NGUYÊN) ---
-MAP_THE_LOAI_TO_TAGS = {
-    "Biển & Đảo": [
-        "Lặn biển", "Ngắm san hô", "Thể thao dưới nước", "Chèo thuyền",
-        "Biển đảo", "Bãi biển", "Hải sản"
-    ],
-    "Núi & Cao nguyên": [
-        "Leo núi", "Trekking", "Cắm trại", "Săn mây", "Ngắm cảnh",
-        "Homestay", "Trải nghiệm văn hóa", "Núi", "Cao nguyên"
-    ],
-    "Văn hóa - Lịch sử": [
-        "Di tích", "Lịch sử", "Bảo tàng", "Làng nghề truyền thống",
-        "Nghệ thuật biểu diễn", "Văn hóa", "Đền thờ", "Chùa"
-    ],
-    "Du lịch - Sinh thái": [
-        "Vườn quốc gia", "Khu bảo tồn", "Hang động", "Khám phá Hang động",
-        "Sinh thái", "Thiên nhiên"
-    ],
-    "Ẩm thực - Chợ đêm": [
-        "Đặc sản", "Tour Ẩm thực đường phố", "Chợ đêm", "Phố ẩm thực",
-        "Ẩm thực", "Đường phố", "Hải sản"
-    ],
-    "Lễ hội - Sự kiện": [
-        "Lễ hội Truyền thống", "Sự kiện theo Tháng", "Sự kiện theo Mùa",
-        "Lễ hội", "Sự kiện", 
-    ],
-    "Nghỉ dưỡng": [
-        "Resort", "Khách sạn Cao cấp", "Spa", "Chăm sóc Sức khỏe",
-        "Wellness", "Retreat", "Yoga", "Nghỉ dưỡng", "Thư giãn"
-    ]
-}
-
-# Human-readable display for each main category (used in template)
-CATEGORY_DISPLAY_TEXT = {
-    "Biển & Đảo": "Lặn biển/Ngắm san hô * Thể thao dưới nước & Chèo thuyền",
-    "Núi & Cao nguyên": "Leo núi/Trekking & Cắm trại * Săn mây & Ngắm cảnh * Homestay và Trải nghiệm văn hóa",
-    "Văn hóa - Lịch sử": "Di tích Lịch sử & Bảo tàng, Làng nghề truyền thống * Nghệ thuật Biểu diễn truyền thống",
-    "Du lịch - Sinh thái": "Vườn quốc gia & Khu bảo tồn, Khám phá Hang động",
-    "Ẩm thực - Chợ đêm": "Đặc sản Vùng miền * Tour Ẩm thực đường phố * Chợ đêm & Phố ẩm thực",
-    "Lễ hội - Sự kiện": "Lễ hội Truyền thống nổi bật, Sự kiện theo Tháng/Mùa",
-    "Nghỉ dưỡng": "Resort & Khách sạn Cao cấp * Spa & Chăm sóc Sức khỏe (Wellness) * Retreat & Yoga",
-}
-
-# --- 1. VIEW TRANG CHỦ (GIỮ NGUYÊN) ---
 def home(request):
-    """
-    View trang chủ hiện tại, lấy dữ liệu địa điểm từ thư mục static/images.
-    (Giữ nguyên logic lấy từ folder)
-    """
+    """Trang chủ - hiển thị địa điểm nổi bật"""
     base_path = os.path.join(settings.BASE_DIR, 'travel', 'static', 'images')
     results = []
 
-    try:
-        for folder in os.listdir(base_path):
-            folder_path = os.path.join(base_path, folder)
-            if os.path.isdir(folder_path):
-                images = [
-                    f"{folder}/{img}" for img in os.listdir(folder_path)
-                    if img.lower().endswith(('.jpg', '.jpeg', '.png', '.webp'))
-                ]
+    for folder in os.listdir(base_path):
+        folder_path = os.path.join(base_path, folder)
+        if os.path.isdir(folder_path):
+            images = [
+                f"{folder}/{img}" for img in os.listdir(folder_path)
+                if img.lower().endswith(('.jpg', '.jpeg', '.png', '.webp'))
+            ]
 
-                if images:
-                    results.append({
-                        "name": folder.title(),
-                        "desc": f"Khám phá vẻ đẹp của {folder.title()}",
-                        "images": images,
-                        "folder": folder,
-                        "img": images[0]
-                    })
-    except Exception as e:
-        print(f"Lỗi khi đọc thư mục static/images: {e}")
-
-    return render(request, 'travel/index.html', {"results": results})
-
-# --- 2. API ENDPOINT: LỌC THEO THỂ LOẠI (GIỮ NGUYÊN) ---
-def goi_y_theo_the_loai(request):
-    """
-    Endpoint trả về danh sách gói tour/hoạt động phổ biến nhất theo thể loại.
-    SỬ DỤNG: TourPackage
-    """
-    if TourPackage is None:
-        return JsonResponse({"error": "Mô hình TourPackage chưa được load"}, status=500)
-
-    the_loai_encoded = request.GET.get('the_loai', None)
-
-    if not the_loai_encoded:
-        return JsonResponse({"error": "Thiếu tham số thể loại"}, status=400)
-        
-    # Dùng hàm chuẩn hóa
-    the_loai_standard = normalize_category_name(the_loai_encoded)
+            if images:
+                results.append({
+                    "name": folder.title(),
+                    "desc": f"Khám phá vẻ đẹp của {folder.title()}",
+                    "images": images,
+                    "folder": folder,
+                    "img": images[0]
+                })
     
-    if not the_loai_standard:
-          return JsonResponse({"error": "Thể loại không hợp lệ"}, status=400)
-        
-    tags = MAP_THE_LOAI_TO_TAGS.get(the_loai_standard, [])
+    # Lấy top địa điểm được gợi ý
+    top_destinations = Destination.objects.select_related('recommendation').order_by(
+        '-recommendation__overall_score'
+    )[:6]
+
+    return render(request, 'travel/index.html', {
+        "results": results,
+        "top_destinations": top_destinations
+    })
+
+
+def search(request):
+    """Trang tìm kiếm nâng cao với thời tiết và đường đi"""
+    query = request.GET.get('q', '').strip()
+    from_location = request.GET.get('from_location', '').strip()
+    location_filter = request.GET.get('location', '').strip()  # Đổi tên để tránh nhầm lẫn
+    travel_date = request.GET.get('travel_date', '').strip()
+    travel_type = request.GET.get('type', '').strip()
+    max_price = request.GET.get('max_price', '').strip()
+    min_rating = request.GET.get('min_rating', '').strip()
     
-    if not tags:
-        return JsonResponse({"message": "Không tìm thấy thẻ tương ứng"}, status=200)
-
-    # 1. Tạo Q object để lọc OR trên các tags (sử dụng tags từ TourPackage)
-    q_tags = Q()
-    for t in tags:
-        # Lọc TourPackage có Tag nào có tên chứa chuỗi 't'
-        # Hoặc tên gói tour chứa 't'
-        q_tags |= Q(tags__name__icontains=t) | Q(name__icontains=t) 
-    
-    # 2. Truy vấn ORM: Lọc theo Q object, sắp xếp theo rating (lấy từ destination), và chỉ lấy 100 kết quả đầu
-    qs = TourPackage.objects.filter(q_tags).order_by('-destination__rating')[:100]
-
-    # 3. Chuẩn bị dữ liệu trả về Json
-    results = []
-    for a in qs: # a là TourPackage
-        # Lấy tên Tags để hiển thị 
-        tags_list = list(a.tags.all().values_list('name', flat=True)) if hasattr(a, 'tags') else []
-        
-        results.append({
-            "DiemDenID": a.id, 
-            "TenDiaDiem": a.name, 
-            "MoTa": a.details, 
-            "URL_AnhDaiDien": a.image_main.url if hasattr(a, 'image_main') and a.image_main else None, 
-            "ChiPhi_TB": a.price,
-            # Lấy rating từ Destination
-            "Diem_ChuyenMon": a.destination.rating if a.destination else 0.0,
-            "KhuVuc": a.destination.name if a.destination else None,
-            "TheLoai_Tags": tags_list 
-        })
-        
-    return JsonResponse(results, safe=False)
-
-# -------------------
-# --- 3. VIEW TRANG KẾT QUẢ LỌC (ĐÃ CHỈNH SỬA) ---
-
-from django.utils.text import slugify
-import datetime
-from django.db.models import Q
-
-def category_detail(request):
-    category_slug_param = request.GET.get('category')
-    destination = request.GET.get('destination')
-    price_min = request.GET.get('price_min')
-    price_max = request.GET.get('price_max')
-    date_str = request.GET.get('date')
-    availability = request.GET.get('available')
-    tag_filters = request.GET.getlist('tag')
-    sort = request.GET.get('sort')
-
-    qs = TourPackage.objects.filter(is_active=True)
-
-    category_obj = None
-    display_category_name = None
-    category_tags_list = []  # [{slug, name}]
-
-    if category_slug_param:
-        # Chuẩn hóa đầu vào, nhưng phải trả về chính xác key MAP (có dấu &)
-        category_name_key = normalize_category_name(category_slug_param)  # ví dụ trả "Biển & Đảo"
-        print("DEBUG category_slug_param:", category_slug_param)
-        print("DEBUG category_name_key:", category_name_key)
-
-        # Lấy đầy đủ hoạt động từ MAP (luôn luôn, không phụ thuộc tour)
-        raw_tags = MAP_THE_LOAI_TO_TAGS.get(category_name_key, [])
-        print("DEBUG raw_tags_len:", len(raw_tags), "raw_tags:", raw_tags)
-
-        category_tags_list = [{"slug": slugify(t), "name": t} for t in raw_tags]
-        display_category_name = category_name_key or category_slug_param
-
-        # Tìm Category trong DB (để lọc tour), KHÔNG ảnh hưởng đến hiển thị button
-        if category_name_key:
-            category_slug_normalized = slugify(category_name_key)
-            category_obj = Category.objects.filter(slug=category_slug_normalized).first()
-            if not category_obj:
-                category_obj = Category.objects.filter(name__iexact=category_name_key).first()
-
-        # Lọc tour theo category hoặc fallback theo tags
-        if category_obj:
-            qs = qs.filter(Q(category=category_obj) | Q(destination__category=category_obj))
-            display_category_name = category_obj.name
-        else:
-            if category_tags_list:
-                q_tags = Q()
-                for t in category_tags_list:
-                    q_tags |= Q(tags__slug__iexact=t["slug"])
-                qs = qs.filter(q_tags).distinct()
-                print(f"DEBUG fallback tags filter used, count={len(category_tags_list)}")
-            else:
-                print("DEBUG no category_obj and no raw_tags from MAP")
-    else:
-        # Không có category param thì không hiển thị dropdown hoạt động
-        display_category_name = 'Du lịch'
-
-    # Lọc theo tag người dùng chọn
-    if tag_filters:
-        qs = qs.filter(tags__slug__in=tag_filters).distinct()
-
-    # Lọc theo destination
-    if destination:
-        qs = qs.filter(destination__name__icontains=destination)
-
-    # Lọc theo ngày
-    today = datetime.date.today()
-    selected_date = None
-    if date_str:
+    # Xây dựng filters
+    filters = {}
+    # Chỉ filter theo location nếu người dùng chọn từ dropdown, không phải từ query
+    if location_filter:
+        filters['location'] = location_filter
+    if travel_type:
+        filters['travel_type'] = travel_type
+    if max_price:
         try:
-            selected_date = datetime.date.fromisoformat(date_str)
-            qs = qs.filter(
-                start_date__lte=selected_date,
-                end_date__gte=selected_date
+            filters['max_price'] = float(max_price)
+        except ValueError:
+            pass
+    if min_rating:
+        try:
+            filters['min_rating'] = float(min_rating)
+        except ValueError:
+            pass
+    
+    # Tìm kiếm địa điểm - chỉ dùng query, không dùng location_filter
+    destinations = search_destinations(query, filters)
+    
+    # Lưu lịch sử
+    if query or to_location:
+        SearchHistory.objects.create(
+            query=query or to_location,
+            user_ip=get_client_ip(request),
+            results_count=destinations.count()
+        )
+    
+    # Thông tin đường đi và thời tiết
+    route_info = None
+    weather_info = None
+    from_coords = None
+    
+    if from_location and destinations.exists():
+        # Lấy tọa độ điểm xuất phát
+        from_coords = get_location_coordinates(from_location)
+        
+        if from_coords:
+            # Tính đường đi đến địa điểm đầu tiên
+            first_dest = destinations.first()
+            if first_dest.latitude and first_dest.longitude:
+                route_info = get_route(
+                    from_coords['lat'], from_coords['lon'],
+                    first_dest.latitude, first_dest.longitude
+                )
+                
+                # Lấy thời tiết cho ngày đi
+                if travel_date:
+                    try:
+                        date_obj = datetime.strptime(travel_date, '%Y-%m-%d')
+                        weather_info = get_weather_forecast(
+                            first_dest.latitude,
+                            first_dest.longitude,
+                            travel_date
+                        )
+                    except:
+                        pass
+    
+    # Phân trang
+    paginator = Paginator(destinations, 12)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    
+    # Lấy danh sách locations và types
+    all_locations = Destination.objects.values_list('location', flat=True).distinct()
+    all_types = Destination.objects.values_list('travel_type', flat=True).distinct()
+    
+    context = {
+        'query': query,
+        'destinations': page_obj,
+        'total_results': destinations.count(),
+        'all_locations': all_locations,
+        'all_types': all_types,
+        'filters': {
+            'from_location': from_location,
+            'location': location_filter,
+            'travel_date': travel_date,
+            'travel_type': travel_type,
+            'max_price': max_price,
+            'min_rating': min_rating,
+        },
+        'route_info': route_info,
+        'weather_info': weather_info,
+        'from_coords': from_coords,
+    }
+    
+    return render(request, 'travel/search.html', context)
+
+
+def destination_detail(request, destination_id):
+    """Chi tiết địa điểm với thời tiết và đường đi"""
+    destination = get_object_or_404(Destination, id=destination_id)
+    
+    # Lấy reviews
+    reviews = Review.objects.filter(destination=destination).order_by('-created_at')[:50]
+    
+    # Lấy điểm gợi ý
+    try:
+        recommendation = destination.recommendation
+    except RecommendationScore.DoesNotExist:
+        recommendation = None
+    
+    # Thông tin từ query params
+    from_location = request.GET.get('from_location', '').strip()
+    travel_date = request.GET.get('travel_date', '').strip()
+    user_lat = request.GET.get('lat')
+    user_lng = request.GET.get('lng')
+    
+    # Thông tin đường đi
+    route_info = None
+    from_coords = None
+    distance = None
+    
+    if from_location and destination.latitude and destination.longitude:
+        from_coords = get_location_coordinates(from_location)
+        if from_coords:
+            route_info = get_route(
+                from_coords['lat'], from_coords['lon'],
+                destination.latitude, destination.longitude
+            )
+    elif user_lat and user_lng and destination.latitude and destination.longitude:
+        try:
+            distance = calculate_distance(
+                float(user_lat), float(user_lng),
+                destination.latitude, destination.longitude
             )
         except ValueError:
-            selected_date = date_str
-    elif availability == 'today':
-        today = datetime.date.today()
-        qs = qs.filter(
-            start_date__lte=today,
-            end_date__gte=today
-        )
-
-    # Lọc theo giá
-    if price_min:
-        try:
-            qs = qs.filter(price__gte=int(price_min))
-        except ValueError:
             pass
-    if price_max:
-        try:
-            max_val = int(price_max)
-            qs = qs.filter(Q(price__lte=max_val) | Q(price__isnull=True))
-        except ValueError:
-            pass
-
-    # Sắp xếp
-    if sort == 'price_asc':
-        qs = qs.order_by('price')
-    elif sort == 'price_desc':
-        qs = qs.order_by('-price')
-    elif sort == 'latest':
-        qs = qs.order_by('-id')
-    else:
-        qs = qs.order_by('-destination__rating')
-
-    if category_obj:
-             qs = qs.filter(Q(category=category_obj) | Q(destination__category=category_obj))
-             display_category_name = category_obj.name
-    else:
-        if category_tags_list:
-            q_tags = Q()
-            for t in category_tags_list:
-                q_tags |= Q(tags__slug__iexact=t["slug"])
-            qs = qs.filter(q_tags).distinct()
-            print(f"DEBUG fallback tags filter used, count={len(category_tags_list)}")
+    
+    # Thông tin thời tiết
+    weather_info = None
+    if destination.latitude and destination.longitude:
+        if travel_date:
+            weather_info = get_weather_forecast(
+                destination.latitude,
+                destination.longitude,
+                travel_date
+            )
         else:
-            print("DEBUG no category_obj and no raw_tags from MAP")
+            # Thời tiết hiện tại
+            current = get_current_weather(destination.latitude, destination.longitude)
+            if 'error' not in current:
+                weather_info = {
+                    'temperature': current['temperature'],
+                    'windspeed': current['windspeed'],
+                    'is_current': True
+                }
+    
+    context = {
+        'destination': destination,
+        'reviews': reviews,
+        'recommendation': recommendation,
+        'distance': distance,
+        'route_info': route_info,
+        'from_coords': from_coords,
+        'weather_info': weather_info,
+        'travel_date': travel_date,
+        'from_location': from_location,
+    }
+    
+    return render(request, 'travel/destination_detail.html', context)
 
-    # Lọc theo rating
-    rating_min = request.GET.get('rating_min')
-    if rating_min:
-        try:
-            rating_val = float(rating_min)
-            if rating_val < 5:
-                # Lọc từ rating_val đến nhỏ hơn rating_val+1, giới hạn max 5
-                qs = qs.filter(destination__rating__gte=rating_val, destination__rating__lt=min(rating_val+1, 5))
-            else:
-                # Chọn 5 sao chính xác
-                qs = qs.filter(destination__rating=5)
-        except ValueError:
-            pass
 
-    # Chuẩn bị kết quả
+def calculate_distance(lat1, lon1, lat2, lon2):
+    """
+    Tính khoảng cách giữa 2 điểm (Haversine formula)
+    Trả về khoảng cách tính bằng km
+    """
+    R = 6371  # Bán kính trái đất (km)
+    
+    lat1_rad = math.radians(lat1)
+    lat2_rad = math.radians(lat2)
+    delta_lat = math.radians(lat2 - lat1)
+    delta_lon = math.radians(lon2 - lon1)
+    
+    a = math.sin(delta_lat/2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(delta_lon/2)**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    
+    distance = R * c
+    return round(distance, 2)
+
+
+# API endpoints (cho AJAX requests)
+def api_search(request):
+    """API tìm kiếm (trả về JSON) - Hỗ trợ autocomplete"""
+    query = request.GET.get('q', '').strip()
+    
+    if not query:
+        return JsonResponse({'results': []})
+    
+    from .utils_helpers import normalize_search_text
+    
+    # Tìm kiếm địa điểm
+    destinations = Destination.objects.all()
+    
+    # Tìm kiếm với normalize (hỗ trợ không dấu)
+    query_normalized = normalize_search_text(query)
+    
+    matching_destinations = []
+    for dest in destinations:
+        # Kiểm tra tên và location
+        name_normalized = normalize_search_text(dest.name)
+        location_normalized = normalize_search_text(dest.location)
+        
+        if query_normalized in name_normalized or query_normalized in location_normalized:
+            matching_destinations.append(dest)
+    
+    # Sắp xếp theo điểm gợi ý (ưu tiên địa điểm nổi tiếng)
+    matching_destinations = sorted(
+        matching_destinations,
+        key=lambda x: x.recommendation.overall_score if hasattr(x, 'recommendation') else 0,
+        reverse=True
+    )[:10]
+    
     results = []
-    tour = None
+    for dest in matching_destinations:
+        try:
+            score = dest.recommendation.overall_score
+            avg_rating = dest.recommendation.avg_rating
+        except:
+            score = 0
+            avg_rating = 0
+        
+        results.append({
+            'id': dest.id,
+            'name': dest.name,
+            'location': dest.location,
+            'travel_type': dest.travel_type,
+            'score': round(score, 1),
+            'avg_rating': round(avg_rating, 1),
+            'avg_price': float(dest.avg_price) if dest.avg_price else None,
+        })
+    
+    return JsonResponse({'results': results})
+
+
+def api_search_provinces(request):
+    """API tìm kiếm tỉnh thành (cho autocomplete)"""
+    query = request.GET.get('q', '').strip()
+    
+    from .utils_helpers import search_provinces
+    
+    provinces = search_provinces(query)
+    
+    return JsonResponse({'provinces': provinces})
+
+
+def api_submit_review(request):
+    """API gửi đánh giá"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    destination_id = request.POST.get('destination_id')
+    author_name = request.POST.get('author_name', 'Anonymous')
+    rating = request.POST.get('rating')
+    comment = request.POST.get('comment', '')
+    
+    if not destination_id or not rating:
+        return JsonResponse({'error': 'Missing required fields'}, status=400)
+    
     try:
-        qs = qs.select_related('destination', 'category').prefetch_related('tags')
-        print(f"DEBUG FINAL QUERY COUNT: {qs.count()}")
-
-        for tour in qs[:200]:
-            tags_text = ', '.join([
-                tag.slug 
-                for tag in tour.tags.all() 
-                if tag is not None and hasattr(tag, 'slug')
-            ])
-            results.append({
-                'id': tour.id,
-                'title': tour.name,
-                'description': tour.details,
-                'image': tour.image_main.url if tour.image_main else None,
-                'price': tour.price,
-                'rating': tour.destination.rating if tour.destination else 0.0,
-                'destination': tour.destination.name if tour.destination else 'Không rõ',
-                'category': tour.category.name if tour.category else 'Không rõ',
-                'tags_text': tags_text,
-                'slug': tour.slug if tour and hasattr(tour, 'slug') else None,
-            })
-    except Exception as e:
-        print(f"ERROR query TourPackage: {e}")
-        results = []
-
-    context = {
-        'results': results,
-        'total_results': len(results),
-        'category_name': display_category_name,
-        'selected_destination': destination or 'Toàn quốc',
-        'selected_date': selected_date,
-        'active_tags': tag_filters,
-        'price_min': price_min,
-        'price_max': price_max,
-        'active_sort': sort or 'rating',
-        'category_tags': category_tags_list,  # luôn là [{slug, name}]
-        'all_categories': Category.objects.all(),
-    }
-
-    print("DEBUG context category_tags_len:", len(category_tags_list))
-    return render(request, 'travel/category_detail.html', context)
-
-def tour_detail(request, tour_slug):
-    """Xử lý yêu cầu hiển thị chi tiết một Tour Package."""
-    
-    # Lấy Tour Package bằng slug (nếu không tìm thấy sẽ trả về lỗi 404)
-    tour = get_object_or_404(
-        TourPackage.objects.select_related('category', 'destination')
-                          .prefetch_related('tags'), 
-        slug=tour_slug
-    )
-    
-    # Logic gợi ý tour liên quan (có thể bỏ qua nếu chưa cần)
-    related_tours = TourPackage.objects.filter(
-        # Lấy tour cùng Category, loại trừ chính tour hiện tại
-        category=tour.category
-    ).exclude(pk=tour.pk).order_by('?')[:4] # Lấy 4 tour ngẫu nhiên
-    
-    context = {
-        'tour': tour,
-        'related_tours': related_tours,
-        # Thêm các dữ liệu khác cần thiết cho template
-    }
-    
-    # Đảm bảo bạn có file template 'travel/tour_detail.html'
-    return render(request, 'travel/tour_detail.html', context)
+        destination = Destination.objects.get(id=destination_id)
+        rating = int(rating)
+        
+        if rating < 1 or rating > 5:
+            return JsonResponse({'error': 'Rating must be between 1 and 5'}, status=400)
+        
+        # Phân tích sentiment
+        sentiment_score, pos_keywords, neg_keywords = analyze_sentiment(comment)
+        
+        # Tạo review
+        review = Review.objects.create(
+            destination=destination,
+            author_name=author_name,
+            rating=rating,
+            comment=comment,
+            sentiment_score=sentiment_score,
+            positive_keywords=pos_keywords,
+            negative_keywords=neg_keywords
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'review_id': review.id,
+            'message': 'Cảm ơn bạn đã đánh giá!'
+        })
+        
+    except Destination.DoesNotExist:
+        return JsonResponse({'error': 'Destination not found'}, status=404)
+    except ValueError:
+        return JsonResponse({'error': 'Invalid rating value'}, status=400)

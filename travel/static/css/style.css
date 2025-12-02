@@ -7,11 +7,10 @@ body {
     margin: 0;
     padding: 0;
     overflow-x: hidden;
-    font-size: 25px;
 }
 
 h2, h3, h5 {
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .pointer {
@@ -23,17 +22,12 @@ h2, h3, h5 {
 ============================== */
 .header .navbar {
     box-shadow: none !important;
-    min-height: 80px;
-    padding-top: 30px;     
-    padding-bottom: 30px;
 }
 
 .navbar a.nav-link {
-    margin: 0 14px;
+    margin: 0 10px;
     color: #333 !important;
     transition: color 0.3s;
-    font-size: 25px;
-    font-weight: 500;
 }
 
 .navbar a.nav-link:hover {
@@ -67,8 +61,8 @@ h2, h3, h5 {
    KHUNG TÌM KIẾM (2 tầng)
 ============================== */
 .search-box {
-    width: 95%;
-    
+    width: 85%;
+    max-width: 1150px;
     z-index: 10;
     position: absolute;
     top: 65%;
@@ -82,6 +76,7 @@ h2, h3, h5 {
     padding: 25px 30px;
     transition: all 0.4s ease;
     animation: floatUp 0.8s ease forwards;
+    overflow: visible;
 }
 
 .search-box:hover {
@@ -141,63 +136,58 @@ h2, h3, h5 {
 }
 
 /* ==============================
-   DANH MỤC DU LỊCH - FIX HOVER
+   DANH MỤC DU LỊCH
 ============================== */
+.categories {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-top: 2px solid #d8ecff;
+    border-bottom: 2px solid #d8ecff;
+    padding: 40px 0;
+    text-align: center;
+}
 
-.categories a.category-link {
+.categories h3 {
+    color: #333;
+    margin-bottom: 2rem;
+}
+
+.category-card {
     display: block;
-    padding: 15px 5px; 
-    border-radius: 12px;
+    padding: 30px 20px;
+    background: white;
+    border-radius: 16px;
+    text-decoration: none;
     transition: all 0.3s ease;
-    position: relative;
-    border: 2px solid transparent; /* 💡 MỚI: Thêm viền trong suốt */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    height: 100%;
 }
 
-/* HIỆU ỨNG KHI RÊ CHUỘT (MẪU MỚI) */
-.categories a.category-link:hover {
-    background-color: #ffffff; /* 💡 MỚI: Đặt lại nền trắng */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Giữ lại đổ bóng nhẹ */
-    transform: translateY(-3px); 
-    border: 2px solid #0078ff; /* 💡 MỚI: Hiển thị viền màu xanh */
+.category-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 120, 255, 0.2);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
 }
 
-/* Biểu tượng (Icon) */
-.categories i {
-    color: #0078ff;
-    font-size: 36px !important; 
+.category-card i {
     transition: all 0.3s ease;
+    margin-bottom: 12px;
 }
 
-/* Tên danh mục (Text) */
-.categories p {
-    margin-top: 15px !important; 
-    font-weight: 500;
-    transition: color 0.3s, font-weight 0.3s; /* 💡 MỚI: Thêm transition cho font-weight */
-    font-size: 17px;
-    line-height: 1.2;
+.category-card:hover i {
+    transform: scale(1.2) rotate(5deg);
 }
 
-.categories a.category-link:hover p {
+.category-card p {
+    margin-top: 12px;
+    margin-bottom: 0;
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+    transition: color 0.3s;
+}
+
+.category-card:hover p {
     color: #0078ff;
-    font-weight: 700; /* 💡 MỚI: Làm chữ đậm hơn khi hover */
-}
-
-@media (min-width: 992px) { 
-    /* Áp dụng cho màn hình desktop */
-    
-    /* 1. Ép các cột Bootstrap col-2 nhỏ lại (14.28% = 1/7) */
-    .categories .col-lg-2,
-    .categories .col-md-2,
-    .categories .col-2 {
-        flex: 0 0 auto;
-        /* Buộc chiều rộng mỗi cột chỉ còn 1/7 = 14.28% */
-        width: 14.28%; 
-    }
-    
-    /* 2. Căn giữa hàng (Nếu cần) */
-    .categories .row {
-        justify-content: center !important; 
-    }
 }
 
 /* ==============================
@@ -248,12 +238,11 @@ h2, h3, h5 {
     color: #0078ff;
     font-weight: bold;
     margin-bottom: 8px;
-    font-size: 22px;
 }
 
 .card-text {
     color: #555;
-    font-size: 18px;
+    font-size: 14px;
     margin-bottom: 12px;
 }
 
@@ -285,8 +274,7 @@ h2, h3, h5 {
 
 }
 .footer-container{
-    width: 95%;
-    max-width: 1400px;
+    width: 1150px;
     margin: 0 auto;
     display: flex;
     justify-content: space-between;
@@ -300,7 +288,7 @@ h2, h3, h5 {
 
 .footer-col h3{
     margin-bottom: 15px;
-    font-size: 22px;
+    font-size: 18px;
     font-weight: 600;
     text-transform: uppercase;
     color: white;
@@ -308,7 +296,7 @@ h2, h3, h5 {
 
 
 .footer-col ul li{
-    font-size: 18px;
+    font-size: 16px;
     margin: 6px 0;
     cursor: pointer;
     transition: 0.25s;
@@ -317,7 +305,7 @@ h2, h3, h5 {
 }
 
 .footer-col p{
-    font-size: 18px;
+    font-size: 15px;
     margin: 8px 0;
     line-height: 1.6;
     color: white;
@@ -347,22 +335,24 @@ h2, h3, h5 {
 
 
 /* ============================
-   HIỆU ỨNG & HIGHLIGHT GỢI Ý
+   AUTOCOMPLETE THÔNG MINH
 ============================ */
-.suggestions-box {
+.autocomplete-box {
     position: absolute;
     top: 100%;
     left: 0;
+    right: 0;
     width: 100%;
     background: #ffffff;
-    border: 1px solid #dcdcdc;
-    border-radius: 10px;
-    margin-top: 5px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    z-index: 9999;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    margin-top: 8px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    z-index: 99999 !important;
     display: none;
-    opacity: 0;
-    transform: translateY(-10px);
+    max-height: 500px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden;
     animation: slideDown 0.25s ease forwards;
 }
 
@@ -377,20 +367,123 @@ h2, h3, h5 {
     }
 }
 
-.suggestion-item {
-    padding: 10px 15px;
+.autocomplete-item {
+    padding: 12px 16px;
     cursor: pointer;
-    transition: background-color 0.2s;
-    font-size: 15px;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    border-bottom: 1px solid #f5f5f5;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    word-spacing: normal;
+    letter-spacing: normal;
+    min-height: 44px;
 }
 
-.suggestion-item:hover {
-    background-color: #f8f9fa;
+.autocomplete-item:first-child {
+    border-radius: 12px 12px 0 0;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+    border-radius: 0 0 12px 12px;
+}
+
+.autocomplete-item:hover {
+    background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%);
+    padding-left: 22px;
+}
+
+.autocomplete-item > div:first-child {
+    flex: 1;
+}
+
+.autocomplete-item > div:first-child > div:first-child {
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 4px;
+    font-size: 15px;
+    word-spacing: normal;
+    letter-spacing: normal;
+}
+
+.autocomplete-item small {
+    font-size: 13px;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    word-spacing: normal;
+    letter-spacing: normal;
+}
+
+.autocomplete-item small i {
+    font-size: 12px;
+}
+
+.autocomplete-item > div:last-child {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.autocomplete-item .badge {
+    font-size: 12px;
+    padding: 4px 10px;
+    font-weight: 600;
+    border-radius: 6px;
+}
+
+.autocomplete-item .text-warning {
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+/* Scrollbar cho autocomplete */
+.autocomplete-box::-webkit-scrollbar {
+    width: 6px;
+}
+
+.autocomplete-box::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.autocomplete-box::-webkit-scrollbar-thumb {
+    background: #d0d0d0;
+    border-radius: 10px;
+}
+
+.autocomplete-box::-webkit-scrollbar-thumb:hover {
+    background: #b0b0b0;
 }
 
 .highlight {
     font-weight: bold;
     color: #0078ff;
+}
+
+/* Loading state */
+.autocomplete-loading {
+    padding: 16px;
+    text-align: center;
+    color: #6c757d;
+}
+
+.autocomplete-loading i {
+    animation: spin 1s linear infinite;
+}
+
+/* Empty state */
+.autocomplete-empty {
+    padding: 16px;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    font-size: 14px;
 }
 
 /* ============================
@@ -592,10 +685,373 @@ a {
     font-size: 1rem !important;
 }
 
-.full-width-container {
-    width: 100% !important; 
-    padding-right: var(--bs-gutter-x, 0.75rem);
-    padding-left: var(--bs-gutter-x, 0.75rem);
-    margin-right: auto;
-    margin-left: auto;
+
+
+/* ==============================
+   GIAO DIỆN CHUYÊN NGHIỆP - NÂNG CẤP
+============================== */
+
+/* Header nâng cấp */
+.header.shadow-sm {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08) !important;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+.navbar-brand:hover {
+    transform: scale(1.05);
+}
+
+.nav-link.active {
+    color: #0078ff !important;
+    font-weight: 600;
+}
+
+/* Nút hành động */
+.action-buttons .btn {
+    transition: all 0.3s ease;
+}
+
+.action-buttons .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Breadcrumb đẹp hơn */
+.breadcrumb {
+    background: transparent;
+    padding: 0;
+}
+
+.breadcrumb-item a {
+    color: #0078ff;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.breadcrumb-item a:hover {
+    color: #005fcc;
+    text-decoration: underline;
+}
+
+/* Card nâng cấp */
+.card {
+    transition: all 0.3s ease;
+    border: 1px solid #e0e0e0;
+}
+
+.card:hover {
+    border-color: #0078ff;
+}
+
+.card-title {
+    color: #333;
+    font-size: 1.25rem;
+}
+
+/* Badge đẹp hơn */
+.badge {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    border-radius: 20px;
+}
+
+.badge.bg-success {
+    background-color: #28a745 !important;
+}
+
+.badge.bg-primary {
+    background-color: #0078ff !important;
+}
+
+/* Review section */
+.review-item {
+    transition: all 0.3s ease;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.review-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(5px);
+}
+
+.keywords .badge {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+    margin: 0.2rem;
+}
+
+/* Form đánh giá */
+#reviewForm .form-control,
+#reviewForm .form-select {
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    transition: border-color 0.3s;
+}
+
+#reviewForm .form-control:focus,
+#reviewForm .form-select:focus {
+    border-color: #0078ff;
+    box-shadow: 0 0 0 0.2rem rgba(0,120,255,0.15);
+}
+
+/* Thông tin đường đi và thời tiết */
+.trip-info {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 2rem;
+}
+
+.trip-info h5 {
+    color: white;
+    font-weight: 600;
+}
+
+.trip-info i {
+    font-size: 1.2rem;
+}
+
+/* Alert đẹp hơn */
+.alert {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+/* Button nâng cấp */
+.btn {
+    border-radius: 8px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: #0078ff;
+    border-color: #0078ff;
+}
+
+.btn-primary:hover {
+    background-color: #005fcc;
+    border-color: #005fcc;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,120,255,0.3);
+}
+
+.btn-outline-primary:hover {
+    background-color: #0078ff;
+    border-color: #0078ff;
+    color: white;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #333;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+    transform: translateY(-2px);
+}
+
+/* Loading spinner */
+.fa-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Bản đồ */
+#map, #routeMap {
+    border: 2px solid #e0e0e0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Rating stars */
+.text-warning {
+    color: #ffc107 !important;
+    font-size: 1.1rem;
+}
+
+/* Thông tin nhanh sidebar */
+.list-unstyled li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.list-unstyled li:last-child {
+    border-bottom: none;
+}
+
+.list-unstyled li i {
+    width: 25px;
+    text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .search-box {
+        width: 95%;
+        padding: 20px;
+    }
+    
+    .action-buttons {
+        margin-top: 1rem;
+    }
+    
+    .action-buttons .btn {
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Hiệu ứng fade in */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card, .alert, .trip-info {
+    animation: fadeIn 0.5s ease;
+}
+
+/* Scroll smooth */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Print styles */
+@media print {
+    .header, .footer, .action-buttons, #reviewForm, .btn {
+        display: none !important;
+    }
+}
+
+/* Tooltip custom */
+[data-bs-toggle="tooltip"] {
+    cursor: help;
+}
+
+/* Quick links */
+.quick-links .badge {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.quick-links .badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Search section nâng cấp */
+.search-section {
+    border: 2px solid #e0e0e0;
+    transition: border-color 0.3s;
+}
+
+.search-section:hover {
+    border-color: #0078ff;
+}
+
+.search-section h5 i {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Destination card hover effect */
+.col-md-4 .card {
+    position: relative;
+    overflow: hidden;
+}
+
+.col-md-4 .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s;
+}
+
+.col-md-4 .card:hover::before {
+    left: 100%;
+}
+
+/* Icon animations */
+.fa-plane-departure {
+    animation: fly 3s ease-in-out infinite;
+}
+
+@keyframes fly {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(10px); }
+}
+
+/* Weather icon size */
+.trip-info .fs-1 {
+    font-size: 3rem !important;
+}
+
+/* Collapse animation */
+.collapse {
+    transition: height 0.35s ease;
+}
+
+/* Form focus glow */
+.form-control:focus,
+.form-select:focus {
+    box-shadow: 0 0 0 0.25rem rgba(0,120,255,0.15);
+}
+
+/* Success badge subtle */
+.bg-success-subtle {
+    background-color: #d1e7dd !important;
+}
+
+.bg-danger-subtle {
+    background-color: #f8d7da !important;
+}
+
+.bg-info-subtle {
+    background-color: #cff4fc !important;
 }

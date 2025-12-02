@@ -1,10 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 {% load static %}
-
-{% load humanize %}
-
 <head>
     <meta charset="UTF-8">
     <title>Web Du Lịch</title>
@@ -23,22 +19,27 @@
 </head>
 
 <body>
-<header class="header sticky-top bg-white">
-    <div class ="container-fluid">
-        <nav class="navbar navbar-expand-lg px-4 py-1">
-            <a class="navbar-brand fw-bold" href="#">Logo</a>
+<header class="header sticky-top bg-white shadow-sm"></header>
+    <div class ="container">
+        <nav class="navbar navbar-expand-lg px-4 py-2">
+            <a class="navbar-brand fw-bold text-primary" href="{% url 'travel:home' %}">
+                <i class="fa-solid fa-plane-departure me-2"></i>Du Lịch Việt
+            </a>
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Trang chủ</a>
+                    <a class="nav-link active fw-bold" href="{% url 'travel:home' %}">
+                        <i class="fa-solid fa-home me-1"></i>Trang chủ
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Lịch sử</a>
+                    <a class="nav-link" href="{% url 'travel:search' %}">
+                        <i class="fa-solid fa-search me-1"></i>Tìm kiếm
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Địa điểm</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Liên hệ</a>
+                    <a class="nav-link" href="#recommend-section">
+                        <i class="fa-solid fa-star me-1"></i>Gợi ý
+                    </a>
                 </li>
             </ul>
 
@@ -49,9 +50,6 @@
                 </span>
                 <!-- Dropdown chỉ hiển thị sau login -->
                 <ul class="dropdown-menu dropdown-menu-end userDropdown" id="userDropdown">
-                    <li>
-                        <a class="dropdown-item" href="#" id="infoPrivateBtn">Tài khoản của tôi</a>
-                    </li>
                     <li>
                         <a class="dropdown-item" href="#" id="logoutBtn">Đăng xuất</a>
                     </li>
@@ -66,127 +64,204 @@
     <section class="hero position-relative text-center">
         <img src="{% static 'images/banner.jpg' %}" class="hero-img">
 
-        <!-- Thanh tìm kiếm 2 tầng -->
-        <div class="search-box container-fluid rounded-4 shadow-lg p-4 border border-3 border-info position-absolute top-50 start-50 translate-middle bg-white">
-
-            <!-- 🔹 Ô tìm kiếm lớn phía trên -->
-            <div class="main-search mb-3 position-relative" style="max-width: 820px; margin: 0 auto;">
-                <div class="input-group input-group-lg">
-            <span class="input-group-text bg-white border-end-0">
-                <i class="fa-solid fa-magnifying-glass text-secondary"></i>
-            </span>
-                    <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Tìm kiếm địa điểm..." autocomplete="off">
-                </div>
-                <div id="suggestions" class="suggestions-box"></div>
+        <!-- Thanh tìm kiếm 2 chế độ -->
+        <div class="search-box container-fluid rounded-4 shadow-lg p-4 position-absolute top-50 start-50 translate-middle bg-white" style="max-width: 950px;">
+            
+            <!-- Tìm kiếm nhanh -->
+            <div class="quick-search mb-4" style="overflow: visible;">
+                <form method="GET" action="{% url 'travel:search' %}" class="position-relative" id="quickSearchForm" style="overflow: visible;">
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="fa-solid fa-magnifying-glass text-primary"></i>
+                        </span>
+                        <input type="text" name="q" id="quickSearchInput" class="form-control border-start-0" 
+                               placeholder="Tìm kiếm địa điểm... (VD: Hà Nội, Chùa Một Cột, Hồ Hoàn Kiếm)" 
+                               autocomplete="off">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="fa-solid fa-search me-1"></i>Tìm
+                        </button>
+                    </div>
+                    <div id="quickSuggestions" class="autocomplete-box"></div>
+                </form>
             </div>
 
-
-            <!-- 🔹 Hàng nhỏ bên dưới: vị trí - nơi đến - ngày đi - nút -->
-            <form class="row align-items-center gx-3 justify-content-center">
-                <div class="col-md-3">
+            <!-- Tìm kiếm chi tiết -->
+            <form class="row align-items-center gx-3 justify-content-center" method="GET" action="{% url 'travel:search' %}" id="detailSearchForm">
+                <div class="col-md-3 position-relative" style="overflow: visible;">
                     <div class="input-group">
-                <span class="input-group-text bg-white">
-                    <i class="fa-solid fa-location-dot text-primary"></i>
-                </span>
-                        <input type="text" class="form-control" placeholder="Vị trí của bạn">
+                        <span class="input-group-text bg-white">
+                            <i class="fa-solid fa-location-dot text-primary"></i>
+                        </span>
+                        <input type="text" name="from_location" id="fromLocationInput" class="form-control" 
+                               placeholder="Vị trí của bạn" autocomplete="off">
                     </div>
+                    <div id="fromLocationSuggestions" class="autocomplete-box"></div>
+                </div>
+
+                <div class="col-md-3 position-relative" style="overflow: visible;">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="fa-solid fa-map-location-dot text-primary"></i>
+                        </span>
+                        <input type="text" name="q" id="toLocationInput" class="form-control" 
+                               placeholder="Nơi muốn đến" autocomplete="off">
+                    </div>
+                    <div id="toLocationSuggestions" class="autocomplete-box"></div>
                 </div>
 
                 <div class="col-md-3">
                     <div class="input-group">
-                <span class="input-group-text bg-white">
-                    <i class="fa-solid fa-map-location-dot text-primary"></i>
-                </span>
-                        <input type="text" class="form-control" placeholder="Nơi bạn muốn đến">
+                        <span class="input-group-text bg-white">
+                            <i class="fa-solid fa-calendar-days text-primary"></i>
+                        </span>
+                        <input type="date" name="travel_date" id="travelDateInput" class="form-control">
                     </div>
                 </div>
 
                 <div class="col-md-3">
-                    <div class="input-group">
-                <span class="input-group-text bg-white">
-                    <i class="fa-solid fa-calendar-days text-primary"></i>
-                </span>
-                        <input type="date" class="form-control">
-                    </div>
-                </div>
-
-                <div class="col-md-2">
-                    <button class="btn btn-warning w-100 fw-bold py-2">Tìm kiếm</button>
+                    <button type="submit" class="btn btn-warning w-100 fw-bold py-2">
+                        <i class="fa-solid fa-route me-1"></i>Tìm kiếm chi tiết
+                    </button>
                 </div>
             </form>
-        </div>
 
+            <!-- Gợi ý nhanh -->
+            <div class="quick-links mt-3 text-center">
+                <small class="text-muted me-2">Địa điểm phổ biến:</small>
+                <a href="{% url 'travel:search' %}?q=Hà Nội" class="badge bg-light text-dark me-2 text-decoration-none py-2 px-3">
+                    Hà Nội
+                </a>
+                <a href="{% url 'travel:search' %}?q=TP Hồ Chí Minh" class="badge bg-light text-dark me-2 text-decoration-none py-2 px-3">
+                    TP Hồ Chí Minh
+                </a>
+                <a href="{% url 'travel:search' %}?q=Đà Nẵng" class="badge bg-light text-dark me-2 text-decoration-none py-2 px-3">
+                    Đà Nẵng
+                </a>
+                <a href="{% url 'travel:search' %}?q=Đà Lạt" class="badge bg-light text-dark me-2 text-decoration-none py-2 px-3">
+                    Đà Lạt
+                </a>
+            </div>
+        </div>
     </section>
 
     <!-- Danh mục du lịch -->
-    <section id="categorySection" class="categories bg-light">
-        <div class="container-fluid text-center py-5">
-            <h3 class="fw-bold mb-5">Danh Mục Khám Phá</h3>
-            <div class="row g-4 justify-content-center">
-                
-                <div class="col-6 col-sm-4 col-md-2">
-                    <a href="{% url 'category_filter' %}?category={{ 'Du lịch và biển đảo'|urlencode }}" class="text-decoration-none text-dark d-block category-link">                        <i class="fa-solid fa-umbrella-beach fa-2x text-info"></i>
-                        <p class="mt-3 fw-semibold">Biển & Đảo</p>
-                    </a>
+    <section class="categories bg-light py-4">
+        <div class="container text-center">
+            <h3 class="mb-4 fw-bold">Khám phá theo danh mục</h3>
+            <div class="row g-4">
+                <div class="col">
+                    <div class="category-card">
+                        <i class="fa-solid fa-umbrella-beach fa-3x text-info"></i>
+                        <p>Du lịch biển đảo</p>
+                    </div>
                 </div>
-                
-                <div class="col-6 col-sm-4 col-md-2">
-                    <a href="{% url 'category_filter' %}?category={{ 'Núi & Cao nguyên'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
-                        <i class="fa-solid fa-mountain fa-2x text-info"></i>
-                        <p class="mt-3 fw-semibold">Núi &nbsp;& Cao nguyên</p>
-                    </a>
+                <div class="col">
+                    <div class="category-card">
+                        <i class="fa-solid fa-mountain fa-3x text-success"></i>
+                        <p>Du lịch núi & cao nguyên</p>
+                    </div>
                 </div>
-                
-                <div class="col-6 col-sm-4 col-md-2">
-                    <a href="{% url 'category_filter' %}?category={{ 'Văn hóa - Lịch sử'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
-                        <i class="fa-solid fa-landmark fa-2x text-info"></i>
-                        <p class="mt-3 fw-semibold">Văn hóa &nbsp;- Lịch sử</p>
-                    </a>
+                <div class="col">
+                    <div class="category-card">
+                        <i class="fa-solid fa-landmark fa-3x text-warning"></i>
+                        <p>Văn hóa - lịch sử</p>
+                    </div>
                 </div>
-                
-                <div class="col-6 col-sm-4 col-md-2">
-                    <a href="{% url 'category_filter' %}?category={{ 'Du lịch - Sinh thái'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
-                        <i class="fa-solid fa-leaf fa-2x text-info"></i>
-                        <p class="mt-3 fw-semibold">Du lịch &nbsp;- Sinh thái</p>
-                    </a>
+                <div class="col">
+                    <div class="category-card">
+                        <i class="fa-solid fa-leaf fa-3x text-success"></i>
+                        <p>Du lịch sinh thái</p>
+                    </div>
                 </div>
-                
-                <div class="col-6 col-sm-4 col-md-2">
-                    <a href="{% url 'category_filter' %}?category={{ 'Ẩm thực - chợ đêm'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
-                        <i class="fa-solid fa-utensils fa-2x text-info"></i>
-                        <p class="mt-3 fw-semibold">Ẩm thực &nbsp;- Chợ đêm</p>
-                    </a>
+                <div class="col">
+                    <div class="category-card">
+                        <i class="fa-solid fa-utensils fa-3x text-danger"></i>
+                        <p>Ẩm thực - chợ đêm</p>
+                    </div>
                 </div>
-                
-                <div class="col-6 col-sm-4 col-md-2">
-                    <a href="{% url 'category_filter' %}?category={{ 'Lễ hội - sự kiện'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
-                        <i class="fa-solid fa-gift fa-2x text-info"></i>
-                        <p class="mt-3 fw-semibold">Lễ hội &nbsp;- Sự kiện</p>
-                    </a>
+                <div class="col">
+                    <div class="category-card">
+                        <i class="fa-solid fa-gift fa-3x text-primary"></i>
+                        <p>Lễ hội - sự kiện</p>
+                    </div>
                 </div>
-                
-                <div class="col-6 col-sm-4 col-md-2">
-                    <a href="{% url 'category_filter' %}?category={{ 'Nghỉ dưỡng - thư giãn'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
-                        <i class="fa-solid fa-hotel fa-2x text-info"></i>
-                        <p class="mt-3 fw-semibold">Nghỉ dưỡng</p>
-                    </a>
+                <div class="col">
+                    <div class="category-card">
+                        <i class="fa-solid fa-city fa-3x text-secondary"></i>
+                        <p>Thành phố - đô thị</p>
+                    </div>
                 </div>
-
             </div>
         </div>
     </section>
 
+    <!-- Địa điểm được gợi ý cao -->
+    {% if top_destinations %}
+    <section class="recommend py-5 bg-light" id="recommend-section">
+        <div class="container">
+            <h2 class="fw-bold mb-3 text-center">
+                <i class="fa-solid fa-star text-warning me-2"></i>Địa điểm được gợi ý
+            </h2>
+            <p class="text-muted mb-4 text-center">Dựa trên đánh giá và phân tích AI</p>
+            <div class="row g-4">
+                {% for dest in top_destinations %}
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="position-relative">
+                            {% if dest.image %}
+                            <img src="{{ dest.image.url }}" class="card-img-top" alt="{{ dest.name }}" style="height: 200px; object-fit: cover;">
+                            {% else %}
+                            <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="fa-solid fa-image fa-3x"></i>
+                            </div>
+                            {% endif %}
+                            <span class="badge bg-success position-absolute top-0 end-0 m-2">
+                                {{ dest.recommendation.overall_score|floatformat:0 }} điểm
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ dest.name }}</h5>
+                            <p class="text-muted small">
+                                <i class="fa-solid fa-location-dot"></i> {{ dest.location }}
+                            </p>
+                            <div class="mb-2">
+                                <span class="text-warning">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= dest.recommendation.avg_rating %}★{% else %}☆{% endif %}
+                                    {% endfor %}
+                                </span>
+                                <small class="text-muted">({{ dest.recommendation.total_reviews }} đánh giá)</small>
+                            </div>
+                            <p class="card-text small">{{ dest.description|truncatewords:15 }}</p>
+                            <a href="{% url 'travel:destination_detail' dest.id %}" class="btn btn-outline-primary btn-sm w-100">
+                                Xem chi tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="text-center mt-4">
+                <a href="{% url 'travel:search' %}" class="btn btn-primary">Xem tất cả địa điểm</a>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Gợi ý địa điểm từ thư mục ảnh -->
     <section class="recommend py-5">
-        <div class="container-fluid text-center">
+        <div class="container text-center">
             <h2 class="fw-bold mb-3">Dải Đất Hình Chữ S</h2>
             <p class="text-muted mb-4">Khám phá Việt Nam theo cách riêng của bạn</p>
             <div class="row justify-content-center g-4">
                 {% for r in results %}
                 <div class="col-md-3">
-                    <div class="card shadow-lg border-0 rounded-3 position-relative overflow-hidden">
+                    <div class="card shadow-sm border-0 position-relative">
                         <div class="image-wrapper">
+                            <!-- Ảnh đầu tiên -->
                             <img src="{% static 'images/' %}{{ r.images.0 }}" class="card-img-top" alt="{{ r.name }}">
 
+                            <!-- Overlay slideshow -->
                             <div class="image-overlay">
                                 <div class="slideshow">
                                     {% for img in r.images %}
@@ -199,15 +274,15 @@
                         </div>
 
                         <div class="card-body text-center">
-                            <h5 class="card-title fw-bold text-primary">{{ r.name }}</h5>
-                            <p class="card-text text-muted">{{ r.desc }}</p>
-                            <button class="btn btn-outline-primary explore-btn mt-2 rounded-pill">Khám phá ngay</button>
+                            <h5 class="card-title fw-bold">{{ r.name }}</h5>
+                            <p class="card-text">{{ r.desc }}</p>
+                            <button class="btn btn-outline-primary explore-btn">Khám phá ngay</button>
                         </div>
                     </div>
                 </div>
 
                 {% endfor %}
-                </div>
+            </div>
         </div>
     </section>
 </main>
@@ -345,60 +420,197 @@
 </body>
 
 <script>
-    const destinations = [
-        "Đà Lạt",
-        "Đà Nẵng",
-        "Phú Quốc",
-        "Hội An",
-        "Nha Trang",
-        "Hà Nội",
-        "Sapa",
-        "Huế",
-        "Vũng Tàu",
-        "Cần Thơ"
-    ];
+// ===== AUTOCOMPLETE THÔNG MINH =====
 
-    const searchInput = document.getElementById("searchInput");
-    const suggestionsBox = document.getElementById("suggestions");
+// Hàm loại bỏ dấu tiếng Việt
+function removeAccents(str) {
+    return str.normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .replace(/đ/g, 'd')
+              .replace(/Đ/g, 'D');
+}
 
-    searchInput.addEventListener("input", function() {
-        const query = this.value.toLowerCase();
-        suggestionsBox.innerHTML = "";
+// Autocomplete cho tìm kiếm nhanh
+const quickSearchInput = document.getElementById('quickSearchInput');
+const quickSuggestions = document.getElementById('quickSuggestions');
+let quickSearchTimeout;
 
-        if (query.length === 0) {
-            suggestionsBox.style.display = "none";
-            return;
+quickSearchInput.addEventListener('input', function() {
+    clearTimeout(quickSearchTimeout);
+    const query = this.value.trim();
+    
+    if (query.length < 1) {
+        quickSuggestions.style.display = 'none';
+        return;
+    }
+    
+    quickSearchTimeout = setTimeout(() => {
+        fetch(`/api/search/?q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+                displayQuickSuggestions(data.results, query);
+            })
+            .catch(err => console.error('Error:', err));
+    }, 300);
+});
+
+function displayQuickSuggestions(results, query) {
+    quickSuggestions.innerHTML = '';
+    
+    if (results.length === 0) {
+        quickSuggestions.style.display = 'none';
+        return;
+    }
+    
+    results.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'autocomplete-item';
+        
+        // Highlight query trong kết quả
+        const queryNormalized = removeAccents(query.toLowerCase());
+        const nameNormalized = removeAccents(item.name.toLowerCase());
+        
+        let displayName = item.name;
+        if (nameNormalized.includes(queryNormalized)) {
+            const regex = new RegExp(`(${query})`, 'gi');
+            displayName = item.name.replace(regex, '<strong class="text-primary">$1</strong>');
         }
-
-        const filtered = destinations.filter(d => d.toLowerCase().includes(query));
-        if (filtered.length === 0) {
-            suggestionsBox.style.display = "none";
-            return;
-        }
-
-        filtered.forEach(item => {
-            const div = document.createElement("div");
-            div.classList.add("suggestion-item");
-
-            // Làm nổi bật chữ trùng
-            const regex = new RegExp(`(${query})`, "gi");
-            div.innerHTML = item.replace(regex, "<span class='highlight'>$1</span>");
-
-            div.addEventListener("click", () => {
-                searchInput.value = item;
-                suggestionsBox.style.display = "none";
-            });
-            suggestionsBox.appendChild(div);
+        
+        div.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div>${displayName}</div>
+                    <small class="text-muted">
+                        <i class="fa-solid fa-location-dot"></i> ${item.location} 
+                        <span class="ms-2"><i class="fa-solid fa-tag"></i> ${item.travel_type}</span>
+                    </small>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-success">${item.score} điểm</span>
+                    <div class="text-warning small">
+                        ${'★'.repeat(Math.round(item.avg_rating))}${'☆'.repeat(5 - Math.round(item.avg_rating))}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        div.addEventListener('click', () => {
+            quickSearchInput.value = item.name;
+            quickSuggestions.style.display = 'none';
+            document.getElementById('quickSearchForm').submit();
         });
-
-        suggestionsBox.style.display = "block";
+        
+        quickSuggestions.appendChild(div);
     });
+    
+    quickSuggestions.style.display = 'block';
+}
 
-    document.addEventListener("click", (e) => {
-        if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
-            suggestionsBox.style.display = "none";
-        }
+// Autocomplete cho vị trí xuất phát
+const fromLocationInput = document.getElementById('fromLocationInput');
+const fromLocationSuggestions = document.getElementById('fromLocationSuggestions');
+let fromLocationTimeout;
+
+fromLocationInput.addEventListener('input', function() {
+    clearTimeout(fromLocationTimeout);
+    const query = this.value.trim();
+    
+    if (query.length < 1) {
+        fromLocationSuggestions.style.display = 'none';
+        return;
+    }
+    
+    fromLocationTimeout = setTimeout(() => {
+        fetch(`/api/provinces/?q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+                displayProvinceSuggestions(data.provinces, query, fromLocationInput, fromLocationSuggestions);
+            })
+            .catch(err => console.error('Error:', err));
+    }, 200);
+});
+
+// Autocomplete cho nơi muốn đến
+const toLocationInput = document.getElementById('toLocationInput');
+const toLocationSuggestions = document.getElementById('toLocationSuggestions');
+let toLocationTimeout;
+
+toLocationInput.addEventListener('input', function() {
+    clearTimeout(toLocationTimeout);
+    const query = this.value.trim();
+    
+    if (query.length < 1) {
+        toLocationSuggestions.style.display = 'none';
+        return;
+    }
+    
+    toLocationTimeout = setTimeout(() => {
+        fetch(`/api/provinces/?q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+                displayProvinceSuggestions(data.provinces, query, toLocationInput, toLocationSuggestions);
+            })
+            .catch(err => console.error('Error:', err));
+    }, 200);
+});
+
+function displayProvinceSuggestions(provinces, query, inputElement, suggestionsElement) {
+    suggestionsElement.innerHTML = '';
+    
+    if (provinces.length === 0) {
+        suggestionsElement.style.display = 'none';
+        return;
+    }
+    
+    provinces.forEach(province => {
+        const div = document.createElement('div');
+        div.className = 'autocomplete-item';
+        
+        // Tạo icon
+        const icon = document.createElement('i');
+        icon.className = 'fa-solid fa-map-marker-alt text-primary me-2';
+        
+        // Tạo text node (không dùng innerHTML để tránh vấn đề spacing)
+        const textSpan = document.createElement('span');
+        textSpan.textContent = province;
+        textSpan.style.whiteSpace = 'nowrap';
+        
+        div.appendChild(icon);
+        div.appendChild(textSpan);
+        
+        div.addEventListener('click', () => {
+            inputElement.value = province;
+            suggestionsElement.style.display = 'none';
+        });
+        
+        suggestionsElement.appendChild(div);
     });
+    
+    suggestionsElement.style.display = 'block';
+}
+
+// Đóng suggestions khi click bên ngoài
+document.addEventListener('click', (e) => {
+    if (!quickSearchInput.contains(e.target) && !quickSuggestions.contains(e.target)) {
+        quickSuggestions.style.display = 'none';
+    }
+    if (!fromLocationInput.contains(e.target) && !fromLocationSuggestions.contains(e.target)) {
+        fromLocationSuggestions.style.display = 'none';
+    }
+    if (!toLocationInput.contains(e.target) && !toLocationSuggestions.contains(e.target)) {
+        toLocationSuggestions.style.display = 'none';
+    }
+});
+
+// Không cho chọn ngày trong quá khứ
+const travelDateInput = document.getElementById('travelDateInput');
+const today = new Date().toISOString().split('T')[0];
+travelDateInput.setAttribute('min', today);
+
+// Giới hạn tối đa 7 ngày (cho dự báo thời tiết)
+const maxDate = new Date();
+maxDate.setDate(maxDate.getDate() + 7);
+travelDateInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
 </script>
 
 <script>
@@ -618,10 +830,6 @@
         const userDropdown = document.getElementById('userDropdown');
         const logoutBtn = document.getElementById('logoutBtn');
         const userDataRaw = localStorage.getItem('user');
-        const categorySection = document.getElementById('categorySection');
-
-        // 1. Ẩn mặc định
-        categorySection.style.display = 'none';
 
         let usernameToShow = "Đăng ký / Đăng nhập";
 
@@ -639,9 +847,6 @@
         userText.textContent = usernameToShow;
 
         if (usernameToShow !== "Đăng ký / Đăng nhập") {
-            // Show section khi login
-            categorySection.style.display = 'block';
-
             // Bỏ modal, setup dropdown logout
             userText.removeAttribute('data-bs-toggle');
             userText.removeAttribute('data-bs-target');
@@ -651,17 +856,9 @@
                 userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block';
             });
 
-            logoutBtn.addEventListener('click', async (e) => {
+            logoutBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-
-                await fetch("/api/logout/", {
-                    method: "POST",
-                    credentials: "include",
-                    headers: { "Content-Type": "application/json" }
-                });
-
                 localStorage.clear();
-                categorySection.style.display = 'none';  // ẩn section khi logout
                 window.location.reload();
             });
 
