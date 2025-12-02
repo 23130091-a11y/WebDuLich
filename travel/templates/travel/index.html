@@ -19,6 +19,7 @@
 
     <!-- CSS custom -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/tour.css' %}">
 
 </head>
 
@@ -175,6 +176,68 @@
             </div>
         </div>
     </section>
+
+    <!-- Thêm phần đề xuất -->
+    {% if recommendations %}
+    <div id="recommendationsSection" class="recommendations-section mt-5">
+        <h3 class="fw-bold mb-3">Đề xuất dành riêng cho bạn</h3>
+
+        <div class="row g-4">
+            {% for tour in recommendations %}
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <a href="{% url 'tour_detail' tour_slug=tour.slug %}"
+                   class="card tour-card shadow-sm border-0 rounded-xl overflow-hidden d-flex flex-column h-100">
+
+                    <!-- ẢNH -->
+                    <div class="image-wrapper">
+                        {% if tour.image_main %}
+                        <img src="{{ tour.image_main.url }}" class="img-fluid" alt="{{ tour.name }}">
+                        {% else %}
+                        <div class="placeholder-image">No Image</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- BODY -->
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title fw-bold fs-6 mb-1 text-truncate text-gray-900">
+                            {{ tour.name }}
+                        </h5>
+
+                        <!-- LOCATION -->
+                        <p class="card-text text-muted small mb-2">
+                            <i class="fa-solid fa-location-dot me-1"></i>
+                            {{ tour.destination.location }}
+                        </p>
+
+                        <!-- RATING + TAG -->
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fa-solid fa-star text-amber-500 me-1 small"></i>
+                            <span class="small fw-bold me-2 text-gray-700">
+                            {{ tour.rating|floatformat:1|default:"0.0" }}
+                        </span>
+
+                            <span class="badge bg-light text-muted fw-normal">
+                            {{ tour.destination.tags.all|join:", " }}
+                        </span>
+                        </div>
+
+                        <!-- PRICE -->
+                        {% if tour.price %}
+                        <p class="fw-bold text-red-600 fs-5 mt-auto mb-0">
+                            {{ tour.price|intcomma }}₫
+                        </p>
+                        {% else %}
+                        <p class="fw-bold text-red-600 fs-5 mt-auto mb-0">Liên hệ để biết giá</p>
+                        {% endif %}
+                    </div>
+
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+    {% endif %}
 
     <section class="recommend py-5">
         <div class="container-fluid text-center">
@@ -619,9 +682,11 @@
         const logoutBtn = document.getElementById('logoutBtn');
         const userDataRaw = localStorage.getItem('user');
         const categorySection = document.getElementById('categorySection');
+        const recommendationsSection = document.getElementById('recommendationsSection');
 
         // 1. Ẩn mặc định
         categorySection.style.display = 'none';
+        if (recommendationsSection) recommendationsSection.style.display = 'none';
 
         let usernameToShow = "Đăng ký / Đăng nhập";
 
@@ -641,6 +706,7 @@
         if (usernameToShow !== "Đăng ký / Đăng nhập") {
             // Show section khi login
             categorySection.style.display = 'block';
+            if (recommendationsSection) recommendationsSection.style.display = 'block';
 
             // Bỏ modal, setup dropdown logout
             userText.removeAttribute('data-bs-toggle');
@@ -662,6 +728,7 @@
 
                 localStorage.clear();
                 categorySection.style.display = 'none';  // ẩn section khi logout
+                if (recommendationsSection) recommendationsSection.style.display = 'none';
                 window.location.reload();
             });
 

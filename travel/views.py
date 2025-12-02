@@ -6,9 +6,8 @@ from django.db.models import Q
 import urllib.parse 
 import datetime
 from decimal import Decimal 
-from django.utils.text import slugify 
-# from .models import TourPackage, Category
-# from users.models import TravelPreference
+from django.utils.text import slugify
+from users.models import TravelPreference
 
 import urllib.parse
 
@@ -158,10 +157,9 @@ CATEGORY_DISPLAY_TEXT = {
 
 # --- 1. VIEW TRANG CHỦ (GIỮ NGUYÊN) ---
 def home(request):
-    """
-    View trang chủ hiện tại, lấy dữ liệu địa điểm từ thư mục static/images.
-    (Giữ nguyên logic lấy từ folder)
-    """
+    # ------------------------------
+    # 1. Lấy dữ liệu static như cũ
+    # ------------------------------
     base_path = os.path.join(settings.BASE_DIR, 'travel', 'static', 'images')
     results = []
 
@@ -170,10 +168,10 @@ def home(request):
             folder_path = os.path.join(base_path, folder)
             if os.path.isdir(folder_path):
                 images = [
-                    f"{folder}/{img}" for img in os.listdir(folder_path)
-                    if img.lower().endswith(('.jpg', '.jpeg', '.png', '.webp'))
+                    f"{folder}/{img}"
+                    for img in os.listdir(folder_path)
+                    if img.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))
                 ]
-
                 if images:
                     results.append({
                         "name": folder.title(),
@@ -183,9 +181,41 @@ def home(request):
                         "img": images[0]
                     })
     except Exception as e:
-        print(f"Lỗi khi đọc thư mục static/images: {e}")
+        print("Error:", e)
 
-    return render(request, 'travel/index.html', {"results": results})
+    # ------------------------------
+    # 2. Gợi ý theo Preferences
+    # ------------------------------
+    recommendations = []
+
+    if request.user.is_authenticated:
+        prefs = TravelPreference.objects.filter(user=request.user)
+
+        preferred_types = [slugify(p.travel_type) for p in prefs]
+        preferred_locations = [p.location.strip() for p in prefs]
+
+        query = Q()
+
+        # Lọc theo location (thuộc Destination)
+        for loc in preferred_locations:
+            query |= Q(destination__location__icontains=loc)
+
+        # Lọc theo loại du lịch (tags của Destination)
+        for t in preferred_types:
+            query |= Q(destination__tags__slug__icontains=t)
+
+        recommendations = (
+            TourPackage.objects
+            .filter(query)
+            .select_related("destination")
+            .prefetch_related("destination__tags")
+            .distinct()
+        )
+
+    return render(request, 'travel/index.html', {
+        "results": results,
+        "recommendations": recommendations
+    })
 
 # --- 2. API ENDPOINT: LỌC THEO THỂ LOẠI (GIỮ NGUYÊN) ---
 def goi_y_theo_the_loai(request):
@@ -449,3 +479,15 @@ def tour_detail(request, tour_slug):
     
     # Đảm bảo bạn có file template 'travel/tour_detail.html'
     return render(request, 'travel/tour_detail.html', context)
+
+def destination_detail(request, slug):
+    # Lấy destination theo slug, nếu không có sẽ trả về 404
+    destination = get_object_or_404(Destination, slug=slug)
+
+    # Có thể thêm logic gợi ý tours liên quan nếu muốn
+    related_tours = destination.tourpackage_set.all()[:4]  # 4 tour liên quan
+
+    return render(request, 'travel/destination_detail.html', {
+        'destination': destination,
+        'related_tours': related_tours,
+    })

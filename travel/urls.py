@@ -9,4 +9,6 @@ urlpatterns = [
     path('danh-muc/<slug:category_slug>/', views.category_detail, name='category_detail'),
     path('api/goi-y-theo-the-loai/', views.goi_y_theo_the_loai, name='goi_y_theo_the_loai'),
     path('tour/<slug:tour_slug>/', views.tour_detail, name='tour_detail'),
+    # Thêm route cho destination detail
+    path('destination/<slug:slug>/', views.destination_detail, name='destination_detail'),
 ]
