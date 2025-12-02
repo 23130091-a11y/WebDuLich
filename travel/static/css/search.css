@@ -1,0 +1,320 @@
+/* ==============================
+   SEARCH PAGE - MODERN UX/UI
+============================== */
+
+.search-page-body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+    min-height: 100vh;
+}
+
+/* ==============================
+   SEARCH CARD
+============================== */
+.search-card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.search-card:hover {
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.12);
+}
+
+/* Input tìm kiếm */
+.search-input {
+    border-radius: 12px !important;
+    border: 2px solid #e0e0e0 !important;
+    height: 50px !important;
+    font-size: 1rem;
+    padding: 10px 16px;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15) !important;
+}
+
+.search-input::placeholder {
+    color: #adb5bd;
+    font-size: 0.95rem;
+}
+
+/* Nút tìm kiếm */
+.btn-search {
+    height: 50px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.btn-search:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(13, 110, 253, 0.3);
+}
+
+/* Toggle bộ lọc */
+.filter-toggle {
+    font-size: 0.95rem;
+    text-decoration: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+.filter-toggle:hover {
+    color: #0056b3;
+}
+
+/* Bộ lọc nâng cao */
+.advanced-filter {
+    background-color: #f8f9fa;
+}
+
+.filter-select {
+    border-radius: 10px;
+    border: 2px solid #e0e0e0;
+    height: 48px;
+    transition: all 0.3s ease;
+}
+
+.filter-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+/* ==============================
+   TRIP INFO CARD
+============================== */
+.trip-info-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.trip-icon {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ==============================
+   DESTINATION CARDS
+============================== */
+.destination-card {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s ease;
+}
+
+.destination-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.destination-img {
+    height: 220px;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.destination-card:hover .destination-img {
+    transform: scale(1.05);
+}
+
+.bg-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    height: 220px;
+}
+
+/* Overlay gradient */
+.img-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
+    pointer-events: none;
+}
+
+/* Score badge */
+.score-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.score-number {
+    font-size: 1.2rem;
+    font-weight: 700;
+    display: block;
+    line-height: 1;
+}
+
+.score-text {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Type badge */
+.type-badge {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Rating */
+.rating-section .stars {
+    font-size: 0.9rem;
+}
+
+/* Price */
+.price-section {
+    background: linear-gradient(90deg, #fff3cd 0%, #ffeeba 100%);
+    padding: 10px 15px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.price-label {
+    font-size: 0.85rem;
+    color: #856404;
+}
+
+.price-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #856404;
+}
+
+/* ==============================
+   NO RESULTS
+============================== */
+.no-results {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
+}
+
+.no-results-icon {
+    width: 100px;
+    height: 100px;
+    background: #f8f9fa;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ==============================
+   PAGINATION
+============================== */
+.pagination .page-link {
+    border-radius: 10px;
+    margin: 0 3px;
+    border: none;
+    color: #333;
+    padding: 10px 16px;
+    transition: all 0.3s ease;
+}
+
+.pagination .page-link:hover {
+    background: #e9ecef;
+    color: #0d6efd;
+}
+
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+}
+
+/* ==============================
+   AUTOCOMPLETE
+============================== */
+.autocomplete-box {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    margin-top: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    z-index: 1000;
+    display: none;
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.autocomplete-item {
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-item:hover {
+    background: #f8f9fa;
+    padding-left: 22px;
+}
+
+/* ==============================
+   RESPONSIVE
+============================== */
+@media (max-width: 768px) {
+    .search-input {
+        height: 55px !important;
+    }
+    
+    .btn-search {
+        height: 55px;
+    }
+    
+    .destination-img {
+        height: 180px;
+    }
+    
+    .score-badge {
+        padding: 6px 10px;
+    }
+    
+    .score-number {
+        font-size: 1rem;
+    }
+}
