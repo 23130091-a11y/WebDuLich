@@ -1,0 +1,194 @@
+{% extends "travel/baseIndex.html" %}
+{% load static %}
+
+{% block title %}Thông tin tài khoản{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .profile-header {
+        background-color: #a6cfff;
+        padding: 20px 30px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .avatar-circle {
+        width: 60px;
+        height: 60px;
+        background-color: #4dabf7;
+        color: white;
+        font-size: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 20px;
+    }
+
+    .user-info h5 {
+        margin: 0;
+        font-size: 14px;
+        color: #555;
+        font-weight: normal;
+    }
+
+    .user-name {
+        font-size: 18px;
+        color: #495057;
+        margin-top: 2px;
+    }
+
+    .info-card {
+        background: #fff;
+        padding: 20px 30px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .info-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .info-value {
+        font-size: 16px;
+        color: #555;
+    }
+
+    .badge-verified {
+        background-color: #20c997;
+        color: white;
+        font-size: 11px;
+        padding: 3px 8px;
+        border-radius: 4px;
+        margin-left: 10px;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+
+    .action-link {
+        color: #0056b3;
+        font-weight: 600;
+        text-decoration: none;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    .action-link:hover {
+        text-decoration: underline;
+    }
+
+    .password-dots {
+        color: #adb5bd;
+        letter-spacing: 3px;
+        font-size: 20px;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5 profile-container">
+    <h3 class="mb-4" style="color: #333;">Thông tin người dùng</h3>
+
+    <!-- Header user -->
+    <div class="profile-header">
+        <div class="d-flex align-items-center">
+            <div class="avatar-circle">
+                {{ user.username|slice:":1"|upper }}
+            </div>
+            <div class="user-info">
+                <h5>Họ & Tên</h5>
+                <div class="user-name">{{ user.first_name }} {{ user.last_name }}</div>
+            </div>
+        </div>
+        <a href="#" class="action-link" data-bs-toggle="modal" data-bs-target="#editNameModal">Chỉnh sửa</a>
+    </div>
+
+    <!-- Email -->
+    <div class="info-card">
+        <div>
+            <span class="info-label">Email</span>
+            <div class="d-flex align-items-center">
+                <span class="info-value">{{ user.email }}</span>
+                <span class="badge-verified">ĐÃ XÁC NHẬN</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phone -->
+    <div class="info-card">
+        <div>
+            <span class="info-label">Số điện thoại</span>
+            <span class="info-value">
+                {% if user.profile.phone %}
+                    {{ user.profile.phone }}
+                {% else %}
+                    <span class="text-muted fst-italic">Chưa cập nhật</span>
+                {% endif %}
+            </span>
+        </div>
+        {% if user.profile.phone %}
+            <a href="#" class="action-link">Chỉnh sửa</a>
+        {% else %}
+            <a href="#" class="action-link">Thêm</a>
+        {% endif %}
+    </div>
+
+    <!-- Password -->
+    <div class="info-card">
+        <div>
+            <span class="info-label">Mật khẩu</span>
+            <span class="password-dots">••••••••••</span>
+        </div>
+        <a href="{% url 'change_password' %}" class="action-link">Chỉnh sửa</a>
+    </div>
+
+    <!-- Logout -->
+    <div class="text-end mt-3">
+        <a href="/admin/logout/" class="btn btn-outline-danger btn-sm">Đăng xuất</a>
+    </div>
+</div>
+
+<!-- Modal chỉnh sửa tên -->
+<div class="modal fade" id="editNameModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cập nhật thông tin</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Họ</label>
+                        <input type="text" name="last_name" class="form-control" value="{{ user.last_name }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tên</label>
+                        <input type="text" name="first_name" class="form-control" value="{{ user.first_name }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Lưu thay đổi</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

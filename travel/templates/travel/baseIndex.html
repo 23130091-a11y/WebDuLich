@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+{% load static %}
+{% load humanize %}
+
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Web Du Lịch{% endblock %}</title>
+
+    <!-- CSS thư viện -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- CSS custom -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/tour.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+<!-- Header -->
+<header class="header sticky-top bg-white">
+    <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg px-4 py-1">
+            <a class="navbar-brand fw-bold" href="#">Logo</a>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Trang chủ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Lịch sử</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Địa điểm</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Liên hệ</a>
+                </li>
+            </ul>
+
+            <div id="userBtn" class="ms-auto d-flex align-items-center">
+                <i class="bi bi-person fs-3 me-2"></i>
+                <span id="userText" class="fw-semibold pointer">
+                    Đăng ký / Đăng nhập
+                </span>
+                <!-- Dropdown chỉ hiển thị sau login -->
+                <ul class="dropdown-menu dropdown-menu-end userDropdown" id="userDropdown">
+                    <li>
+                        <a class="dropdown-item" href="{% url 'account' %}" id="infoPrivateBtn">Tài khoản của tôi</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'account' %}" id="logoutBtn">Đăng xuất</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+</header>
+
+<!-- Nội dung chính -->
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-col">
+            <h3>Hỗ trợ</h3>
+            <ul>
+                <li>Chính sách khách hàng</li>
+                <li>Chính sách bảo hành</li>
+                <li>Chính sách vận chuyển</li>
+                <li>Chính sách bảo mật</li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h3>Về chúng tôi</h3>
+            <ul>
+                <li>Giới thiệu</li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h3>Kết nối với chúng tôi</h3>
+            <p>Hotline: 10101010</p>
+            <div class="footer-icons">
+                <i class="fa-brands fa-facebook"></i>
+                <i class="fa-brands fa-instagram"></i>
+                <i class="fa-brands fa-tiktok"></i>
+                <i class="fa-brands fa-xmark"></i>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Modal đăng ký/đăng nhập -->
+<div class="modal fade" id="authModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-4 border-0">
+            <div class="modal-header border-0 p-0 mb-3">
+                <h5 id="modalTitle" class="modal-title">Đăng nhập</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Form Đăng nhập -->
+                <div id="loginForm">
+                    <div class="mb-3">
+                        <label for="loginEmail" class="form-label">Email đăng nhập</label>
+                        <input type="email" class="form-control" id="loginEmail" name="email" placeholder="Email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="loginPassword" class="form-label">Mật khẩu</label>
+                        <input type="password" name="password" id="loginPassword" class="form-control" placeholder="Mật khẩu">
+                    </div>
+                    <div class="mb-3 text-center fs-4">
+                        <span>Bạn chưa có tài khoản? </span>
+                        <a href="#" id="showRegisterLink">Đăng ký</a>
+                    </div>
+                    <button id="loginBtn" class="btn btn-primary w-100">Đăng nhập</button>
+                </div>
+
+                <!-- Form Đăng ký -->
+                <div id="registerForm" class="d-none">
+                    <div class="mb-3">
+                        <label for="registerUsername" class="form-label">Tên hiển thị</label>
+                        <input type="text" name="username" id="registerUsername" class="form-control" placeholder="Nhập tên hiển thị">
+                    </div>
+                    <div class="mb-3">
+                        <label for="registerEmail" class="form-label">Email đăng ký</label>
+                        <input type="email" name="email" id="registerEmail" class="form-control" placeholder="Email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="registerPassword" class="form-label">Mật khẩu</label>
+                        <input type="password" name="password" id="registerPassword" class="form-control" placeholder="Mật khẩu">
+                    </div>
+                    <div class="mb-3">
+                        <label for="registerConfirmPassword" class="form-label">Nhập lại mật khẩu</label>
+                        <input type="password" name="confirm_password" id="registerConfirmPassword" class="form-control" placeholder="Nhập lại mật khẩu">
+                    </div>
+                    <div class="mb-3 text-center fs-4">
+                        <span>Bạn đã có tài khoản? </span>
+                        <a href="#" id="showLoginLink">Đăng nhập</a>
+                    </div>
+                    <button id="registerBtn" class="btn btn-primary w-100">Đăng ký</button>
+                </div>
+
+                <!-- Form Sở thích -->
+                <div id="preferencesForm" class="d-none card p-3 mt-3">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Loại hình du lịch yêu thích:</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="travelType" value="Biển" id="prefSea">
+                            <label class="form-check-label" for="prefSea">Biển</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="travelType" value="Núi" id="prefMountain">
+                            <label class="form-check-label" for="prefMountain">Núi</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="travelType" value="Thành phố" id="prefCity">
+                            <label class="form-check-label" for="prefCity">Thành phố</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Địa điểm bạn quan tâm:</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="locations" value="Hà Nội" id="locHN">
+                            <label class="form-check-label" for="locHN">Hà Nội</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="locations" value="Hồ Chí Minh" id="locHCM">
+                            <label class="form-check-label" for="locHCM">Hồ Chí Minh</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="locations" value="Đà Nẵng" id="locDN">
+                            <label class="form-check-label" for="locDN">Đà Nẵng</label>
+                        </div>
+                    </div>
+
+                    <button id="savePreferencesBtn" class="btn btn-success w-100">Hoàn tất</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- JS login/register -->
+<script>
+    // Chuyển form login/register
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const modalTitle = document.getElementById('modalTitle');
+
+    document.getElementById('showRegisterLink').addEventListener('click', (e) => {
+        e.preventDefault();
+        loginForm.classList.add('d-none');
+        registerForm.classList.remove('d-none');
+        modalTitle.textContent = 'Đăng ký';
+    });
+
+    document.getElementById('showLoginLink').addEventListener('click', (e) => {
+        e.preventDefault();
+        registerForm.classList.add('d-none');
+        loginForm.classList.remove('d-none');
+        modalTitle.textContent = 'Đăng nhập';
+    });
+
+    // Login
+    document.getElementById('loginBtn').addEventListener('click', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+
+        try {
+            const response = await fetch('/auth/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email, password})
+            });
+            const data = await response.json();
+            if (response.ok) {
+                localStorage.setItem('access', data.tokens.access);
+                localStorage.setItem('refresh', data.tokens.refresh);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                window.location.reload();
+            } else {
+                alert(data.detail || data.error || 'Đăng nhập thất bại');
+            }
+        } catch (err) {
+            alert('Lỗi kết nối server: ' + err);
+        }
+    });
+
+    // Register
+    document.getElementById('registerBtn').addEventListener('click', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('registerUsername').value;
+        const email = document.getElementById('registerEmail').value;
+        const password = document.getElementById('registerPassword').value;
+        const confirmPassword = document.getElementById('registerConfirmPassword').value;
+
+        if (password !== confirmPassword) {
+            alert('Mật khẩu và xác nhận mật khẩu không trùng khớp!');
+            return;
+        }
+
+        try {
+            const response = await fetch('/auth/register', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email, password, username})
+            });
+            const data = await response.json();
+            if (response.ok) {
+                localStorage.setItem('access', data.tokens.access);
+                localStorage.setItem('refresh', data.tokens.refresh);
+                document.getElementById('registerForm').classList.add('d-none');
+                document.getElementById('preferencesForm').classList.remove('d-none');
+                document.getElementById('modalTitle').textContent = 'Bạn muốn đến đâu?';
+            } else {
+                alert(JSON.stringify(data));
+            }
+        } catch (err) {
+            alert('Lỗi kết nối server: ' + err);
+        }
+    });
+
+    // Save preferences
+    document.getElementById('savePreferencesBtn').addEventListener('click', async () => {
+        const travelTypes = [];
+        if (document.getElementById('prefSea').checked) travelTypes.push('Biển');
+        if (document.getElementById('prefMountain').checked) travelTypes.push('Núi');
+        if (document.getElementById('prefCity').checked) travelTypes.push('Thành phố');
+
+        const locations = [];
+        if (document.getElementById('locHN').checked) locations.push('Hà Nội');
+        if (document.getElementById('locHCM').checked) locations.push('Hồ Chí Minh');
+        if (document.getElementById('locDN').checked) locations.push('Đà Nẵng');
+
+        if (travelTypes.length === 0 || locations.length === 0) {
+            alert('Bạn cần chọn ít nhất một loại hình du lịch và một địa điểm!');
+            return;
+        }
+
+        try {
+            const accessToken = localStorage.getItem('access');
+
+            const response = await fetch('/auth/preferences', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({ travelTypes, locations })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('Lưu sở thích thành công!');
+                document.getElementById('preferencesForm').classList.add('d-none');
+                window.location.href = '/';
+            } else {
+                alert('Lỗi lưu sở thích: ' + JSON.stringify(data));
+            }
+        } catch (err) {
+            alert('Lỗi kết nối server: ' + err);
+        }
+    });
+
+    // Hiển thị user
+    document.addEventListener('DOMContentLoaded', function() {
+        const userText = document.getElementById('userText');
+        const userBtn = document.getElementById('userBtn');
+        const userDropdown = document.getElementById('userDropdown');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userDataRaw = localStorage.getItem('user');
+
+        let usernameToShow = "Đăng ký / Đăng nhập";
+
+        if (userDataRaw) {
+            try {
+                const user = JSON.parse(userDataRaw);
+                if (user.username) {
+                    usernameToShow = user.username;
+                }
+            } catch (err) {
+                console.error("Lỗi parse user từ localStorage:", err);
+            }
+        }
+
+        userText.textContent = usernameToShow;
+
+        if (usernameToShow !== "Đăng ký / Đăng nhập") {
+            userText.removeAttribute('data-bs-toggle');
+            userText.removeAttribute('data-bs-target');
+
+            // userText.addEventListener('click', (e) => {
+            //     e.stopPropagation();
+            //     userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block';
+            // });
+
+            userText.addEventListener('click', e => {
+                e.stopPropagation();
+                userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block';
+            });
+
+            // Ẩn dropdown khi click vào link bên trong
+            document.querySelectorAll('#userDropdown a').forEach(link => {
+                link.addEventListener('click', () => {
+                    userDropdown.style.display = 'none';
+                });
+            });
+
+
+            logoutBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+
+                await fetch("/api/logout/", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: { "Content-Type": "application/json" }
+                });
+
+                localStorage.clear();
+                window.location.reload();
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!userBtn.contains(e.target)) {
+                    userDropdown.style.display = 'none';
+                }
+            });
+
+        } else {
+            userText.setAttribute('data-bs-toggle', 'modal');
+            userText.setAttribute('data-bs-target', '#authModal');
+        }
+    });
+</script>
+
+<!-- Nút trở lên đầu trang -->
+<button id="btnTop" class="btn-top">
+    <i class="bi bi-arrow-up"></i>
+</button>
+
+<script>
+    const btnTop = document.getElementById("btnTop");
+
+    window.addEventListener("scroll", () => {
+        if (window.scrollY > 50) {
+            btnTop.classList.add("show");
+        } else {
+            btnTop.classList.remove("show");
+        }
+    });
+
+    btnTop.addEventListener("click", () => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    });
+</script>
+
+
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

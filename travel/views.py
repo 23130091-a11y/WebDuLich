@@ -9,7 +9,36 @@ from decimal import Decimal
 from django.utils.text import slugify
 from users.models import TravelPreference
 
+from .models import Destination
+
+import json
 import urllib.parse
+
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+from django.shortcuts import render, redirect
+
+
+@login_required
+def change_password_view(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # giữ login sau khi đổi mật khẩu
+            messages.success(request, 'Đổi mật khẩu thành công!')
+            return redirect('account')  # về lại trang account
+
+
+def account_view(request):
+    return render(request, "travel/account.html")
+
+def phuquoc_gallery(request):
+    folder = os.path.join(settings.STATICFILES_DIRS[0], 'images/phuquoc')
+    images = [f'images/phuquoc/{img}' for img in os.listdir(folder) if img.lower().endswith(('.jpg', '.png', '.jpeg', '.webp'))]
+    return render(request, 'travel/phuquoc_gallery.html', {'images': images})
 
 def normalize_category_name(name: str) -> str | None:
     """Chuẩn hóa tên Category từ URL/DB về format chuẩn đúng với MAP_THE_LOAI_TO_TAGS."""
@@ -490,4 +519,13 @@ def destination_detail(request, slug):
     return render(request, 'travel/destination_detail.html', {
         'destination': destination,
         'related_tours': related_tours,
+    })
+
+
+def destination_overview(request, slug):
+    destination = get_object_or_404(Destination, slug=slug)
+    return render(request, "travel/destination_overview.html", {
+        "destination": destination,
+        "reviews": destination.reviews.all() if hasattr(destination, "reviews") else [],
+        "itinerary": None,  # nếu có lịch trình thì thêm sau
     })

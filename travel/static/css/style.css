@@ -345,6 +345,34 @@ h2, h3, h5 {
     color: #d8ecff;
 }
 
+/* Nút cuộn lên đầu trang */
+#btnTop {
+    position: fixed;
+    bottom: 30px;            /* cách đáy màn hình */
+    right: 30px;             /* cách phải màn hình */
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: #0d6efd;
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    z-index: 9999;           /* cực cao – footer không đè nổi */
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s;
+}
+
+#btnTop.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+
 
 /* ============================
    HIỆU ỨNG & HIGHLIGHT GỢI Ý

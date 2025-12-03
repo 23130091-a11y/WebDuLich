@@ -1,0 +1,229 @@
+{% extends "travel/baseIndex.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ destination.name }} - Khám phá{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* 1. CẤU HÌNH KHUNG RỘNG (Fix lỗi lề thụt sâu) */
+    .container-custom {
+        max-width: 92%; /* Mở rộng ra 98% màn hình (gần như full) */
+        margin: 0 auto; /* Căn giữa */
+        padding-top: 30px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    /* 2. TIÊU ĐỀ */
+    .destination-title {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 32px;
+        font-weight: 400;
+        color: #212529;
+        margin-bottom: 8px;
+        line-height: 1.2;
+    }
+
+    .location-text {
+        color: #dc3545;
+        font-weight: 500;
+        font-size: 16px;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+    }
+
+    /* 3. BỐ CỤC CHÍNH (Theo yêu cầu kích thước 894px) */
+    .main-layout {
+        display: flex;
+        gap: 40px; /* Khoảng cách giữa Ảnh và Map */
+        align-items: flex-start;
+        justify-content: flex-start; /* Căn mọi thứ sang trái */
+    }
+
+    .left-column {
+        /* Set cứng chiều rộng 894px như yêu cầu */
+        flex: 0 0 894px;
+        max-width: 894px;
+        min-width: 894px;
+    }
+
+    .right-column {
+        /* Phần còn lại cho Map & Review */
+        flex: 1;
+        max-width: 500px; /* Giới hạn map không quá to bè */
+        min-width: 300px;
+    }
+
+    /* 4. GALLERY ẢNH (Căn chỉnh lại chiều cao cho khớp với rộng 894px) */
+    .gallery-item {
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: #f0f0f0;
+        position: relative;
+    }
+    .gallery-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+        display: block;
+    }
+    .gallery-item:hover img { transform: scale(1.05); cursor: pointer; }
+
+    /* Kích thước ảnh (Tính toán lại cho đẹp với chiều rộng 894) */
+    .img-big { height: 480px; }      /* Ảnh to cao lên xíu cho đẹp */
+    .img-side { height: 232px; }     /* (480 - 16px gap) / 2 = 232 */
+    .img-bottom { height: 160px; }   /* Ảnh dưới */
+
+    /* 5. BẢN ĐỒ & REVIEW */
+    .map-container iframe {
+        border-radius: 12px;
+        width: 100%;
+    }
+
+    /* Card Review */
+    .review-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 24px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    }
+
+    .rating-big { font-size: 36px; font-weight: 700; color: #333; line-height: 1; }
+    .rating-stars { color: #ffc107; font-size: 16px; margin-left: 10px; }
+    .review-count { color: #6c757d; font-size: 14px; margin-left: 5px; }
+    .review-text { font-size: 15px; color: #495057; line-height: 1.6; margin: 15px 0; font-style: italic; }
+    .avatar-circle { width: 36px; height: 36px; border-radius: 50%; background-color: #0078ff; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; }
+    .user-name { font-weight: 600; font-size: 14px; }
+    .review-date { font-size: 12px; color: #adb5bd; }
+
+    /* Responsive Mobile */
+    @media (max-width: 1200px) {
+        .main-layout { flex-direction: column; gap: 30px; }
+        .left-column { width: 100%; max-width: 100%; min-width: 0; flex: auto; }
+        .right-column { width: 100%; max-width: 100%; }
+        .img-big { height: 350px; }
+        .img-side { height: 167px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-custom">
+
+    <h1 class="destination-title">{{ destination.name }} - Thiên đường biển xanh</h1>
+    <div class="location-text">
+        <i class="fa-solid fa-location-dot me-2"></i> {{ destination.location }}
+    </div>
+
+    <div class="main-layout">
+
+        <div class="left-column">
+
+            <div class="row g-3 mb-3">
+                <div class="col-8">
+                    <div class="gallery-item img-big">
+                        <img src="{% static 'images/phuquoc/diboduoibienPQ/jgkfqhu3j5j9u6lnaspg.webp' %}" alt="Main">
+                    </div>
+                </div>
+
+                <div class="col-4 d-flex flex-column justify-content-between">
+                    <div class="gallery-item img-side">
+                        <img src="{% static 'images/phuquoc/diboduoibienPQ/TrảiNghiệmĐiBộDướiBiểnNgắmSanHôởNamĐảoPhúQuốc.webp' %}" alt="Side 1">
+                    </div>
+                    <div class="gallery-item img-side">
+                        <img src="{% static 'images/phuquoc/diboduoibienPQ/tsfstbomz21zdpoetcc1.webp' %}" alt="Side 2">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-3">
+                    <div class="gallery-item img-bottom">
+                        <img src="{% static 'images/phuquoc/diboduoibienPQ/umg08ofajtaymcyi46at.webp' %}" alt="Bottom 1">
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="gallery-item img-bottom">
+                        <img src="{% static 'images/phuquoc/diboduoibienPQ/xkxdttklsypf5gomgstt.webp' %}" alt="Bottom 2">
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="gallery-item img-bottom">
+                        <img src="{% static 'images/phuquoc/lanbiencobkhi/e58zpg4csp2yz9u33dl9.webp' %}" alt="Bottom 3">
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="gallery-item img-bottom">
+                        <img src="{% static 'images/phuquoc/lanbiencobkhi/ewzhmitsihzrma8xgnlc.webp' %}" alt="Bottom 4">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-column">
+
+            <div class="position-relative mb-4">
+                <div class="map-container" style="height: 250px; border-radius: 12px; overflow: hidden; border: 1px solid #ddd;">
+                    <iframe
+                        src="https://maps.google.com/maps?q={{ destination.name }}&t=&z=13&ie=UTF8&iwloc=&output=embed"
+                        width="100%"
+                        height="100%"
+                        style="border:0;"
+                        allowfullscreen
+                        loading="lazy">
+                    </iframe>
+                </div>
+
+                <a href="https://maps.google.com/maps?q={{ destination.name }}" target="_blank"
+                   class="btn btn-light btn-sm position-absolute top-0 start-0 m-3 fw-bold text-primary shadow-sm"
+                   style="z-index: 10; opacity: 0.9;">
+                    <i class="fa-solid fa-map-location-dot"></i> Xem bản đồ lớn
+                </a>
+            </div>
+
+            <div class="review-card">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="rating-big">5.0</span>
+                    <div class="d-flex flex-column justify-content-center ms-2">
+                        <div class="rating-stars">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                        </div>
+                    </div>
+                    <span class="review-count ms-auto">({{ reviews.count|default:"10" }} đánh giá)</span>
+                </div>
+                <hr class="text-muted opacity-25 my-3">
+
+                {% if reviews %}
+                    <div>
+                        <p class="review-text">"{{ reviews.first.comment|truncatewords:20 }}" <a href="#" class="text-decoration-none text-secondary small">Xem Thêm <i class="fa-solid fa-chevron-down"></i></a></p>
+                        <div class="d-flex align-items-center mt-3">
+                            <div class="avatar-circle">{{ reviews.first.user.username|slice:":1"|upper }}</div>
+                            <div><div class="user-name">{{ reviews.first.user.username }}</div><div class="review-date">{{ reviews.first.created_at|date:"d/m/Y" }}</div></div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div>
+                        <p class="review-text">"Tôi vừa có chuyến đi 4 ngày 3 đêm ở một resort phía Nam đảo và phải nói là vượt mong đợi..." <a href="#" class="text-decoration-none text-secondary small">Xem Thêm <i class="fa-solid fa-chevron-down"></i></a></p>
+                        <div class="d-flex align-items-center mt-3">
+                            <div class="avatar-circle">T</div>
+                            <div><div class="user-name">Thu Hằng</div><div class="review-date">01/03/2025 (Mùa Khô)</div></div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="mt-4 pt-2 border-top text-center">
+                    <a href="#" class="text-dark fw-normal text-decoration-none" style="font-size: 14px;">Xem tất cả đánh giá</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -11,4 +11,9 @@ urlpatterns = [
     path('tour/<slug:tour_slug>/', views.tour_detail, name='tour_detail'),
     # Thêm route cho destination detail
     path('destination/<slug:slug>/', views.destination_detail, name='destination_detail'),
+
+    path('destination/overview/<slug:slug>/', views.destination_overview, name='destination_overview'),
+    path('account/', views.account_view, name='account'),
+    path('account/change-password/', views.change_password_view, name='change_password'),
+
 ]

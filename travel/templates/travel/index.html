@@ -51,10 +51,10 @@
                 <!-- Dropdown chỉ hiển thị sau login -->
                 <ul class="dropdown-menu dropdown-menu-end userDropdown" id="userDropdown">
                     <li>
-                        <a class="dropdown-item" href="#" id="infoPrivateBtn">Tài khoản của tôi</a>
+                        <a class="dropdown-item" href="{% url 'account' %}" id="infoPrivateBtn">Tài khoản của tôi</a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="#" id="logoutBtn">Đăng xuất</a>
+                        <a class="dropdown-item" href="{% url 'account' %}" id="logoutBtn">Đăng xuất</a>
                     </li>
                 </ul>
             </div>
@@ -405,7 +405,32 @@
         </div>
     </div>
 </div>
+
+<button id="btnTop" class="btn-top">
+    <i class="bi bi-arrow-up"></i>
+</button>
+
 </body>
+
+<script>
+    const btnTop = document.getElementById("btnTop");
+
+    window.addEventListener("scroll", () => {
+        if (window.scrollY > 50) {
+            btnTop.classList.add("show");
+        } else {
+            btnTop.classList.remove("show");
+        }
+    });
+
+    btnTop.addEventListener("click", () => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    });
+</script>
+
 
 <script>
     const destinations = [
@@ -792,5 +817,7 @@
         }
     });
 </script>
+
+
 
 </html>
