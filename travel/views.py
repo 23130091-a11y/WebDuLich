@@ -6,6 +6,11 @@ from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.db.models import Q
 from django.utils.text import slugify
+import urllib.parse 
+import datetime
+from decimal import Decimal 
+from django.utils.text import slugify
+from users.models import TravelPreference
 
 from .models import TourPackage, Category
 
@@ -107,6 +112,9 @@ MAP_THE_LOAI_TO_TAGS = {
 # View trang chủ
 # ----------------------------
 def home(request):
+    # ------------------------------
+    # 1. Lấy dữ liệu static như cũ
+    # ------------------------------
     base_path = os.path.join(settings.BASE_DIR, 'travel', 'static', 'images')
     results = []
     try:
@@ -114,8 +122,9 @@ def home(request):
             folder_path = os.path.join(base_path, folder)
             if os.path.isdir(folder_path):
                 images = [
-                    f"{folder}/{img}" for img in os.listdir(folder_path)
-                    if img.lower().endswith(('.jpg', '.jpeg', '.png', '.webp'))
+                    f"{folder}/{img}"
+                    for img in os.listdir(folder_path)
+                    if img.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))
                 ]
                 if images:
                     results.append({
@@ -126,9 +135,41 @@ def home(request):
                         "img": images[0]
                     })
     except Exception as e:
-        print(f"Lỗi khi đọc thư mục static/images: {e}")
+        print("Error:", e)
 
-    return render(request, 'travel/index.html', {"results": results})
+    # ------------------------------
+    # 2. Gợi ý theo Preferences
+    # ------------------------------
+    recommendations = []
+
+    if request.user.is_authenticated:
+        prefs = TravelPreference.objects.filter(user=request.user)
+
+        preferred_types = [slugify(p.travel_type) for p in prefs]
+        preferred_locations = [p.location.strip() for p in prefs]
+
+        query = Q()
+
+        # Lọc theo location (thuộc Destination)
+        for loc in preferred_locations:
+            query |= Q(destination__location__icontains=loc)
+
+        # Lọc theo loại du lịch (tags của Destination)
+        for t in preferred_types:
+            query |= Q(destination__tags__slug__icontains=t)
+
+        recommendations = (
+            TourPackage.objects
+            .filter(query)
+            .select_related("destination")
+            .prefetch_related("destination__tags")
+            .distinct()
+        )
+
+    return render(request, 'travel/index.html', {
+        "results": results,
+        "recommendations": recommendations
+    })
 
 # --- 2. API ENDPOINT: LỌC THEO THỂ LOẠI ---
 def goi_y_theo_the_loai(request):
@@ -227,23 +268,20 @@ def category_detail(request):
     today = datetime.date.today()
     selected_date = None
     if date_str:
-        if date_str == 'today':
-            qs = qs.filter(is_available_today=True)
-            selected_date = today.isoformat()
-        elif date_str == 'tomorrow':
-            tomorrow = today + datetime.timedelta(days=1)
-            selected_date = tomorrow.isoformat()
-        else:
-            try:
-                parsed_date = datetime.date.fromisoformat(date_str)
-                selected_date = parsed_date.isoformat()
-                if parsed_date == today:
-                    qs = qs.filter(is_available_today=True)
-            except ValueError:
-                selected_date = date_str
+        try:
+            selected_date = datetime.date.fromisoformat(date_str)
+            qs = qs.filter(
+                start_date__lte=selected_date,
+                end_date__gte=selected_date
+            )
+        except ValueError:
+            selected_date = date_str
     elif availability == 'today':
-        qs = qs.filter(is_available_today=True)
-        selected_date = today.isoformat()
+        today = datetime.date.today()
+        qs = qs.filter(
+            start_date__lte=today,
+            end_date__gte=today
+        )
 
     if price_min:
         try:
@@ -252,7 +290,8 @@ def category_detail(request):
             pass
     if price_max:
         try:
-            qs = qs.filter(price__lte=int(price_max))
+            max_val = int(price_max)
+            qs = qs.filter(Q(price__lte=max_val) | Q(price__isnull=True))
         except ValueError:
             pass
 
@@ -266,6 +305,34 @@ def category_detail(request):
     else:
         qs = qs.order_by('-rating')  # sửa lại dùng rating của TourPackage
 
+    if category_obj:
+             qs = qs.filter(Q(category=category_obj) | Q(destination__category=category_obj))
+             display_category_name = category_obj.name
+    else:
+        if category_tags_list:
+            q_tags = Q()
+            for t in category_tags_list:
+                q_tags |= Q(tags__slug__iexact=t["slug"])
+            qs = qs.filter(q_tags).distinct()
+            print(f"DEBUG fallback tags filter used, count={len(category_tags_list)}")
+        else:
+            print("DEBUG no category_obj and no raw_tags from MAP")
+
+    # Lọc theo rating
+    rating_min = request.GET.get('rating_min')
+    if rating_min:
+        try:
+            rating_val = float(rating_min)
+            if rating_val < 5:
+                # Lọc từ rating_val đến nhỏ hơn rating_val+1, giới hạn max 5
+                qs = qs.filter(destination__rating__gte=rating_val, destination__rating__lt=min(rating_val+1, 5))
+            else:
+                # Chọn 5 sao chính xác
+                qs = qs.filter(destination__rating=5)
+        except ValueError:
+            pass
+
+    # Chuẩn bị kết quả
     results = []
     try:
         qs = qs.select_related('destination', 'category').prefetch_related('tags')
@@ -321,3 +388,18 @@ def tour_detail(request, tour_slug):
         'related_tours': related_tours,
     }
     return render(request, 'travel/tour_detail.html', context)
+    
+    # Đảm bảo bạn có file template 'travel/tour_detail.html'
+    return render(request, 'travel/tour_detail.html', context)
+
+def destination_detail(request, slug):
+    # Lấy destination theo slug, nếu không có sẽ trả về 404
+    destination = get_object_or_404(Destination, slug=slug)
+
+    # Có thể thêm logic gợi ý tours liên quan nếu muốn
+    related_tours = destination.tourpackage_set.all()[:4]  # 4 tour liên quan
+
+    return render(request, 'travel/destination_detail.html', {
+        'destination': destination,
+        'related_tours': related_tours,
+    })
