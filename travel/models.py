@@ -1,10 +1,8 @@
-# D:\LT_Python\PyWeb\DoAnWeb\WebDuLich\travel\models.py
 from django.conf import settings
 from django.db import models
 from taggit.managers import TaggableManager
-from users.models import User 
-
-
+from users.models import User
+from django.utils.text import slugify
 
 class Review(models.Model):
     user = models.ForeignKey(
@@ -19,14 +17,12 @@ class Review(models.Model):
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, null=True)
-
-    slug = models.SlugField(unique=True, max_length=100) 
+    slug = models.SlugField(unique=True, max_length=100)
     icon = models.CharField(max_length=50, blank=True, null=True)
-
     image = models.ImageField(upload_to='categories/images/', blank=True, null=True)
 
     class Meta:
-        verbose_name_plural = "Categories" # Đặt tên hiển thị trong Admin
+        verbose_name_plural = "Categories"
 
     def __str__(self):
         return self.name
@@ -36,20 +32,17 @@ class Category(models.Model):
 # ----------------------------------------------------------------------
 class Destination(models.Model):
     category = models.ForeignKey(
-        'Category',  # Hoặc tên Model Category của bạn
-        on_delete=models.SET_NULL, 
-        null=True,      # Cho phép giá trị NULL trong DB
-        blank=True      # Cho phép trường này trống trong Form Admin
+        'Category',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
     )
     name = models.CharField(max_length=200, unique=True)
     description = models.TextField()
     location = models.CharField(max_length=255)
-    rating = models.FloatField(default=0.0)
     is_popular = models.BooleanField(default=False)
     slug = models.SlugField(unique=True, max_length=200)
-    
-    # Tagging Manager
-    tags = TaggableManager() 
+    tags = TaggableManager()
 
     def __str__(self):
         return self.name
@@ -59,8 +52,8 @@ class Destination(models.Model):
 # ----------------------------------------------------------------------
 class DestinationImage(models.Model):
     destination = models.ForeignKey(
-        Destination, 
-        on_delete=models.CASCADE, 
+        Destination,
+        on_delete=models.CASCADE,
         related_name='images'
     )
     image = models.ImageField(upload_to='destinations/images/', blank=True, null=True)
@@ -73,41 +66,51 @@ class DestinationImage(models.Model):
 # 4. TourPackage Model
 # ----------------------------------------------------------------------
 class TourPackage(models.Model):
-    # Liên kết với Category (Sửa lỗi: Đã thêm null=True để tương thích với SET_NULL)
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
         related_name='tour_packages',
-        null=True,    # <--- BẮT BUỘC PHẢI CÓ DÒNG NÀY
+        null=True,
         blank=True
     )
-    # Liên kết với Destination
     destination = models.ForeignKey(
-        Destination, 
-        on_delete=models.CASCADE, 
+        Destination,
+        on_delete=models.CASCADE,
         related_name='packages'
     )
     name = models.CharField(max_length=255)
     duration = models.IntegerField(help_text="Duration in days")
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    rating = models.FloatField(default=0.0)
     address_detail = models.CharField(
-        max_length=255, 
-        blank=True, 
+        max_length=255,
+        blank=True,
         null=True,
         verbose_name="Địa chỉ đón/trả khách hoặc địa chỉ chính"
     )
-    details = models.TextField() 
+    details = models.TextField()
     is_active = models.BooleanField(default=True)
-    image_main = models.ImageField(upload_to='packages/main_images/', blank=True, null=True) 
+    image_main = models.ImageField(upload_to='packages/main_images/', blank=True, null=True)
     tags = TaggableManager(blank=True)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     is_available_today = models.BooleanField(
-        default=False, 
+        default=False,
         help_text="Check nếu tour này khả dụng trong ngày hiện tại hoặc tương lai gần."
     )
 
     class Meta:
         ordering = ['name']
+
+    def save(self, *args, **kwargs):
+        # Nếu chưa gán category, tự động lấy từ destination
+        if not self.category and self.destination and self.destination.category:
+            self.category = self.destination.category
+
+        # Nếu chưa có slug, tự động sinh từ name
+        if not self.slug:
+            self.slug = slugify(self.name)
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name} at {self.destination.name}"
