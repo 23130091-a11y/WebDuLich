@@ -30,7 +30,7 @@ INSTALLED_APPS = [
     # Third-party Apps
     'rest_framework',
     'rest_framework_simplejwt',
-    'taggit', # ⬅️ Đã thêm: Bắt buộc cho tags
+    'taggit', # Đã thêm: Bắt buộc cho tags
     
     # Custom Apps
     'travel', # Ứng dụng travel của bạn

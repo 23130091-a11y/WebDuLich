@@ -1,3 +1,6 @@
+# D:\LT_Python\PyWeb\DoAnWeb\WebDuLich\travel\models.py
+from tokenize import blank_re
+
 from django.conf import settings
 from django.db import models
 from taggit.managers import TaggableManager
@@ -82,6 +85,7 @@ class TourPackage(models.Model):
     duration = models.IntegerField(help_text="Duration in days")
     price = models.DecimalField(max_digits=10, decimal_places=2)
     rating = models.FloatField(default=0.0)
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     address_detail = models.CharField(
         max_length=255,
         blank=True,
@@ -92,11 +96,15 @@ class TourPackage(models.Model):
     is_active = models.BooleanField(default=True)
     image_main = models.ImageField(upload_to='packages/main_images/', blank=True, null=True)
     tags = TaggableManager(blank=True)
-    slug = models.SlugField(max_length=255, unique=True, blank=True)
+    slug = models.SlugField(max_length=255, unique=True, null=True, blank=True)
     is_available_today = models.BooleanField(
         default=False,
         help_text="Check nếu tour này khả dụng trong ngày hiện tại hoặc tương lai gần."
     )
+
+    # --- Thêm các trường ngày ---
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
 
     class Meta:
         ordering = ['name']
