@@ -114,9 +114,9 @@ def search(request):
     destinations = search_destinations(query, filters)
     
     # Lưu lịch sử
-    if query or to_location:
+    if query:
         SearchHistory.objects.create(
-            query=query or to_location,
+            query=query,
             user_ip=get_client_ip(request),
             results_count=destinations.count()
         )
