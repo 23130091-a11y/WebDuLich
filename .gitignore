@@ -1,0 +1,93 @@
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+env/
+
+# Static files
+staticfiles/
+static_root/
+
+# Backup files
+*.bak
+*.backup
+
+# ============================================
+# Documentation Files (Development/Planning)
+# ============================================
+# These are internal planning/improvement docs
+# Not needed for production deployment
+
+# Planning & TODO
+TODO_FIX_DATA_REVIEWS.md
+REMAINING_ISSUES_PLAN.md
+DATA_QUALITY_IMPROVEMENT_PLAN.md
+API_SECURITY_PLAN.md
+FILES_TO_DELETE.md
+read_to_fix_data_reviews.md
+
+# Summary & Fix Reports
+IMPROVEMENTS_SUMMARY.md
+N+1_QUERY_FIX_SUMMARY.md
+SECURITY_FIX_SUMMARY.md
+DATABASE_OPTIMIZATION_SUMMARY.md
+
+# Detailed Guides (Duplicate info)
+QUERY_OPTIMIZATION.md
+DATABASE_PERFORMANCE.md
+SECURITY_DEPLOYMENT.md
+DATA_SOURCE_AND_AI_TRAINING.md
+
+# Keep only these essential docs:
+# - README.md (main documentation)
+# - SECURITY.md (security overview)
+# - TESTING.md (how to test)
+# - CACHING_README.md (cache guide)
+# - AI_SENTIMENT_README.md (AI guide)
+# - CRON_JOBS.md (maintenance tasks)
