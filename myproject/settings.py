@@ -13,11 +13,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
-# Application definition
-
 INSTALLED_APPS = [
-    # Django Core Apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -27,14 +23,12 @@ INSTALLED_APPS = [
     'django.utils.text',
     'django.contrib.humanize',
     
-    # Third-party Apps
     'rest_framework',
     'rest_framework_simplejwt',
-    'taggit', # Đã thêm: Bắt buộc cho tags
+    'taggit', 
     
-    # Custom Apps
-    'travel', # Ứng dụng travel của bạn
-    'users',  # Ứng dụng users của bạn
+    'travel', 
+    'users',  
 ]
 
 MIDDLEWARE = [
