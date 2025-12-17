@@ -46,7 +46,7 @@ class Destination(models.Model):
     name = models.CharField(max_length=200, unique=True)
     description = models.TextField()
     location = models.CharField(max_length=255)
-    rating = models.FloatField(default=0.0)
+    score = models.FloatField(default=0.0)
     is_popular = models.BooleanField(default=False)
     slug = models.SlugField(unique=True, max_length=200)
     
@@ -75,12 +75,11 @@ class DestinationImage(models.Model):
 # 4. TourPackage Model
 # ----------------------------------------------------------------------
 class TourPackage(models.Model):
-    # Liên kết với Category (Sửa lỗi: Đã thêm null=True để tương thích với SET_NULL)
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
         related_name='tour_packages',
-        null=True,    # <--- BẮT BUỘC PHẢI CÓ DÒNG NÀY
+        null=True,    
         blank=True
     )
     # Liên kết với Destination
@@ -91,6 +90,7 @@ class TourPackage(models.Model):
     )
     name = models.CharField(max_length=255)
     duration = models.IntegerField(help_text="Duration in days")
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     address_detail = models.CharField(
         max_length=255, 
@@ -108,7 +108,6 @@ class TourPackage(models.Model):
         help_text="Check nếu tour này khả dụng trong ngày hiện tại hoặc tương lai gần."
     )
 
-    # --- Thêm các trường ngày ---
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
 
@@ -117,3 +116,11 @@ class TourPackage(models.Model):
 
     def __str__(self):
         return f"{self.name} at {self.destination.name}"
+
+class TourImage(models.Model):
+    tour = models.ForeignKey(TourPackage, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='packages/gallery/')
+    caption = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return f"Image for {self.tour.name}"
