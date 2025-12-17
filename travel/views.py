@@ -380,7 +380,7 @@ def category_detail(request):
     elif sort == 'latest':
         qs = qs.order_by('-id')
     else:
-        qs = qs.order_by('-destination__rating')
+        qs = qs.order_by('-destination__score')
 
     if category_obj:
              qs = qs.filter(Q(category=category_obj) | Q(destination__category=category_obj))
@@ -402,10 +402,10 @@ def category_detail(request):
             rating_val = float(rating_min)
             if rating_val < 5:
                 # Lọc từ rating_val đến nhỏ hơn rating_val+1, giới hạn max 5
-                qs = qs.filter(destination__rating__gte=rating_val, destination__rating__lt=min(rating_val+1, 5))
+                qs = qs.filter(destination__score__gte=rating_val, destination__score__lt=min(rating_val+1, 5))
             else:
                 # Chọn 5 sao chính xác
-                qs = qs.filter(destination__rating=5)
+                qs = qs.filter(destination__score=5)
         except ValueError:
             pass
 
@@ -428,12 +428,15 @@ def category_detail(request):
                 'description': tour.details,
                 'image': tour.image_main.url if tour.image_main else None,
                 'price': tour.price,
-                'rating': tour.destination.rating if tour.destination else 0.0,
+                'rating': tour.rating, 
+                'destination_score': tour.destination.score if tour.destination else 0.0,
                 'destination': tour.destination.name if tour.destination else 'Không rõ',
                 'category': tour.category.name if tour.category else 'Không rõ',
                 'tags_text': tags_text,
                 'slug': tour.slug if tour and hasattr(tour, 'slug') else None,
             })
+
+            
     except Exception as e:
         print(f"ERROR query TourPackage: {e}")
         results = []
