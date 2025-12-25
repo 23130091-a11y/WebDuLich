@@ -1,0 +1,300 @@
+/**
+ * index.css - CSS riêng cho trang chủ
+ */
+
+/* ==============================
+   LỊCH SỬ TÌM KIẾM - SECTION RIÊNG
+============================== */
+.search-history-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    margin-top: -30px;
+    padding-top: 50px !important;
+}
+
+.search-history-card {
+    border-left: 4px solid #667eea;
+}
+
+.search-history-section .history-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+    border: 1px solid #e0e0e0;
+    border-radius: 25px;
+    text-decoration: none;
+    color: #333;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.search-history-section .history-item:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.search-history-section .history-item:hover i {
+    color: white !important;
+}
+
+.search-history-section .history-item .btn-close {
+    width: 16px;
+    height: 16px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    filter: none;
+}
+
+.search-history-section .history-item:hover .btn-close {
+    opacity: 0.8;
+    filter: brightness(0) invert(1);
+}
+
+.search-history-section .history-item .btn-close:hover {
+    opacity: 1;
+}
+
+.search-history-section .history-item .search-count {
+    background: rgba(0,0,0,0.1);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+}
+
+.search-history-section .history-item:hover .search-count {
+    background: rgba(255,255,255,0.2);
+}
+
+/* ==============================
+   AUTOCOMPLETE
+============================== */
+.autocomplete-box {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 9999;
+    display: none;
+    min-width: 300px;
+}
+
+/* Đảm bảo search-box không cắt autocomplete */
+.search-box {
+    overflow: visible !important;
+}
+
+.search-box .position-relative {
+    overflow: visible !important;
+}
+
+.search-box .row {
+    overflow: visible !important;
+}
+
+.search-box .col-md-3 {
+    overflow: visible !important;
+}
+
+.autocomplete-item {
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* ==============================
+   EXPLORE MODAL
+============================== */
+.explore-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.explore-modal .modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    max-width: 500px;
+    text-align: center;
+    position: relative;
+}
+
+.explore-modal .modal-content img {
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.explore-modal .modal-content h3 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.explore-modal .modal-content p {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.explore-modal .close-icon {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+    transition: color 0.2s;
+}
+
+.explore-modal .close-icon:hover {
+    color: #333;
+}
+
+.explore-modal .close-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform 0.2s;
+}
+
+.explore-modal .close-btn:hover {
+    transform: scale(1.05);
+}
+
+/* ==============================
+   SLIDESHOW
+============================== */
+.image-wrapper {
+    position: relative;
+    overflow: hidden;
+}
+
+.image-wrapper img.card-img-top {
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.image-wrapper:hover img.card-img-top {
+    transform: scale(1.05);
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.image-wrapper:hover .image-overlay {
+    opacity: 1;
+}
+
+.slideshow {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.slideshow .slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+
+.slideshow .slide.active {
+    opacity: 1;
+}
+
+.slideshow .prev,
+.slideshow .next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 18px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.slideshow .prev:hover,
+.slideshow .next:hover {
+    background: white;
+}
+
+.slideshow .prev {
+    left: 10px;
+}
+
+.slideshow .next {
+    right: 10px;
+}
+
+/* ==============================
+   CATEGORY CARDS
+============================== */
+.category-card {
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.category-card i {
+    margin-bottom: 10px;
+}
+
+.category-card p {
+    margin: 0;
+    font-weight: 500;
+    color: #333;
+}
