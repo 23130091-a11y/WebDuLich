@@ -5,6 +5,10 @@ Django settings for travel_project project.
 from pathlib import Path
 import os
 
+#
+from dotenv import load_dotenv
+load_dotenv()
+
 BASE_DIR = Path(__file__).resolve().parent.parent 
 
 SECRET_KEY = 'django-insecure-#05+7kdse&hdu$&w2#u#7utz77m(n4d7rb0&+e0@vqa^(rcf1_'
@@ -25,6 +29,7 @@ INSTALLED_APPS = [
     
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'taggit', 
     
     'travel', 
@@ -64,16 +69,31 @@ TEMPLATES = [
 ROOT_URLCONF = 'myproject.urls'
 WSGI_APPLICATION = 'myproject.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'railway',
-        'USER': 'postgres',
-        'PASSWORD': 'CJsjqUXvzXuexeuGlVVHNqwxVNASqRmP',
-        'HOST': 'trolley.proxy.rlwy.net',
-        'PORT': '12067',
+USE_LOCAL_DB = os.getenv("USE_LOCAL_DB", "false").lower() == "true"
+
+if USE_LOCAL_DB:
+    # DATABASE LOCAL (SQLite)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    # DATABASE DEPLOY (Railway / PostgreSQL)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('PGDATABASE', 'railway'),
+            'USER': os.getenv('PGUSER', 'postgres'),
+            'PASSWORD': os.getenv('PGPASSWORD'),
+            'HOST': os.getenv('PGHOST'),
+            'PORT': os.getenv('PGPORT'),
+            'OPTIONS': {
+                'sslmode': 'require',
+            },
+        }
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

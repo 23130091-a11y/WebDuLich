@@ -7,7 +7,9 @@ urlpatterns = [
     path('register', RegisterView.as_view()),
     path('login', LoginView.as_view()),
     path('preferences', save_preferences, name='save_preferences'),
+    # Test
     # path('preferences', get_preferences, name='get_preferences'),   # GET
     # path('preferences/save', save_preferences, name='save_preferences'), # POST
+    # Logout
     path("api/logout/", logout_view, name="logout"),
 ]
