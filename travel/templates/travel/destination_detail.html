@@ -1,0 +1,115 @@
+{% extends "travel/base.html" %}
+{% load static %}
+
+{% block title %}Chi tiết địa điểm - Web Du Lịch{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/destination.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Nội dung chi tiết địa điểm ở đây -->
+<div class="container py-4">
+
+    <div class="row">
+        <!-- LEFT CONTENT -->
+        <div class="col-lg-8">
+
+            <!-- Title -->
+            <h2 class="fw-bold mb-2">
+                {{ destination.name|default:"Phú Quốc" }}
+            </h2>
+
+            <p class="text-muted mb-4">
+                Nơi biển trời giao hoà, thiên nhiên trong lành và con người thân thiện.<br>
+                Trải nghiệm kỳ nghỉ đáng nhớ giữa đảo ngọc xinh đẹp của Việt Nam.
+            </p>
+
+            <!-- Short description -->
+            <p>
+                {{ destination.description|truncatewords:40 }}
+                <a href="#" class="text-primary fw-semibold">Xem thêm</a>
+            </p>
+
+            <!-- INFO TAGS -->
+            <div class="d-flex gap-3 flex-wrap my-4">
+
+                <div class="border rounded-pill px-4 py-2 d-flex align-items-center gap-2">
+                    <span>☀️</span>
+                    <span>29°C (Nắng đẹp)</span>
+                </div>
+
+                <div class="border rounded-pill px-4 py-2 d-flex align-items-center gap-2">
+                    <span>✈️</span>
+                    <span>Bay / Tàu (Phương tiện)</span>
+                </div>
+
+                <div class="border rounded-pill px-4 py-2 d-flex align-items-center gap-2">
+                    <span>📅</span>
+                    <span>T11 - T4 (Mùa đẹp nhất)</span>
+                </div>
+
+            </div>
+
+            <!-- Suggestion title -->
+            <h4 class="fw-semibold mb-3">
+                Lịch trình gợi ý: 2 Ngày 1 Đêm - Oanh tạc Nam Đảo & Săn Hoàng Hôn
+            </h4>
+
+            <!-- Checklist -->
+            <ul class="list-unstyled">
+                <li>✨ <b>Check-in Bãi Sao:</b> Bãi biển cát trắng mịn nhất đảo, chụp ảnh cùng sao biển.</li>
+                <li>✨ <b>Săn hoàng hôn:</b> Tại Sunset Sanato hoặc OCSEN Beach Bar (View cực phẩm).</li>
+                <li>✨ <b>Foodtour:</b> Thưởng thức Bún quậy Kiến Xây & Ẩm thực Chợ đêm.</li>
+                <li>✨ <b>Di chuyển:</b> 100% xe máy, tự do khám phá các cung đường ven biển.</li>
+            </ul>
+
+            <!-- Note box -->
+            <div class="p-3 border rounded bg-light mt-4">
+                <h6 class="fw-bold mb-2">⚠️ Lưu ý:</h6>
+                <ul class="mb-0">
+                    <li>Kem chống nắng: Mang loại chỉ số cao, nắng Phú Quốc rất gắt.</li>
+                    <li>Đường đi: Đường xuống Bãi Sao có đoạn đất đỏ khá bụi và xóc, tay lái yếu nên cẩn thận.</li>
+                    <li>Tiền mặt: Nên rút sẵn tiền mặt vì các quán nhỏ hoặc trên đảo ít nhận chuyển khoản/thẻ.</li>
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- RIGHT SIDEBAR -->
+        <div class="col-lg-4">
+
+            <div class="border rounded p-4 shadow-sm" style="background: #fff9e9;">
+
+                <div class="mb-3">
+                    <h6 class="mb-1 fw-semibold">Khởi hành từ
+                        <span class="text-dark">{{ destination.start_from|default:"Hồ Chí Minh" }}</span>
+                    </h6>
+                </div>
+
+                <p class="mb-1">
+                    Mức giá:
+                    <span class="text-success fw-semibold">Trung bình</span>
+                </p>
+
+                <p class="mb-1">Vé: ~1,5tr</p>
+                <p class="mb-3">Ăn: 500k</p>
+
+                <div class="d-flex gap-2">
+                    <button class="btn btn-warning px-3 rounded-pill fw-semibold">
+                        <i class="bi bi-calendar-plus"></i> Thêm vào lịch trình
+                    </button>
+
+                    <button class="btn btn-outline-warning px-3 rounded-pill fw-semibold">
+                        <i class="bi bi-calendar-event"></i> Chỉnh sửa lịch trình
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+

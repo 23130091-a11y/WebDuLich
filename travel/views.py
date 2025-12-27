@@ -142,29 +142,44 @@ def home(request):
     # ------------------------------
     recommendations = []
 
+    # CHÚ Ý: Bạn đang dùng JWT, nên ở môi trường local load trang truyền thống,
+    # request.user có thể bị Anonymous. Hãy đảm bảo bạn đã làm bước login session
+    # hoặc tạm thời test bằng cách bỏ check is_authenticated nếu muốn xem kết quả.
+
     if request.user.is_authenticated:
+        # 1. Lấy tất cả sở thích của User
         prefs = TravelPreference.objects.filter(user=request.user)
 
-        preferred_types = [slugify(p.travel_type) for p in prefs]
-        preferred_locations = [p.location.strip() for p in prefs]
+        if prefs.exists():
+            # Lấy danh sách string từ sở thích
+            fav_locations = [p.location.strip() for p in prefs]
+            fav_types = [p.travel_type.strip() for p in prefs]
 
-        query = Q()
+            # 2. Xây dựng Query tập trung vào Location và Category
+            query = Q()
 
-        # Lọc theo location (thuộc Destination)
-        for loc in preferred_locations:
-            query |= Q(destination__location__icontains=loc)
+            # So sánh với địa điểm (Location của Destination)
+            for loc in fav_locations:
+                query |= Q(destination__location__icontains=loc) | Q(destination__name__icontains=loc)
 
-        # Lọc theo loại du lịch (tags của Destination)
-        for t in preferred_types:
-            query |= Q(destination__tags__slug__icontains=t)
+            # So sánh với loại hình (Tên của Category)
+            for t in fav_types:
+                # normalize_category_name là hàm bạn đã viết để khớp "Biển" thành "Biển & Đảo"
+                norm_name = normalize_category_name(t)
+                query |= Q(category__name__icontains=t)
+                if norm_name:
+                    query |= Q(category__name__icontains=norm_name)
 
-        recommendations = (
-            TourPackage.objects
-            .filter(query)
-            .select_related("destination")
-            .prefetch_related("destination__tags")
-            .distinct()
-        )
+            # 3. Thực hiện truy vấn
+            recommendations = (
+                TourPackage.objects
+                .filter(query, is_active=True)
+                .select_related('category', 'destination')
+                .distinct()[:8]
+            )
+
+            # DEBUG: In ra terminal để kiểm tra có tìm thấy gì không
+            print(f"DEBUG: Found {recommendations.count()} recommendations for User {request.user.email}")
 
     return render(request, 'travel/index.html', {
         "results": results,
@@ -405,4 +420,11 @@ def destination_detail(request, slug):
     return render(request, 'travel/destination_detail.html', {
         'destination': destination,
         'related_tours': related_tours,
+    })
+
+def destination_list(request):
+    qs = Destination.objects.all().order_by('-score')
+
+    return render(request, 'travel/destination_list.html', {
+        'destinations': qs
     })

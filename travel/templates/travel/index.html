@@ -239,6 +239,179 @@
     </div>
     {% endif %}
 
+    <section class="container py-5">
+        <h2 class="text-center mb-4 fw-bold">Một số địa điểm tham quan nổi tiếng tại Hà Nội</h2>
+
+        <div class="row g-4">
+            <!-- ITEM -->
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="place-card shadow-sm">
+                    <div class="place-image">
+                        <a href="{% if destination.slug %}{% url 'destination_detail' destination.slug %}{% else %}#!{% endif %}">
+                            <img src="{% if destination.images.first %}{{ destination.images.first.image.url }}{% else %}https://placehold.co/600x400{% endif %}"
+                                 class="img-fluid" alt="{{ destination.name }}">
+                        </a>
+
+                        <div class="place-score">
+                            {{ destination.score|default:"83" }} điểm
+                        </div>
+
+                        <button class="heart-btn">
+                            <i class="bi bi-heart"></i>
+                        </button>
+                    </div>
+
+                    <div class="p-3">
+                        <h5 class="place-title">
+                            <a href="{% if destination.slug %}{% url 'destination_detail' destination.slug %}{% else %}#!{% endif %}"
+                               class="text-dark text-decoration-none fs-4 fw-semibold">
+                                {{ destination.name }}
+                            </a>
+                        </h5>
+
+                        <p class="place-location">
+                            <i class="bi bi-geo-alt-fill text-danger"></i>
+                            {{ destination.location|default:"Chưa rõ địa điểm" }}
+                        </p>
+
+                        <div class="rating mb-2">
+                            <span>{{ destination.rating|default:"5.0" }}</span>
+                            {% for i in "12345" %}
+                            <i class="bi bi-star-fill text-warning"></i>
+                            {% endfor %}
+                        </div>
+
+                        <p class="small mb-2">
+                            {{ destination.caption|default:"Địa điểm đang cập nhật mô tả chi tiết." }}
+                        </p>
+
+                        <div class="d-flex gap-2 mt-2">
+                            <span class="badge bg-success-subtle text-success">Chi phí rẻ</span>
+                            <span class="badge bg-danger-subtle text-danger">Xe máy vào tận nơi</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3 items -->
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="place-card shadow-sm">
+                    <div class="place-image">
+                        <a href="/destination_detail.html">
+                            <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e" class="img-fluid" alt="">
+                        </a>
+                        <div class="place-score">83 điểm</div>
+                        <button class="heart-btn"><i class="bi bi-heart"></i></button>
+                    </div>
+
+                    <div class="p-3">
+                        <h5 class="place-title">
+                            <a href="/destination_detail.html" class="text-dark text-decoration-none fs-4 fw-semibold">Bãi Sao</a>
+                        </h5>
+
+                        <p class="place-location">
+                            <i class="bi bi-geo-alt-fill text-danger"></i>
+                            Phú Quốc - Kiên Giang
+                        </p>
+
+                        <div class="rating mb-2">
+                            <span>5.0</span>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                        </div>
+
+                        <p class="small mb-2">Biển xanh, cát trắng, bãi tắm nổi tiếng nhất Phú Quốc.</p>
+
+                        <div class="d-flex gap-2 mt-2">
+                            <span class="badge bg-success-subtle text-success">Chi phí rẻ</span>
+                            <span class="badge bg-danger-subtle text-danger">Xe máy vào tận nơi</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="place-card shadow-sm">
+                    <div class="place-image">
+                        <a href="#!">
+                            <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e" class="img-fluid" alt="">
+                        </a>
+                        <div class="place-score">83 điểm</div>
+                        <button class="heart-btn"><i class="bi bi-heart"></i></button>
+                    </div>
+
+                    <div class="p-3">
+                        <h5 class="place-title">
+                            <a href="#!" class="text-dark text-decoration-none fs-4 fw-semibold">Bãi Sao</a>
+                        </h5>
+
+                        <p class="place-location">
+                            <i class="bi bi-geo-alt-fill text-danger"></i>
+                            Phú Quốc - Kiên Giang
+                        </p>
+
+                        <div class="rating mb-2">
+                            <span>5.0</span>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                        </div>
+
+                        <p class="small mb-2">Biển xanh, cát trắng, bãi tắm nổi tiếng nhất Phú Quốc.</p>
+
+                        <div class="d-flex gap-2 mt-2">
+                            <span class="badge bg-success-subtle text-success">Chi phí rẻ</span>
+                            <span class="badge bg-danger-subtle text-danger">Xe máy vào tận nơi</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="place-card shadow-sm">
+                    <div class="place-image">
+                        <a href="#!">
+                            <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e" class="img-fluid" alt="">
+                        </a>
+                        <div class="place-score">83 điểm</div>
+                        <button class="heart-btn"><i class="bi bi-heart"></i></button>
+                    </div>
+
+                    <div class="p-3">
+                        <h5 class="place-title">
+                            <a href="#!" class="text-dark text-decoration-none fs-4 fw-semibold">Bãi Sao</a>
+                        </h5>
+
+                        <p class="place-location">
+                            <i class="bi bi-geo-alt-fill text-danger"></i>
+                            Phú Quốc - Kiên Giang
+                        </p>
+
+                        <div class="rating mb-2">
+                            <span>5.0</span>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                        </div>
+
+                        <p class="small mb-2">Biển xanh, cát trắng, bãi tắm nổi tiếng nhất Phú Quốc.</p>
+
+                        <div class="d-flex gap-2 mt-2">
+                            <span class="badge bg-success-subtle text-success">Chi phí rẻ</span>
+                            <span class="badge bg-danger-subtle text-danger">Xe máy vào tận nơi</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
     <section class="recommend py-5">
         <div class="container-fluid text-center">
             <h2 class="fw-bold mb-3">Dải Đất Hình Chữ S</h2>
@@ -368,16 +541,16 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Loại hình du lịch yêu thích:</label>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="travelType" value="Biển" id="prefSea">
-                            <label class="form-check-label" for="prefSea">Biển</label>
+                            <input class="form-check-input" type="checkbox" name="travelType" value="Biển & Đảo" id="prefSea">
+                            <label class="form-check-label" for="prefSea">Biển & Đảo</label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="travelType" value="Núi" id="prefMountain">
-                            <label class="form-check-label" for="prefMountain">Núi</label>
+                            <input class="form-check-input" type="checkbox" name="travelType" value="Núi & Cao nguyên" id="prefMountain">
+                            <label class="form-check-label" for="prefMountain">Núi & Cao nguyên</label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="travelType" value="Thành phố" id="prefCity">
-                            <label class="form-check-label" for="prefCity">Thành phố</label>
+                            <input class="form-check-input" type="checkbox" name="travelType" value="Nghỉ dưỡng" id="prefResort">
+                            <label class="form-check-label" for="prefResort">Nghỉ dưỡng & Thư giãn</label>
                         </div>
                     </div>
 
@@ -645,6 +818,12 @@
                 return;
             }
 
+            // Check độ dài password
+            if (password.length < 6) {
+                alert('Mật khẩu phải có ít nhất 6 ký tự!');
+                return;
+            }
+
             try {
                 const response = await fetch('/auth/register', {
                     method: 'POST',
@@ -720,15 +899,18 @@
             logoutBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
 
+                const refresh = localStorage.getItem('refresh');
+
                 await fetch("/api/logout/", {
                     method: "POST",
-                    credentials: "include",
-                    headers: { "Content-Type": "application/json" }
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem('access')}`
+                    },
+                    body: JSON.stringify({ refresh })
                 });
 
                 localStorage.clear();
-                categorySection.style.display = 'none';  // ẩn section khi logout
-                if (recommendationsSection) recommendationsSection.style.display = 'none';
                 window.location.reload();
             });
 
@@ -749,15 +931,18 @@
 <!---->
 <script>
     document.getElementById('savePreferencesBtn').addEventListener('click', async () => {
+        // Tìm đoạn script xử lý savePreferencesBtn
         const travelTypes = [];
-        if (document.getElementById('prefSea').checked) travelTypes.push('Biển');
-        if (document.getElementById('prefMountain').checked) travelTypes.push('Núi');
-        if (document.getElementById('prefCity').checked) travelTypes.push('Thành phố');
+        // Lấy tất cả các checkbox travelType đã check
+        document.querySelectorAll('input[name="travelType"]:checked').forEach(el => {
+            travelTypes.push(el.value);
+        });
 
         const locations = [];
-        if (document.getElementById('locHN').checked) locations.push('Hà Nội');
-        if (document.getElementById('locHCM').checked) locations.push('Hồ Chí Minh');
-        if (document.getElementById('locDN').checked) locations.push('Đà Nẵng');
+        // Lấy tất cả các checkbox locations đã check
+        document.querySelectorAll('input[name="locations"]:checked').forEach(el => {
+            locations.push(el.value);
+        });
 
         if (travelTypes.length === 0 || locations.length === 0) {
             alert('Bạn cần chọn ít nhất một loại hình du lịch và một địa điểm!');

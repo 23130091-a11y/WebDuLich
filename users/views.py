@@ -1,4 +1,3 @@
-from django.shortcuts import get_object_or_404, render
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
@@ -11,7 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth import login, logout
+from django.contrib.auth import login # Import thêm
 
 # Create your views here.
 class RegisterView(APIView) :
@@ -39,20 +38,19 @@ class RegisterView(APIView) :
 class LoginView(APIView) :
     def post(self, request):
         email = request.data.get("email", None)
-        user = get_object_or_404(User, email=email)
-
         password = request.data.get("password", None)
-        is_check = user.check_password(password)
 
-        if not is_check :
-            raise AuthenticationFailed("Sai mật khẩu")
+        user = User.objects.filter(email=email).first()
 
-        # LOGIN SESSION
-        login(request, user)
+        if user and user.check_password(password):
+            login(request, user) # <--- THÊM DÒNG NÀY để tạo Session cho trình duyệt
 
-        # Tạo JWT
+        if user is None or not user.check_password(password):
+            raise AuthenticationFailed("Email hoặc mật khẩu không đúng")
+
+        # Tạo token
         refresh = RefreshToken.for_user(user)
-        #
+
         return Response({
             "user": {
                 "id": user.id,
@@ -65,60 +63,47 @@ class LoginView(APIView) :
             }
         })
 
+#
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def save_preferences(request):
-    # Nếu request.user là TokenUser, lấy User thật từ DB
-    if hasattr(request.user, 'id'):
-        user = User.objects.get(id=request.user.id)
-    else:
-        return Response({"error": "User not found"}, status=404)
-
-    # Xóa sở thích cũ
-    TravelPreference.objects.filter(user=user).delete()
+    user = request.user
 
     travel_types = request.data.get("travelTypes", [])
     locations = request.data.get("locations", [])
 
-    # Tạo tổ hợp loại hình + địa điểm
-    for t in travel_types:
-        for loc in locations:
-            TravelPreference.objects.create(
-                user=user,
-                travel_type=t,
-                location=loc
-            )
+    if not travel_types or not locations:
+        return Response(
+            {"error": "Phải chọn ít nhất 1 loại hình và 1 địa điểm"},
+            status=400
+        )
+
+    # Xóa cũ
+    TravelPreference.objects.filter(user=user).delete()
+
+    # Tạo mới (loại trùng)
+    objs = [
+        TravelPreference(
+            user=user,
+            travel_type=t.strip(),
+            location=loc.strip()
+        )
+        for t in set(travel_types)
+        for loc in set(locations)
+    ]
+
+    TravelPreference.objects.bulk_create(objs)
 
     return Response({"detail": "Preferences saved"})
 
-# @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
-# def get_preferences(request):
-#     print("request.user:", request.user, type(request.user))
-#     try:
-#         user = User.objects.get(id=request.user.id)
-#     except User.DoesNotExist:
-#         return Response({"error": "User not found"}, status=404)
-#
-#     prefs = TravelPreference.objects.filter(user=user)
-#     travel_types = list(set(p.travel_type for p in prefs))
-#     locations = list(set(p.location for p in prefs))
-#     return Response({
-#         "travelTypes": travel_types,
-#         "locations": locations
-#     })
-
-# def index(request):
-#     # Debug: kiểm tra user
-#     print("User:", request.user, "Authenticated:", request.user.is_authenticated)
-#
-#     # Truyền context nếu cần
-#     context = {
-#         # các dữ liệu khác bạn muốn show trên index
-#     }
-#     return render(request, 'index.html', context)
-
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def logout_view(request):
-    logout(request)  # Xóa session Django
-    return Response({"message": "Logged out"}, status=200)
+    try:
+        refresh_token = request.data["refresh"]
+        token = RefreshToken(refresh_token)
+        token.blacklist()
+    except Exception:
+        return Response({"error": "Invalid token"}, status=400)
+
+    return Response({"message": "Logged out"})

@@ -46,7 +46,7 @@ class Destination(models.Model):
     score = models.FloatField(default=0.0)
     is_popular = models.BooleanField(default=False)
     slug = models.SlugField(unique=True, max_length=200)
-    tags = TaggableManager()
+    tags = TaggableManager()  # dùng name để filter
 
     def __str__(self):
         return self.name
@@ -74,7 +74,7 @@ class TourPackage(models.Model):
         Category,
         on_delete=models.SET_NULL,
         related_name='tour_packages',
-        null=True,    
+        null=True,
         blank=True
     )
     destination = models.ForeignKey(
@@ -96,12 +96,13 @@ class TourPackage(models.Model):
     is_active = models.BooleanField(default=True)
     image_main = models.ImageField(upload_to='packages/main_images/', blank=True, null=True)
     tags = TaggableManager(blank=True)
-    slug = models.SlugField(max_length=255, unique=True, null=True, blank=True)
+    slug = models.SlugField(max_length=255, unique=True, null=True, blank=True) # slug:
+    # /destination/da-nang/
+    # /tour/ba-na-hills-1-ngay/
     is_available_today = models.BooleanField(
         default=False,
         help_text="Check nếu tour này khả dụng trong ngày hiện tại hoặc tương lai gần."
     )
-
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
 

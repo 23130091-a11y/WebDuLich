@@ -6,12 +6,12 @@ from .models import Category, Destination, TourPackage, DestinationImage, TourIm
 # ----------------------------------------------------
 class DestinationImageInline(admin.TabularInline):
     model = DestinationImage
-    extra = 1
+    extra = 1 # Hiển thị 1 dòng trống sẵn
 
 class TourPackageInline(admin.TabularInline):
     model = TourPackage
     extra = 1
-    prepopulated_fields = {'slug': ('name',)}
+    prepopulated_fields = {'slug': ('name',)} # Tự động sinh giá trị cho slug dựa trên trường name
 
 # ----------------------------------------------------
 # 2. Destination Admin
@@ -20,7 +20,7 @@ class TourPackageInline(admin.TabularInline):
 class DestinationAdmin(admin.ModelAdmin):
     # Các trường hiển thị trong danh sách Địa điểm
     list_display = ('name', 'location', 'score', 'get_tags')
-    
+
     # Các trường để tìm kiếm
     search_fields = ('name', 'location', 'description')
     prepopulated_fields = {'slug': ('name',)}
@@ -44,8 +44,7 @@ class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'slug', 'icon')
     prepopulated_fields = {'slug': ('name',)} # Tự động tạo slug
 
-
-
+# Quản lý tourimage ngay trong trang tourpackage
 class TourImageInline(admin.TabularInline):
     model = TourImage
     extra = 3 # Hiển thị sẵn 3 ô để chọn ảnh
@@ -53,23 +52,23 @@ class TourImageInline(admin.TabularInline):
 
 @admin.register(TourPackage)
 class TourPackageAdmin(admin.ModelAdmin):
-    # 2. Hiển thị danh sách cột thông minh (List Display)
+    # Hiển thị danh sách cột thông minh (List Display)
     list_display = ('name', 'destination', 'category', 'price', 'duration', 'rating', 'is_active', 'is_available_today')
-    
-    # 3. Thanh tìm kiếm đa năng (Search Fields)
-    # Cho phép tìm theo tên tour, tên địa danh hoặc chi tiết
+
+    # Thanh tìm kiếm đa năng (Search Fields)
+    # Cho phép tìm theo tên tour, tên địa danh, chi tiết hoặc địa chỉ
     search_fields = ('name', 'destination__name', 'details', 'address_detail')
-    
-    # 4. Bộ lọc nhanh bên phải (List Filter)
+
+    # Bộ lọc nhanh bên phải (List Filter)
     list_filter = ('is_active', 'is_available_today', 'category', 'destination', 'start_date')
-    
-    # 5. Tự động sinh Slug khi gõ tên (Prepopulated Fields)
+
+    # Tự động sinh Slug khi gõ tên (Prepopulated Fields)
     prepopulated_fields = {'slug': ('name',)}
-    
-    # 6. Tích hợp Inline ảnh đã tạo ở trên
+
+    # Tích hợp TourImageInline phía trên ảnh đã tạo ở trên
     inlines = [TourImageInline]
-    
-    # 7. Sắp xếp lại giao diện nhập liệu cho chuyên nghiệp (Fieldsets)
+
+    # Sắp xếp lại giao diện nhập liệu cho chuyên nghiệp (Fieldsets)
     fieldsets = (
         ('Thông tin cơ bản', {
             'fields': ('name', 'slug', 'category', 'destination', 'rating')
@@ -83,9 +82,9 @@ class TourPackageAdmin(admin.ModelAdmin):
         }),
         ('Cấu hình hiển thị', {
             'fields': ('is_active', 'is_available_today'),
-            'classes': ('collapse',), # Thu gọn mục này lại, bấm vào mới hiện ra
+            'classes': ('collapse',), # Cấu hình hiển thị (collapse): Thu gọn mục này lại, bấm vào mới hiện ra
         }),
     )
 
-    # Thêm màu sắc hoặc icon cho các trạng thái (Tùy chọn)
-    list_editable = ('is_active', 'is_available_today') # Sửa nhanh ngay tại danh sách
+    # Sửa nhanh ngay tại danh sách
+    list_editable = ('is_active', 'is_available_today')
