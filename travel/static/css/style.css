@@ -650,3 +650,187 @@ a {
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     color: #333;
 }
+
+/* ============================
+   AUTOCOMPLETE THÔNG MINH
+============================ */
+.autocomplete-box {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    margin-top: 8px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    z-index: 99999 !important;
+    display: none;
+    max-height: 500px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    animation: slideDown 0.25s ease forwards;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.autocomplete-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    border-bottom: 1px solid #f5f5f5;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    word-spacing: normal;
+    letter-spacing: normal;
+    min-height: 44px;
+}
+
+.autocomplete-item:first-child {
+    border-radius: 12px 12px 0 0;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+    border-radius: 0 0 12px 12px;
+}
+
+.autocomplete-item:hover {
+    background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%);
+    padding-left: 22px;
+}
+
+.autocomplete-item > div:first-child {
+    flex: 1;
+}
+
+.autocomplete-item > div:first-child > div:first-child {
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 4px;
+    font-size: 15px;
+    word-spacing: normal;
+    letter-spacing: normal;
+}
+
+.autocomplete-item small {
+    font-size: 13px;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    word-spacing: normal;
+    letter-spacing: normal;
+}
+
+.autocomplete-item small i {
+    font-size: 12px;
+}
+
+.autocomplete-item > div:last-child {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.autocomplete-item .badge {
+    font-size: 12px;
+    padding: 4px 10px;
+    font-weight: 600;
+    border-radius: 6px;
+}
+
+.autocomplete-item .text-warning {
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+/* Scrollbar cho autocomplete */
+.autocomplete-box::-webkit-scrollbar {
+    width: 6px;
+}
+
+.autocomplete-box::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.autocomplete-box::-webkit-scrollbar-thumb {
+    background: #d0d0d0;
+    border-radius: 10px;
+}
+
+.autocomplete-box::-webkit-scrollbar-thumb:hover {
+    background: #b0b0b0;
+}
+
+.highlight {
+    font-weight: bold;
+    color: #0078ff;
+}
+
+/* Loading state */
+.autocomplete-loading {
+    padding: 16px;
+    text-align: center;
+    color: #6c757d;
+}
+
+.autocomplete-loading i {
+    animation: spin 1s linear infinite;
+}
+
+/* Empty state */
+.autocomplete-empty {
+    padding: 16px;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    font-size: 14px;
+}
+
+/* ==============================
+   LỊCH SỬ TÌM KIẾM
+============================== */
+.search-history {
+    border-top: 1px solid #eee;
+    padding-top: 12px;
+}
+
+.search-history .history-item {
+    transition: all 0.2s ease;
+    border: 1px solid #e0e0e0;
+}
+
+.search-history .history-item:hover {
+    background-color: #e3f2fd !important;
+    border-color: #2196f3;
+    transform: translateY(-1px);
+}
+
+.search-history .history-item .btn-close {
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.search-history .history-item:hover .btn-close {
+    opacity: 0.7;
+}
+
+.search-history .history-item .btn-close:hover {
+    opacity: 1;
+}
