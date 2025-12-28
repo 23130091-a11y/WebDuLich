@@ -2,6 +2,7 @@ from django.urls import path, include
 from . import views
 
 # travel/urls.py (GỢI Ý SỬA ĐỔI)
+app_name = 'travel'
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -10,7 +11,19 @@ urlpatterns = [
     path('api/goi-y-theo-the-loai/', views.goi_y_theo_the_loai, name='goi_y_theo_the_loai'),
     path('tour/<slug:tour_slug>/', views.tour_detail, name='tour_detail'),
 
+    path('search/', views.search, name='search'),
+
     # Thêm route cho destination detail
+    # Sửa lại chỗ này
     path('destination/<slug:slug>/', views.destination_detail, name='destination_detail'),
     path('destinations/', views.destination_list, name='destination_list'),
+
+    # API endpoints
+    path('api/search/', views.api_search, name='api_search'),
+    path('api/search-history/', views.api_search_history, name='api_search_history'),
+    path('api/search-history/delete/', views.api_delete_search_history, name='api_delete_search_history'),
+
+    # Review APIs (User-Generated Content)
+    path('api/review/vote/', views.api_vote_review, name='api_vote_review'),
+    path('api/review/report/', views.api_report_review, name='api_report_review'),
 ]

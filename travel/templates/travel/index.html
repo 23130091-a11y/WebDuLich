@@ -69,54 +69,93 @@
 
         <!-- Thanh tìm kiếm 2 tầng -->
         <div class="search-box container-fluid rounded-4 shadow-lg p-4 border border-3 border-info position-absolute top-50 start-50 translate-middle bg-white">
-
-            <!-- 🔹 Ô tìm kiếm lớn phía trên -->
-            <div class="main-search mb-3 position-relative" style="max-width: 820px; margin: 0 auto;">
-                <div class="input-group input-group-lg">
-            <span class="input-group-text bg-white border-end-0">
-                <i class="fa-solid fa-magnifying-glass text-secondary"></i>
-            </span>
-                    <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Tìm kiếm địa điểm..." autocomplete="off">
-                </div>
-                <div id="suggestions" class="suggestions-box"></div>
+            <!-- Thay thế xử lý search (code của Thanh) -->
+            <!-- Tìm kiếm nhanh -->
+            <div class="quick-search mb-4" style="overflow: visible;">
+                <form method="GET" action="{% url 'travel:search' %}" class="position-relative" id="quickSearchForm" style="overflow: visible;">
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="fa-solid fa-magnifying-glass text-primary"></i>
+                        </span>
+                        <input type="text" name="q" id="quickSearchInput" class="form-control border-start-0"
+                               placeholder="Tìm kiếm địa điểm... (VD: Hà Nội, Chùa Một Cột, Hồ Hoàn Kiếm)"
+                               autocomplete="off">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="fa-solid fa-search me-1"></i>Tìm
+                        </button>
+                    </div>
+                    <div id="quickSuggestions" class="autocomplete-box"></div>
+                </form>
             </div>
 
-
-            <!-- 🔹 Hàng nhỏ bên dưới: vị trí - nơi đến - ngày đi - nút -->
-            <form class="row align-items-center gx-3 justify-content-center">
-                <div class="col-md-3">
+            <!-- Tìm kiếm chi tiết -->
+            <form class="row align-items-center gx-3 justify-content-center" method="GET" action="{% url 'travel:search' %}" id="detailSearchForm">
+                <div class="col-md-3 position-relative" style="overflow: visible;">
                     <div class="input-group">
-                <span class="input-group-text bg-white">
-                    <i class="fa-solid fa-location-dot text-primary"></i>
-                </span>
-                        <input type="text" class="form-control" placeholder="Vị trí của bạn">
+                        <span class="input-group-text bg-white">
+                            <i class="fa-solid fa-location-dot text-primary"></i>
+                        </span>
+                        <input type="text" name="from_location" id="fromLocationInput" class="form-control"
+                               placeholder="Vị trí của bạn" autocomplete="off">
                     </div>
+                    <div id="fromLocationSuggestions" class="autocomplete-box"></div>
+                </div>
+
+                <div class="col-md-3 position-relative" style="overflow: visible;">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="fa-solid fa-map-location-dot text-primary"></i>
+                        </span>
+                        <input type="text" name="q" id="toLocationInput" class="form-control"
+                               placeholder="Nơi muốn đến" autocomplete="off">
+                    </div>
+                    <div id="toLocationSuggestions" class="autocomplete-box"></div>
                 </div>
 
                 <div class="col-md-3">
                     <div class="input-group">
-                <span class="input-group-text bg-white">
-                    <i class="fa-solid fa-map-location-dot text-primary"></i>
-                </span>
-                        <input type="text" class="form-control" placeholder="Nơi bạn muốn đến">
+                        <span class="input-group-text bg-white">
+                            <i class="fa-solid fa-calendar-days text-primary"></i>
+                        </span>
+                        <input type="date" name="travel_date" id="travelDateInput" class="form-control">
                     </div>
                 </div>
 
                 <div class="col-md-3">
-                    <div class="input-group">
-                <span class="input-group-text bg-white">
-                    <i class="fa-solid fa-calendar-days text-primary"></i>
-                </span>
-                        <input type="date" class="form-control">
-                    </div>
-                </div>
-
-                <div class="col-md-2">
-                    <button class="btn btn-warning w-100 fw-bold py-2">Tìm kiếm</button>
+                    <button type="submit" class="btn btn-warning w-100 fw-bold py-2">
+                        <i class="fa-solid fa-route me-1"></i>Tìm kiếm chi tiết
+                    </button>
                 </div>
             </form>
+
+            <!-- Gợi ý nhanh -->
+            <div class="quick-links mt-3 text-center">
+                <small class="text-muted me-2">Địa điểm phổ biến:</small>
+                <a href="{% url 'travel:search' %}?q=Hà Nội" class="badge bg-light text-dark me-2 text-decoration-none py-2 px-3">Hà Nội</a>
+                <a href="{% url 'travel:search' %}?q=TP Hồ Chí Minh" class="badge bg-light text-dark me-2 text-decoration-none py-2 px-3">TP Hồ Chí Minh</a>
+                <a href="{% url 'travel:search' %}?q=Đà Nẵng" class="badge bg-light text-dark me-2 text-decoration-none py-2 px-3">Đà Nẵng</a>
+                <a href="{% url 'travel:search' %}?q=Đà Lạt" class="badge bg-light text-dark me-2 text-decoration-none py-2 px-3">Đà Lạt</a>
+            </div>
         </div>
 
+    </section>
+
+    <!-- Code của Thanh -->
+    <!-- Lịch sử tìm kiếm - Section riêng -->
+    <section id="searchHistorySection" class="search-history-section py-3 d-none">
+        <div class="container">
+            <div class="search-history-card bg-white rounded-4 shadow-sm p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fa-solid fa-clock-rotate-left text-primary me-2"></i>Tìm kiếm gần đây
+                    </h5>
+                    <button type="button" class="btn btn-outline-danger btn-sm" id="clearAllHistory">
+                        <i class="fa-solid fa-trash-can me-1"></i>Xóa tất cả
+                    </button>
+                </div>
+                <div id="searchHistoryList" class="d-flex flex-wrap gap-2"></div>
+            </div>
+        </div>
     </section>
 
     <!-- Danh mục du lịch -->
@@ -126,48 +165,48 @@
             <div class="row g-4 justify-content-center">
                 
                 <div class="col-6 col-sm-4 col-md-2">
-                    <a href="{% url 'category_filter' %}?category={{ 'Du lịch và biển đảo'|urlencode }}" class="text-decoration-none text-dark d-block category-link">                        <i class="fa-solid fa-umbrella-beach fa-2x text-info"></i>
+                    <a href="{% url 'travel:category_filter' %}?category={{ 'Du lịch và biển đảo'|urlencode }}" class="text-decoration-none text-dark d-block category-link">                        <i class="fa-solid fa-umbrella-beach fa-2x text-info"></i>
                         <p class="mt-3 fw-semibold">Biển & Đảo</p>
                     </a>
                 </div>
                 
                 <div class="col-6 col-sm-4 col-md-2">
-                    <a href="{% url 'category_filter' %}?category={{ 'Núi & Cao nguyên'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
+                    <a href="{% url 'travel:category_filter' %}?category={{ 'Núi & Cao nguyên'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
                         <i class="fa-solid fa-mountain fa-2x text-info"></i>
                         <p class="mt-3 fw-semibold">Núi &nbsp;& Cao nguyên</p>
                     </a>
                 </div>
                 
                 <div class="col-6 col-sm-4 col-md-2">
-                    <a href="{% url 'category_filter' %}?category={{ 'Văn hóa - Lịch sử'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
+                    <a href="{% url 'travel:category_filter' %}?category={{ 'Văn hóa - Lịch sử'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
                         <i class="fa-solid fa-landmark fa-2x text-info"></i>
                         <p class="mt-3 fw-semibold">Văn hóa &nbsp;- Lịch sử</p>
                     </a>
                 </div>
                 
                 <div class="col-6 col-sm-4 col-md-2">
-                    <a href="{% url 'category_filter' %}?category={{ 'Du lịch - Sinh thái'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
+                    <a href="{% url 'travel:category_filter' %}?category={{ 'Du lịch - Sinh thái'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
                         <i class="fa-solid fa-leaf fa-2x text-info"></i>
                         <p class="mt-3 fw-semibold">Du lịch &nbsp;- Sinh thái</p>
                     </a>
                 </div>
                 
                 <div class="col-6 col-sm-4 col-md-2">
-                    <a href="{% url 'category_filter' %}?category={{ 'Ẩm thực - chợ đêm'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
+                    <a href="{% url 'travel:category_filter' %}?category={{ 'Ẩm thực - chợ đêm'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
                         <i class="fa-solid fa-utensils fa-2x text-info"></i>
                         <p class="mt-3 fw-semibold">Ẩm thực &nbsp;- Chợ đêm</p>
                     </a>
                 </div>
                 
                 <div class="col-6 col-sm-4 col-md-2">
-                    <a href="{% url 'category_filter' %}?category={{ 'Lễ hội - sự kiện'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
+                    <a href="{% url 'travel:category_filter' %}?category={{ 'Lễ hội - sự kiện'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
                         <i class="fa-solid fa-gift fa-2x text-info"></i>
                         <p class="mt-3 fw-semibold">Lễ hội &nbsp;- Sự kiện</p>
                     </a>
                 </div>
                 
                 <div class="col-6 col-sm-4 col-md-2">
-                    <a href="{% url 'category_filter' %}?category={{ 'Nghỉ dưỡng - thư giãn'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
+                    <a href="{% url 'travel:category_filter' %}?category={{ 'Nghỉ dưỡng - thư giãn'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
                         <i class="fa-solid fa-hotel fa-2x text-info"></i>
                         <p class="mt-3 fw-semibold">Nghỉ dưỡng</p>
                     </a>
@@ -177,15 +216,15 @@
         </div>
     </section>
 
-    <!-- Thêm phần đề xuất -->
+    <!-- Thêm phần đề xuất tour của Hạnh -->
     {% if recommendations %}
     <div id="recommendationsSection" class="recommendations-section mt-5">
-        <h3 class="fw-bold mb-3">Đề xuất dành riêng cho bạn</h3>
+        <h3 class="fw-bold mb-3">Đề xuất tour dành riêng cho bạn</h3>
 
         <div class="row g-4">
             {% for tour in recommendations %}
             <div class="col-lg-3 col-md-4 col-sm-6">
-                <a href="{% url 'tour_detail' tour_slug=tour.slug %}"
+                <a href="{% url 'travel:tour_detail' tour_slug=tour.slug %}"
                    class="card tour-card shadow-sm border-0 rounded-xl overflow-hidden d-flex flex-column h-100">
 
                     <!-- ẢNH -->
@@ -239,6 +278,13 @@
     </div>
     {% endif %}
 
+    <!-- Code của Thanh -->
+    <!-- Gợi ý cá nhân hóa theo destination (cần làm lại vì khác db) -->
+
+    <!-- Code của Thanh -->
+    <!-- Địa điểm được gợi ý cao (cần làm lại vì khác db) -->
+
+    <!-- Destination giả lập (sửa lại cái này để làm 2 chức năng AI bên trên) -->
     <section class="container py-5">
         <h2 class="text-center mb-4 fw-bold">Một số địa điểm tham quan nổi tiếng tại Hà Nội</h2>
 
@@ -637,8 +683,8 @@
     });
 </script>
 
+<!-- // Xử lý nút "Khám phá ngay" -->
 <script>
-    // Xử lý nút "Khám phá ngay"
     document.querySelectorAll(".btn-outline-primary").forEach((btn) => {
         btn.addEventListener("click", (e) => {
             const card = e.target.closest(".card");
@@ -673,79 +719,51 @@
     });
 </script>
 
-<script>
-    // Khi rê chuột vào hình → chạy slideshow
-    document.querySelectorAll('.image-wrapper').forEach(wrapper => {
-        let slides = wrapper.querySelectorAll('.slide');
-        let index = 0;
-        let interval;
-
-        function showSlide(n) {
-            slides.forEach(s => s.classList.remove('active'));
-            slides[n].classList.add('active');
-        }
-
-        // Bắt đầu slideshow khi hover
-        wrapper.addEventListener('mouseenter', () => {
-            interval = setInterval(() => {
-                index = (index + 1) % slides.length;
-                showSlide(index);
-            }, 2000);
-        });
-
-        // Dừng slideshow khi rời chuột
-        wrapper.addEventListener('mouseleave', () => {
-            clearInterval(interval);
-            index = 0;
-            showSlide(index);
-        });
-
-        // Điều khiển nút trái/phải
-        wrapper.querySelector('.prev').addEventListener('click', () => {
-            index = (index - 1 + slides.length) % slides.length;
-            showSlide(index);
-        });
-
-        wrapper.querySelector('.next').addEventListener('click', () => {
-            index = (index + 1) % slides.length;
-            showSlide(index);
-        });
-    });
-</script>
-
+<!-- ===== SLIDESHOW ===== -->
 <script>
     document.querySelectorAll('.image-wrapper').forEach(wrapper => {
         const slides = wrapper.querySelectorAll('.slide');
+        const prevBtn = wrapper.querySelector('.prev');
+        const nextBtn = wrapper.querySelector('.next');
         let index = 0;
         let interval;
 
         function showSlide(n) {
+            if (slides.length === 0) return;
             slides.forEach(s => s.classList.remove('active'));
             slides[n].classList.add('active');
         }
 
+        // Tự động chạy khi hover
         wrapper.addEventListener('mouseenter', () => {
+            if (slides.length <= 1) return; // Không chạy nếu chỉ có 1 ảnh
             interval = setInterval(() => {
                 index = (index + 1) % slides.length;
                 showSlide(index);
-            }, 10000);
+            }, 3000); // 3 giây chuyển 1 lần
         });
 
+        // Dừng và quay về ảnh đầu khi rời chuột
         wrapper.addEventListener('mouseleave', () => {
             clearInterval(interval);
             index = 0;
             showSlide(index);
         });
 
-        wrapper.querySelector('.prev').addEventListener('click', () => {
-            index = (index - 1 + slides.length) % slides.length;
-            showSlide(index);
-        });
+        // Nút bấm thủ công
+        if (prevBtn && nextBtn) {
+            prevBtn.addEventListener('click', (e) => {
+                e.preventDefault(); // Chặn chuyển trang nếu nằm trong thẻ <a>
+                index = (index - 1 + slides.length) % slides.length;
+                showSlide(index);
+            });
 
-        wrapper.querySelector('.next').addEventListener('click', () => {
-            index = (index + 1) % slides.length;
-            showSlide(index);
-        });
+            nextBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                index = (index + 1) % slides.length;
+                showSlide(index);
+            });
+        }
     });
 </script>
 
@@ -928,7 +946,7 @@
     });
 </script>
 
-<!---->
+<!-- Xử lý phần lấy thông tin đề xuất tour -->
 <script>
     document.getElementById('savePreferencesBtn').addEventListener('click', async () => {
         // Tìm đoạn script xử lý savePreferencesBtn

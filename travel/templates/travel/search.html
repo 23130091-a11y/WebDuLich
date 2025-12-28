@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="vi">
+{% load static %}
+{% load currency_filters %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tìm kiếm - Web Du Lịch</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS Libraries -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/modern-ui.css' %}">
+    <link rel="stylesheet" href="{% static 'css/search.css' %}">
+</head>
+
+<body class="search-page-body">
+<header class="header sticky-top bg-white shadow-sm">
+    <div class="container">
+        <nav class="navbar navbar-expand-lg px-4 py-2">
+            <a class="navbar-brand fw-bold text-primary" href="{% url 'travel:home' %}">
+                <i class="fa-solid fa-plane-departure me-2"></i>Du Lịch Việt
+            </a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'travel:home' %}">
+                        <i class="fa-solid fa-home me-1"></i>Trang chủ
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active fw-bold" href="{% url 'travel:search' %}">
+                        <i class="fa-solid fa-search me-1"></i>Tìm kiếm
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<main class="py-5">
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-dark mb-2">Khám phá hành trình tiếp theo của bạn</h2>
+            <p class="text-muted">Tìm kiếm và khám phá những địa điểm tuyệt vời trên khắp Việt Nam</p>
+        </div>
+
+        <!-- Search Card -->
+        <div class="card search-card bg-white mb-4">
+            <div class="card-body p-4">
+                <form method="GET" action="{% url 'travel:search' %}" id="searchForm">
+                    <div class="row g-3 align-items-end">
+                        <!-- Ô tìm kiếm chính -->
+                        <div class="col-lg-4 col-md-6">
+                            <label class="form-label small fw-bold text-muted">
+                                <i class="bi bi-geo-alt me-1"></i>Bạn muốn đi đâu?
+                            </label>
+                            <div class="position-relative">
+                                <input type="text" name="q" class="form-control search-input" 
+                                       id="searchDestination" placeholder="Nhập tên địa điểm..."
+                                       value="{{ query }}" autocomplete="off">
+                                <div id="searchSuggestions" class="autocomplete-box"></div>
+                            </div>
+                        </div>
+
+                        <!-- Ngày đi -->
+                        <div class="col-lg-2 col-md-6">
+                            <label class="form-label small fw-bold text-muted">
+                                <i class="bi bi-calendar-event me-1"></i>Ngày khởi hành
+                            </label>
+                            <input type="date" name="travel_date" class="form-control search-input" 
+                                   id="travelDate" value="{{ filters.travel_date }}">
+                        </div>
+
+                        <!-- Xuất phát từ -->
+                        <div class="col-lg-3 col-md-6">
+                            <label class="form-label small fw-bold text-muted">
+                                <i class="bi bi-airplane me-1"></i>Xuất phát từ
+                            </label>
+                            <div class="position-relative">
+                                <input type="text" name="from_location" class="form-control search-input" 
+                                       id="fromLocation" placeholder="VD: Hà Nội, TP.HCM..."
+                                       value="{{ filters.from_location }}" autocomplete="off">
+                                <div id="fromSuggestions" class="autocomplete-box"></div>
+                            </div>
+                        </div>
+
+                        <!-- Nút tìm kiếm -->
+                        <div class="col-lg-3 col-md-6">
+                            <label class="form-label small fw-bold text-muted d-none d-lg-block">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary btn-search shadow w-100">
+                                <i class="bi bi-search me-1"></i> TÌM KIẾM
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Toggle bộ lọc nâng cao -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <span class="text-muted small">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Tìm thấy <strong>{{ total_results }}</strong> địa điểm
+                        </span>
+                        <a class="filter-toggle text-primary fw-semibold" data-bs-toggle="collapse" 
+                           href="#advancedFilters" role="button" aria-expanded="false">
+                            <i class="bi bi-sliders me-1"></i> Bộ lọc nâng cao
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Bộ lọc nâng cao -->
+            <div class="collapse advanced-filter" id="advancedFilters">
+                <div class="card-body p-4 pt-2 border-top">
+                    <form method="GET" action="{% url 'travel:search' %}" id="advancedForm">
+                        <!-- Giữ lại các giá trị từ form chính -->
+                        <input type="hidden" name="q" value="{{ query }}">
+                        <input type="hidden" name="travel_date" value="{{ filters.travel_date }}">
+                        <input type="hidden" name="from_location" value="{{ filters.from_location }}">
+                        
+                        <div class="row g-3">
+                            <!-- Vị trí -->
+                            <div class="col-md-3">
+                                <label class="form-label text-muted small fw-bold text-uppercase">
+                                    <i class="bi bi-geo me-1"></i>Vị trí
+                                </label>
+                                <select name="location" class="form-select filter-select">
+                                    <option value="">Tất cả vị trí</option>
+                                    {% for loc in all_locations %}
+                                    <option value="{{ loc }}" {% if filters.location == loc %}selected{% endif %}>
+                                        {{ loc }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Loại hình -->
+                            <div class="col-md-3">
+                                <label class="form-label text-muted small fw-bold text-uppercase">
+                                    <i class="bi bi-flag me-1"></i>Loại hình
+                                </label>
+                                <select name="type" class="form-select filter-select">
+                                    <option value="">Tất cả loại hình</option>
+                                    {% for type in all_types %}
+                                    <option value="{{ type }}" {% if filters.travel_type == type %}selected{% endif %}>
+                                        {{ type }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Khoảng giá -->
+                            <div class="col-md-3">
+                                <label class="form-label text-muted small fw-bold text-uppercase">
+                                    <i class="bi bi-cash me-1"></i>Giá tối đa
+                                </label>
+                                <select name="max_price" class="form-select filter-select">
+                                    <option value="">Tất cả mức giá</option>
+                                    <option value="500000" {% if filters.max_price == '500000' %}selected{% endif %}>
+                                        Dưới 500.000đ
+                                    </option>
+                                    <option value="1000000" {% if filters.max_price == '1000000' %}selected{% endif %}>
+                                        Dưới 1.000.000đ
+                                    </option>
+                                    <option value="2000000" {% if filters.max_price == '2000000' %}selected{% endif %}>
+                                        Dưới 2.000.000đ
+                                    </option>
+                                    <option value="5000000" {% if filters.max_price == '5000000' %}selected{% endif %}>
+                                        Dưới 5.000.000đ
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Đánh giá -->
+                            <div class="col-md-3">
+                                <label class="form-label text-muted small fw-bold text-uppercase">
+                                    <i class="bi bi-star me-1"></i>Đánh giá
+                                </label>
+                                <select name="min_rating" class="form-select filter-select">
+                                    <option value="">Tất cả đánh giá</option>
+                                    <option value="5" {% if filters.min_rating == '5' %}selected{% endif %}>
+                                        ⭐⭐⭐⭐⭐ (5 sao)
+                                    </option>
+                                    <option value="4" {% if filters.min_rating == '4' %}selected{% endif %}>
+                                        ⭐⭐⭐⭐ trở lên
+                                    </option>
+                                    <option value="3" {% if filters.min_rating == '3' %}selected{% endif %}>
+                                        ⭐⭐⭐ trở lên
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end mt-3 gap-2">
+                            <a href="{% url 'travel:search' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i>Xóa bộ lọc
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-funnel me-1"></i>Áp dụng bộ lọc
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thông tin đường đi và thời tiết -->
+        {% if route_info or weather_info %}
+        <div class="card trip-info-card mb-4">
+            <div class="card-body p-4">
+                <div class="row">
+                    {% if route_info %}
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-start">
+                            <div class="trip-icon bg-primary text-white rounded-circle p-3 me-3">
+                                <i class="bi bi-signpost-2 fs-4"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-2">Thông tin đường đi</h5>
+                                <p class="mb-1 text-muted">
+                                    <i class="bi bi-geo-alt text-primary"></i> 
+                                    <strong>Từ:</strong> {{ filters.from_location }}
+                                </p>
+                                <p class="mb-2 text-muted">
+                                    <i class="bi bi-geo-alt-fill text-danger"></i> 
+                                    <strong>Đến:</strong> {{ query|default:filters.location }}
+                                </p>
+                                <div class="d-flex gap-4">
+                                    <div class="text-center">
+                                        <div class="fs-4 fw-bold text-primary">{{ route_info.distance_km }}</div>
+                                        <small class="text-muted">km</small>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="fs-4 fw-bold text-success">{{ route_info.duration_hours }}</div>
+                                        <small class="text-muted">giờ</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if weather_info and not weather_info.error %}
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-start">
+                            <div class="trip-icon bg-warning text-white rounded-circle p-3 me-3">
+                                <i class="bi bi-cloud-sun fs-4"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-2">Dự báo thời tiết</h5>
+                                <p class="mb-1">
+                                    <span class="fs-3 me-2">{{ weather_info.icon }}</span>
+                                    <strong>{{ weather_info.weather_desc }}</strong>
+                                </p>
+                                <div class="d-flex gap-3 flex-wrap">
+                                    <span class="badge bg-light text-dark">
+                                        🌡️ {{ weather_info.temp_min }}°C - {{ weather_info.temp_max }}°C
+                                    </span>
+                                    <span class="badge bg-light text-dark">
+                                        💧 {{ weather_info.precipitation }}mm
+                                    </span>
+                                    <span class="badge bg-light text-dark">
+                                        💨 {{ weather_info.windspeed }}km/h
+                                    </span>
+                                </div>
+                                <small class="text-muted mt-1 d-block">Ngày: {{ weather_info.date }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Kết quả tìm kiếm -->
+        <div class="results-section">
+            <!-- Header kết quả -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h4 class="fw-bold mb-1">
+                        {% if filters.travel_type %}
+                            <i class="bi bi-tag text-primary me-2"></i>
+                            Danh mục: <span class="text-primary">{{ filters.travel_type }}</span>
+                        {% elif query %}
+                            <i class="bi bi-search text-primary me-2"></i>
+                            Kết quả cho "<span class="text-primary">{{ query }}</span>"
+                        {% else %}
+                            <i class="bi bi-map text-primary me-2"></i>
+                            Tất cả địa điểm
+                        {% endif %}
+                    </h4>
+                    <p class="text-muted mb-0 small">
+                        Hiển thị {{ destinations|length }} trong tổng số {{ total_results }} địa điểm
+                    </p>
+                </div>
+                
+                {% if filters.travel_type or query or filters.location %}
+                <a href="{% url 'travel:search' %}" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-x-circle me-1"></i>Xóa tất cả bộ lọc
+                </a>
+                {% endif %}
+            </div>
+
+            {% if destinations %}
+            <div class="row g-4">
+                {% for dest in destinations %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="card destination-card h-100">
+                        <div class="position-relative overflow-hidden">
+                            {% if dest.image %}
+                            <img src="{{ dest.image.url }}" class="card-img-top destination-img" 
+                                 alt="{{ dest.name }}">
+                            {% else %}
+                            <div class="card-img-top destination-img bg-gradient d-flex align-items-center justify-content-center">
+                                <i class="bi bi-image text-white fs-1"></i>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Overlay gradient -->
+                            <div class="img-overlay"></div>
+                            
+                            <!-- Badge điểm -->
+                            {% if dest.recommendation %}
+                            <div class="score-badge">
+                                <span class="score-number">{{ dest.recommendation.overall_score|floatformat:0 }}</span>
+                                <span class="score-text">điểm</span>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Badge loại hình -->
+                            <span class="type-badge">
+                                <i class="bi bi-tag-fill me-1"></i>{{ dest.travel_type }}
+                            </span>
+                        </div>
+                        
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">{{ dest.name }}</h5>
+                            <p class="text-muted small mb-2">
+                                <i class="bi bi-geo-alt-fill text-primary"></i> {{ dest.location }}
+                            </p>
+                            
+                            {% if dest.recommendation %}
+                            <div class="rating-section mb-2">
+                                <span class="stars">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= dest.recommendation.avg_rating %}
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                        {% else %}
+                                        <i class="bi bi-star text-muted"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </span>
+                                <span class="text-muted small ms-2">
+                                    ({{ dest.recommendation.total_reviews }} đánh giá)
+                                </span>
+                            </div>
+                            {% endif %}
+                            
+                            <p class="card-text text-muted small mb-3">
+                                {{ dest.description|truncatewords:15 }}
+                            </p>
+                            
+                            {% if dest.avg_price %}
+                            <div class="price-section mb-3">
+                                <span class="price-label">Giá tham khảo:</span>
+                                <span class="price-value">{{ dest.avg_price|vnd_format }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            <a href="{% url 'travel:destination_detail' dest.id %}?from_location={{ filters.from_location }}&travel_date={{ filters.travel_date }}" 
+                               class="btn btn-primary w-100">
+                                <i class="bi bi-eye me-1"></i>Xem chi tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Phân trang -->
+            {% if destinations.has_other_pages %}
+            <nav class="mt-5">
+                <ul class="pagination justify-content-center">
+                    {% if destinations.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?q={{ query }}&location={{ filters.location }}&type={{ filters.travel_type }}&page={{ destinations.previous_page_number }}">
+                            <i class="bi bi-chevron-left"></i> Trước
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in destinations.paginator.page_range %}
+                    <li class="page-item {% if destinations.number == num %}active{% endif %}">
+                        <a class="page-link" href="?q={{ query }}&location={{ filters.location }}&type={{ filters.travel_type }}&page={{ num }}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                    
+                    {% if destinations.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?q={{ query }}&location={{ filters.location }}&type={{ filters.travel_type }}&page={{ destinations.next_page_number }}">
+                            Sau <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <!-- Không có kết quả -->
+            <div class="no-results text-center py-5">
+                <div class="no-results-icon mb-4">
+                    <i class="bi bi-search fs-1 text-muted"></i>
+                </div>
+                <h4 class="fw-bold text-dark mb-2">Không tìm thấy địa điểm nào</h4>
+                <p class="text-muted mb-4">
+                    Hãy thử tìm kiếm với từ khóa khác hoặc điều chỉnh bộ lọc
+                </p>
+                <div class="d-flex justify-content-center gap-2">
+                    <a href="{% url 'travel:search' %}" class="btn btn-primary">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Xem tất cả địa điểm
+                    </a>
+                    <a href="{% url 'travel:home' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-house me-1"></i>Về trang chủ
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</main>
+
+<footer class="footer mt-5">
+    <div class="footer-container">
+        <div class="footer-col">
+            <h3>Hỗ trợ</h3>
+            <ul>
+                <li>Chính sách khách hàng</li>
+                <li>Chính sách bảo mật</li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h3>Về chúng tôi</h3>
+            <ul>
+                <li>Giới thiệu</li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h3>Kết nối</h3>
+            <p>Hotline: 10101010</p>
+            <div class="footer-icons">
+                <i class="bi bi-facebook"></i>
+                <i class="bi bi-instagram"></i>
+                <i class="bi bi-tiktok"></i>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+// ===== AUTOCOMPLETE CHO TÌM KIẾM =====
+const searchInput = document.getElementById('searchDestination');
+const searchSuggestions = document.getElementById('searchSuggestions');
+let searchTimeout;
+
+searchInput.addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    const query = this.value.trim();
+    
+    if (query.length < 1) {
+        searchSuggestions.style.display = 'none';
+        return;
+    }
+    
+    searchTimeout = setTimeout(() => {
+        fetch(`/api/search/?q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+                displaySuggestions(data.results, query, searchSuggestions, searchInput);
+            })
+            .catch(err => console.error('Error:', err));
+    }, 300);
+});
+
+// Autocomplete cho vị trí xuất phát
+const fromInput = document.getElementById('fromLocation');
+const fromSuggestions = document.getElementById('fromSuggestions');
+let fromTimeout;
+
+fromInput.addEventListener('input', function() {
+    clearTimeout(fromTimeout);
+    const query = this.value.trim();
+    
+    if (query.length < 1) {
+        fromSuggestions.style.display = 'none';
+        return;
+    }
+    
+    fromTimeout = setTimeout(() => {
+        fetch(`/api/provinces/?q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+                displayProvinceSuggestions(data.provinces, fromInput, fromSuggestions);
+            })
+            .catch(err => console.error('Error:', err));
+    }, 200);
+});
+
+function displaySuggestions(results, query, container, input) {
+    container.innerHTML = '';
+    
+    if (results.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+    
+    results.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'autocomplete-item';
+        div.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fw-semibold">${item.name}</div>
+                    <small class="text-muted">
+                        <i class="bi bi-geo-alt"></i> ${item.location}
+                        <span class="ms-2"><i class="bi bi-tag"></i> ${item.travel_type}</span>
+                    </small>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-success">${item.score} điểm</span>
+                    <div class="text-warning small">
+                        ${'★'.repeat(Math.round(item.avg_rating))}${'☆'.repeat(5 - Math.round(item.avg_rating))}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        div.addEventListener('click', () => {
+            input.value = item.name;
+            container.style.display = 'none';
+        });
+        
+        container.appendChild(div);
+    });
+    
+    container.style.display = 'block';
+}
+
+function displayProvinceSuggestions(provinces, input, container) {
+    container.innerHTML = '';
+    
+    if (provinces.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+    
+    provinces.forEach(province => {
+        const div = document.createElement('div');
+        div.className = 'autocomplete-item';
+        
+        // Tạo icon
+        const icon = document.createElement('i');
+        icon.className = 'bi bi-geo-alt text-primary me-2';
+        
+        // Tạo text node (không dùng innerHTML để tránh vấn đề spacing)
+        const textSpan = document.createElement('span');
+        textSpan.textContent = province;
+        textSpan.style.whiteSpace = 'nowrap';
+        
+        div.appendChild(icon);
+        div.appendChild(textSpan);
+        
+        div.addEventListener('click', () => {
+            input.value = province;
+            container.style.display = 'none';
+        });
+        
+        container.appendChild(div);
+    });
+    
+    container.style.display = 'block';
+}
+
+// Đóng suggestions khi click bên ngoài
+document.addEventListener('click', (e) => {
+    if (!searchInput.contains(e.target) && !searchSuggestions.contains(e.target)) {
+        searchSuggestions.style.display = 'none';
+    }
+    if (!fromInput.contains(e.target) && !fromSuggestions.contains(e.target)) {
+        fromSuggestions.style.display = 'none';
+    }
+});
+
+// Giới hạn ngày tối thiểu là hôm nay
+const travelDateInput = document.getElementById('travelDate');
+const today = new Date().toISOString().split('T')[0];
+travelDateInput.setAttribute('min', today);
+
+// Giới hạn tối đa 7 ngày
+const maxDate = new Date();
+maxDate.setDate(maxDate.getDate() + 7);
+travelDateInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
+
+
+</script>
+
+</body>
+</html>
