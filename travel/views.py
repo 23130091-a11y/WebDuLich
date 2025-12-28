@@ -1,18 +1,23 @@
+import math
 import os
 import urllib.parse
-import datetime
 from django.conf import settings
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
-from django.db.models import Q
+from django.db.models import Q, Max, Count
 from django.utils.text import slugify
-import urllib.parse 
-import datetime
-from decimal import Decimal 
-from django.utils.text import slugify
-from users.models import TravelPreference
 
-from .models import TourPackage, Category, Destination
+from datetime import datetime, date
+
+from users.models import TravelPreference
+from .services import get_weather_forecast, get_route, get_location_coordinates
+from django.core.paginator import Paginator
+from .models import TourPackage, Category, Destination, SearchHistory, Review
+import bleach
+
+from .cache_utils import get_cache_key, get_or_set_cache
+from django.views.decorators.http import require_http_methods, require_POST
+from django_ratelimit.decorators import ratelimit
 
 # ----------------------------
 # Hàm chuẩn hóa tên Category
@@ -93,8 +98,8 @@ def normalize_category_name(name: str) -> str | None:
         if all(tok in normalized for tok in tokens):
             return target
 
-    return name
-
+    return None
+    ###
 # ----------------------------
 # Bản đồ tags cho từng Category
 # ----------------------------
@@ -280,11 +285,11 @@ def category_detail(request):
     if destination:
         qs = qs.filter(destination__name__icontains=destination)
 
-    today = datetime.date.today()
+    today = date.today()
     selected_date = None
     if date_str:
         try:
-            selected_date = datetime.date.fromisoformat(date_str)
+            selected_date = date.fromisoformat(date_str)
             qs = qs.filter(
                 start_date__lte=selected_date,
                 end_date__gte=selected_date
@@ -292,7 +297,7 @@ def category_detail(request):
         except ValueError:
             selected_date = date_str
     elif availability == 'today':
-        today = datetime.date.today()
+        today = date.today()
         qs = qs.filter(
             start_date__lte=today,
             end_date__gte=today
@@ -319,19 +324,6 @@ def category_detail(request):
         qs = qs.order_by('-id')
     else:
         qs = qs.order_by('-destination__score')
-
-    if category_obj:
-             qs = qs.filter(Q(category=category_obj) | Q(destination__category=category_obj))
-             display_category_name = category_obj.name
-    else:
-        if category_tags_list:
-            q_tags = Q()
-            for t in category_tags_list:
-                q_tags |= Q(tags__slug__iexact=t["slug"])
-            qs = qs.filter(q_tags).distinct()
-            print(f"DEBUG fallback tags filter used, count={len(category_tags_list)}")
-        else:
-            print("DEBUG no category_obj and no raw_tags from MAP")
 
     # Lọc theo rating
     rating_min = request.GET.get('rating_min')
@@ -406,25 +398,440 @@ def tour_detail(request, tour_slug):
         'related_tours': related_tours,
     }
     return render(request, 'travel/tour_detail.html', context)
-    
-    # Đảm bảo bạn có file template 'travel/tour_detail.html'
-    return render(request, 'travel/tour_detail.html', context)
 
+# Cần sửa lại (destination chưa hoàn thiện nên để đỡ)
 def destination_detail(request, slug):
     # Lấy destination theo slug, nếu không có sẽ trả về 404
     destination = get_object_or_404(Destination, slug=slug)
 
     # Có thể thêm logic gợi ý tours liên quan nếu muốn
-    related_tours = destination.tourpackage_set.all()[:4]  # 4 tour liên quan
+    related_tours = destination.packages.all()[:4]  # 4 tour liên quan
 
     return render(request, 'travel/destination_detail.html', {
         'destination': destination,
         'related_tours': related_tours,
     })
-
+# Cần sửa lại (destination chưa hoàn thiện nên để đỡ)
 def destination_list(request):
     qs = Destination.objects.all().order_by('-score')
 
     return render(request, 'travel/destination_list.html', {
         'destinations': qs
+    })
+
+# Thanh
+
+def get_client_ip(request):
+    """Lấy IP của client"""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+# Search chưa hoàn tất do destination thiếu thuộc tính
+def search(request):
+    from .ai_engine import search_destinations  # import trễ
+    """Trang tìm kiếm nâng cao với thời tiết và đường đi"""
+    query = request.GET.get('q', '').strip()
+    from_location = request.GET.get('from_location', '').strip()
+    location_filter = request.GET.get('location', '').strip()  # Đổi tên để tránh nhầm lẫn
+    travel_date = request.GET.get('travel_date', '').strip()
+    travel_type = request.GET.get('type', '').strip()
+    max_price = request.GET.get('max_price', '').strip()
+    min_rating = request.GET.get('min_rating', '').strip()
+
+    # Xây dựng filters
+    filters = {}
+    # Chỉ filter theo location nếu người dùng chọn từ dropdown, không phải từ query
+    if location_filter:
+        filters['location'] = location_filter
+    if travel_type:
+        filters['travel_type'] = travel_type
+    if max_price:
+        try:
+            filters['max_price'] = float(max_price)
+        except ValueError:
+            pass
+    if min_rating:
+        try:
+            filters['min_rating'] = float(min_rating)
+        except ValueError:
+            pass
+
+    # Tìm kiếm địa điểm - chỉ dùng query, không dùng location_filter
+    destinations = search_destinations(query, filters)
+
+    # Lưu lịch sử tìm kiếm theo IP
+    if query:
+        SearchHistory.objects.create(
+            query=query,
+            user_ip=get_client_ip(request),
+            results_count=len(destinations)
+        )
+
+    # Thông tin đường đi và thời tiết
+    route_info = None
+    weather_info = None
+    from_coords = None
+
+# Destination chưa có các thuộc tính bên dưới nên cmt
+    # if from_location and len(destinations) > 0:
+    #     # Lấy tọa độ điểm xuất phát
+    #     from_coords = get_location_coordinates(from_location)
+    #
+    #     if from_coords:
+    #         # Tính đường đi đến địa điểm đầu tiên
+    #         first_dest = destinations[0] if destinations else None
+    #         if first_dest and first_dest.latitude and first_dest.longitude:
+    #             route_info = get_route(
+    #                 from_coords['lat'], from_coords['lon'],
+    #                 first_dest.latitude, first_dest.longitude
+    #             )
+    #
+    #             # Lấy thời tiết cho ngày đi
+    #             if travel_date:
+    #                 try:
+    #                     date_obj = datetime.strptime(travel_date, '%Y-%m-%d')
+    #                     weather_info = get_weather_forecast(
+    #                         first_dest.latitude,
+    #                         first_dest.longitude,
+    #                         travel_date
+    #                     )
+    #                 except:
+    #                     pass
+
+    # Phân trang
+    paginator = Paginator(destinations, 12)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    # Lấy danh sách locations và types (optimized - only fetch needed fields)
+    all_locations = Destination.objects.values_list('location', flat=True).distinct().order_by('location')
+    all_types = Destination.objects.values_list('travel_type', flat=True).distinct().order_by('travel_type')
+
+    context = {
+        'query': query,
+        'destinations': page_obj,
+        'total_results': len(destinations),
+        'all_locations': all_locations,
+        'all_types': all_types,
+        'filters': {
+            'from_location': from_location,
+            'location': location_filter,
+            'travel_date': travel_date,
+            'travel_type': travel_type,
+            'max_price': max_price,
+            'min_rating': min_rating,
+        },
+        'route_info': route_info,
+        'weather_info': weather_info,
+        'from_coords': from_coords,
+    }
+
+    return render(request, 'travel/search.html', context)
+
+def calculate_distance(lat1, lon1, lat2, lon2):
+    """
+    Tính khoảng cách giữa 2 điểm (Haversine formula)
+    Trả về khoảng cách tính bằng km
+    """
+    R = 6371  # Bán kính trái đất (km)
+
+    lat1_rad = math.radians(lat1)
+    lat2_rad = math.radians(lat2)
+    delta_lat = math.radians(lat2 - lat1)
+    delta_lon = math.radians(lon2 - lon1)
+
+    a = math.sin(delta_lat/2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(delta_lon/2)**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+
+    distance = R * c
+    return round(distance, 2)
+
+@require_POST
+@ratelimit(key='ip', rate='30/m', method='POST', block=True)
+def api_vote_review(request):
+    """API vote review helpful/not helpful"""
+    import json
+
+    if request.content_type == 'application/json':
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    else:
+        data = request.POST
+
+    review_id = data.get('review_id')
+    vote_type = data.get('vote_type')  # 'helpful' or 'not_helpful'
+
+    if not review_id or vote_type not in ['helpful', 'not_helpful']:
+        return JsonResponse({'error': 'Invalid parameters'}, status=400)
+
+    try:
+        from .models import ReviewVote
+
+        review = Review.objects.get(id=int(review_id))
+        client_ip = get_client_ip(request)
+        user = request.user if request.user.is_authenticated else None
+
+        # Check if already voted (by IP or user)
+        existing_vote = ReviewVote.objects.filter(
+            review=review,
+            user_ip=client_ip
+        ).first()
+
+        if user:
+            existing_vote = ReviewVote.objects.filter(
+                review=review,
+                user=user
+            ).first() or existing_vote
+
+        if existing_vote:
+            # Update existing vote
+            old_type = existing_vote.vote_type
+            if old_type == vote_type:
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Bạn đã vote rồi',
+                    'helpful_count': review.helpful_count,
+                    'not_helpful_count': review.not_helpful_count,
+                })
+
+            # Change vote
+            existing_vote.vote_type = vote_type
+            existing_vote.save()
+
+            # Update counts
+            if old_type == 'helpful':
+                review.helpful_count = max(0, review.helpful_count - 1)
+                review.not_helpful_count += 1
+            else:
+                review.not_helpful_count = max(0, review.not_helpful_count - 1)
+                review.helpful_count += 1
+        else:
+            # Create new vote
+            ReviewVote.objects.create(
+                review=review,
+                user=user,
+                user_ip=client_ip,
+                vote_type=vote_type
+            )
+
+            if vote_type == 'helpful':
+                review.helpful_count += 1
+            else:
+                review.not_helpful_count += 1
+
+        review.save()
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Cảm ơn phản hồi của bạn!',
+            'helpful_count': review.helpful_count,
+            'not_helpful_count': review.not_helpful_count,
+        })
+
+    except Review.DoesNotExist:
+        return JsonResponse({'error': 'Review không tồn tại'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@require_POST
+@ratelimit(key='ip', rate='5/h', method='POST', block=True)
+def api_report_review(request):
+    """API báo cáo review không phù hợp"""
+    import json
+
+    if request.content_type == 'application/json':
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    else:
+        data = request.POST
+
+    review_id = data.get('review_id')
+    reason = data.get('reason')
+    description = data.get('description', '')
+
+    valid_reasons = ['spam', 'inappropriate', 'fake', 'other']
+    if not review_id or reason not in valid_reasons:
+        return JsonResponse({'error': 'Invalid parameters'}, status=400)
+
+    try:
+        from .models import ReviewReport
+
+        review = Review.objects.get(id=int(review_id))
+        client_ip = get_client_ip(request)
+        user = request.user if request.user.is_authenticated else None
+
+        # Check if already reported by this IP
+        existing_report = ReviewReport.objects.filter(
+            review=review,
+            reporter_ip=client_ip
+        ).exists()
+
+        if existing_report:
+            return JsonResponse({
+                'success': True,
+                'message': 'Bạn đã báo cáo review này rồi'
+            })
+
+        # Create report
+        ReviewReport.objects.create(
+            review=review,
+            reporter_ip=client_ip,
+            reporter_user=user,
+            reason=reason,
+            description=bleach.clean(description)[:500]
+        )
+
+        # Update report count
+        review.report_count += 1
+
+        # Auto-hide if too many reports
+        if review.report_count >= 3:
+            review.status = Review.STATUS_PENDING
+
+        review.save()
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Cảm ơn bạn đã báo cáo. Chúng tôi sẽ xem xét.'
+        })
+
+    except Review.DoesNotExist:
+        return JsonResponse({'error': 'Review không tồn tại'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+# API endpoints (cho AJAX requests)
+@ratelimit(key='ip', rate='30/m', method='GET', block=True)
+def api_search(request):
+    query = bleach.clean(request.GET.get('q', '').strip())[:100]
+
+    if not query:
+        return JsonResponse({'results': []})
+
+    cache_key = get_cache_key('api_search', query=query.lower()[:5])
+
+    def perform_search():
+        from .utils_helpers import normalize_search_text
+
+        destinations = Destination.objects.select_related('recommendation').filter(
+            Q(name__icontains=query) |
+            Q(location__icontains=query)
+        ).only(
+            'id', 'name', 'location', 'travel_type', 'avg_price',
+            'recommendation__overall_score',
+            'recommendation__avg_rating'
+        )[:50]
+
+        query_normalized = normalize_search_text(query)
+
+        matching_destinations = []
+        for dest in destinations:
+            if (
+                    query_normalized in normalize_search_text(dest.name)
+                    or query_normalized in normalize_search_text(dest.location)
+            ):
+                matching_destinations.append(dest)
+
+        matching_destinations.sort(
+            key=lambda x: x.recommendation.overall_score if x.recommendation else 0,
+            reverse=True
+        )
+        matching_destinations = matching_destinations[:10]
+
+        results = []
+        for dest in matching_destinations:
+            rec = dest.recommendation
+            results.append({
+                'id': dest.id,
+                'name': dest.name,
+                'location': dest.location,
+                'travel_type': dest.travel_type,
+                'score': round(rec.overall_score, 1) if rec else 0,
+                'avg_rating': round(rec.avg_rating, 1) if rec else 0,
+                'avg_price': float(dest.avg_price) if dest.avg_price else None,
+            })
+
+        return results
+
+    return JsonResponse({
+        'results': get_or_set_cache(
+            cache_key,
+            perform_search,
+            timeout=settings.CACHE_TTL['search']
+        )
+    })
+
+@ratelimit(key='ip', rate='30/m', method='GET', block=True)
+def api_search_provinces(request):
+    """API tìm kiếm tỉnh thành (cho autocomplete) với rate limiting"""
+    query = request.GET.get('q', '').strip()
+    query = bleach.clean(query)[:100]
+
+    from .utils_helpers import search_provinces
+
+    provinces = search_provinces(query)
+
+    return JsonResponse({'provinces': provinces})
+
+@ratelimit(key='ip', rate='30/m', method='GET', block=True)
+def api_search_history(request):
+    """API lấy lịch sử tìm kiếm theo IP (không cần đăng nhập)"""
+    client_ip = get_client_ip(request)
+    limit = int(request.GET.get('limit', 10))
+
+    # Lấy lịch sử tìm kiếm gần đây theo IP (unique queries)
+    history = SearchHistory.objects.filter(
+        user_ip=client_ip
+    ).values('query').annotate(
+        last_search=Max('created_at'),
+        search_count=Count('id')
+    ).order_by('-last_search')[:limit]
+
+    results = [{
+        'query': item['query'],
+        'last_search': item['last_search'].strftime('%d/%m/%Y %H:%M'),
+        'search_count': item['search_count']
+    } for item in history]
+
+    return JsonResponse({'history': results, 'has_history': len(results) > 0})
+
+@require_http_methods(["POST"])
+@ratelimit(key='ip', rate='10/m', method='POST', block=True)
+def api_delete_search_history(request):
+    """API xóa lịch sử tìm kiếm theo IP"""
+    client_ip = get_client_ip(request)
+
+    # Hỗ trợ cả POST form và JSON body
+    if request.content_type == 'application/json':
+        import json
+        try:
+            data = json.loads(request.body)
+            query = data.get('query', '').strip()
+            delete_all = data.get('delete_all', False)
+        except:
+            query = ''
+            delete_all = False
+    else:
+        query = request.POST.get('query', '').strip()
+        delete_all = request.POST.get('delete_all', 'false') == 'true'
+
+    if delete_all:
+        deleted_count, _ = SearchHistory.objects.filter(user_ip=client_ip).delete()
+    elif query:
+        deleted_count, _ = SearchHistory.objects.filter(user_ip=client_ip, query=query).delete()
+    else:
+        return JsonResponse({'error': 'Thiếu tham số'}, status=400)
+
+    return JsonResponse({
+        'success': True,
+        'deleted_count': deleted_count,
+        'message': 'Đã xóa lịch sử tìm kiếm'
     })
