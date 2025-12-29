@@ -40,6 +40,9 @@ class LoginView(APIView) :
         email = request.data.get("email", None)
         password = request.data.get("password", None)
 
+        if not email or not password:
+            raise AuthenticationFailed("Thiếu email hoặc mật khẩu")
+
         user = User.objects.filter(email=email).first()
 
         if user and user.check_password(password):
@@ -95,6 +98,25 @@ def save_preferences(request):
     TravelPreference.objects.bulk_create(objs)
 
     return Response({"detail": "Preferences saved"})
+
+
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def get_preferences(request):
+#     print("request.user:", request.user, type(request.user))
+#     try:
+#         user = User.objects.get(id=request.user.id)
+#     except User.DoesNotExist:
+#         return Response({"error": "User not found"}, status=404)
+#
+#     prefs = TravelPreference.objects.filter(user=user)
+#     travel_types = list(set(p.travel_type for p in prefs))
+#     locations = list(set(p.location for p in prefs))
+#     return Response({
+#         "travelTypes": travel_types,
+#         "locations": locations
+#     })
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

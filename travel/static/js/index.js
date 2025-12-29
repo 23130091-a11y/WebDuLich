@@ -8,6 +8,18 @@ const searchHistorySection = document.getElementById('searchHistorySection');
 const searchHistoryList = document.getElementById('searchHistoryList');
 const clearAllHistoryBtn = document.getElementById('clearAllHistory');
 
+const loginForm = document.getElementById('loginForm');
+const registerForm = document.getElementById('registerForm');
+const preferencesForm = document.getElementById('preferencesForm');
+const modalTitle = document.getElementById('modalTitle');
+
+function hideAllForms() {
+    if (loginForm) loginForm.classList.add('d-none');
+    if (registerForm) registerForm.classList.add('d-none');
+    if (preferencesForm) preferencesForm.classList.add('d-none');
+}
+
+
 // Load lịch sử tìm kiếm khi trang load (theo IP, không cần đăng nhập)
 function loadSearchHistory() {
     if (!searchHistorySection) return;
@@ -31,6 +43,7 @@ function loadSearchHistory() {
 
 // Hiển thị lịch sử tìm kiếm
 function displaySearchHistory(history) {
+    if (!searchHistoryList) return;
     searchHistoryList.innerHTML = '';
     
     history.forEach(item => {
@@ -228,7 +241,8 @@ if (quickSearchInput) {
     });
 }
 
-function displayQuickSuggestions(results, query) {
+function displayQuickSuggestions(results = [], query) {
+    if (!quickSuggestions) return;
     quickSuggestions.innerHTML = '';
     
     if (results.length === 0) {
@@ -245,7 +259,8 @@ function displayQuickSuggestions(results, query) {
         
         let displayName = item.name;
         if (nameNormalized.includes(queryNormalized)) {
-            const regex = new RegExp(`(${query})`, 'gi');
+            const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(`(${escapedQuery})`, 'gi');
             displayName = item.name.replace(regex, '<strong class="text-primary">$1</strong>');
         }
         
@@ -259,7 +274,7 @@ function displayQuickSuggestions(results, query) {
                     </small>
                 </div>
                 <div class="text-end">
-                    <span class="badge bg-success">${item.score} điểm</span>
+                    <span class="badge bg-success">${item.score ?? 0} điểm</span>
                     <div class="text-warning small">
                         ${'★'.repeat(Math.round(item.avg_rating))}${'☆'.repeat(5 - Math.round(item.avg_rating))}
                     </div>
@@ -394,7 +409,232 @@ if (travelDateInput) {
 
 // ===== KHỞI TẠO KHI TRANG LOAD =====
 document.addEventListener('DOMContentLoaded', () => {
-    // checkAuthStatus();
+    checkAuthStatus();
     loadSearchHistory();
     setupEmailSuggestions();
 });
+
+// ===== ĐĂNG KÝ / ĐĂNG NHẬP =====
+
+// Đăng nhập
+const loginBtn = document.getElementById('loginBtn');
+if (loginBtn) {
+    loginBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+
+        if (!email || !password) {
+            showAlert('Vui lòng nhập đầy đủ email và mật khẩu');
+            return;
+        }
+
+        const btn = e.target;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang đăng nhập...';
+
+        try {
+            const response = await fetch('/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify({email, password})
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                // Lưu thông tin đăng nhập
+                localStorage.setItem('access', data.tokens.access);
+                localStorage.setItem('refresh', data.tokens.refresh);
+                localStorage.setItem('user', JSON.stringify(data.user));
+
+                // Lưu email để gợi ý lần sau
+                saveRecentEmail(email);
+
+                showAlert('Đăng nhập thành công!', 'success');
+
+                // Đóng modal và cập nhật UI
+                const modal = bootstrap.Modal.getInstance(document.getElementById('authModal'));
+                if (modal) modal.hide();
+
+                checkAuthStatus();
+                loadSearchHistory();
+            } else {
+                showAlert(data.detail || 'Email hoặc mật khẩu không đúng');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-right-to-bracket me-2"></i>Đăng nhập';
+            }
+        } catch (err) {
+            showAlert('Lỗi kết nối server');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-right-to-bracket me-2"></i>Đăng nhập';
+        }
+    });
+}
+
+// Đăng ký
+const registerBtn = document.getElementById('registerBtn');
+if (registerBtn) {
+    registerBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('registerUsername').value;
+        const email = document.getElementById('registerEmail').value;
+        const password = document.getElementById('registerPassword').value;
+        const confirmPassword = document.getElementById('registerConfirmPassword').value;
+
+        // Validation
+        if (!username || !email || !password || !confirmPassword) {
+            showAlert('Vui lòng nhập đầy đủ thông tin');
+            return;
+        }
+        if (password !== confirmPassword) {
+            showAlert('Mật khẩu xác nhận không khớp');
+            return;
+        }
+        if (password.length < 6) {
+            showAlert('Mật khẩu phải có ít nhất 6 ký tự');
+            return;
+        }
+
+        const btn = e.target;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang đăng ký...';
+
+        try {
+            const response = await fetch('/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify({username, email, password})
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                // Lưu thông tin đăng nhập
+                localStorage.setItem('access', data.tokens.access);
+                localStorage.setItem('refresh', data.tokens.refresh);
+                localStorage.setItem('user', JSON.stringify(data.user));
+
+                // Lưu email để gợi ý lần sau
+                saveRecentEmail(email);
+
+                showAlert('Đăng ký thành công!', 'success');
+                hideAllForms();
+                if (preferencesForm) preferencesForm.classList.remove('d-none');
+                if (modalTitle) modalTitle.textContent = 'Chọn sở thích';
+            } else {
+                showAlert(data.detail || data.email?.[0] || data.username?.[0] || 'Đăng ký thất bại');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-user-plus me-2"></i>Đăng ký';
+            }
+        } catch (err) {
+            showAlert('Lỗi kết nối server');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-user-plus me-2"></i>Đăng ký';
+        }
+    });
+}
+
+// Lưu sở thích
+const savePreferencesBtn = document.getElementById('savePreferencesBtn');
+if (savePreferencesBtn) {
+    savePreferencesBtn.addEventListener('click', async () => {
+        const travelTypes = Array.from(document.querySelectorAll('input[name="travelType"]:checked')).map(el => el.value);
+        const locations = Array.from(document.querySelectorAll('input[name="locations"]:checked')).map(el => el.value);
+
+        if (travelTypes.length === 0 || locations.length === 0) {
+            showAlert('Vui lòng chọn ít nhất 1 loại hình và 1 địa điểm');
+            return;
+        }
+
+        const accessToken = localStorage.getItem('access');
+        if (!accessToken) {
+            showAlert('Vui lòng đăng nhập lại');
+            return;
+        }
+
+        try {
+            const response = await fetch('/auth/preferences', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`,
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify({ travelTypes, locations })
+            });
+
+            if (response.ok) {
+                showAlert('Đã lưu sở thích!', 'success');
+                const modal = bootstrap.Modal.getInstance(document.getElementById('authModal'));
+                if (modal) modal.hide();
+                checkAuthStatus();
+                loadSearchHistory();
+            } else {
+                showAlert('Không thể lưu sở thích');
+            }
+        } catch (err) {
+            console.error('Error saving preferences:', err);
+        }
+    });
+}
+
+// Đăng xuất
+function logout() {
+    localStorage.removeItem('access');
+    localStorage.removeItem('refresh');
+    localStorage.removeItem('user');
+    window.location.reload();
+}
+
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        logout();
+    });
+}
+
+// Thanh
+// ===== KIỂM TRA TRẠNG THÁI ĐĂNG NHẬP =====
+function hasValidAuth() {
+    return !!localStorage.getItem('access');
+}
+
+function checkAuthStatus() {
+    const user = localStorage.getItem('user');
+    const authButtons = document.getElementById('authButtons');
+    const userInfo = document.getElementById('userInfo');
+    const userDisplayName = document.getElementById('userDisplayName');
+    const userEmail = document.getElementById('userEmail');
+
+    if (user && hasValidAuth()) {
+        try {
+            const userData = JSON.parse(user);
+
+            if (authButtons) authButtons.classList.add('d-none');
+            if (userInfo) userInfo.classList.remove('d-none');
+
+            if (userDisplayName) {
+                userDisplayName.textContent =
+                    userData.username ||
+                    (userData.email ? userData.email.split('@')[0] : 'User');
+            }
+
+            if (userEmail) userEmail.textContent = userData.email || '';
+        } catch (e) {
+            console.error('Invalid user data:', e);
+            localStorage.clear();
+            if (authButtons) authButtons.classList.remove('d-none');
+            if (userInfo) userInfo.classList.add('d-none');
+        }
+    } else {
+        localStorage.removeItem('user');
+        if (authButtons) authButtons.classList.remove('d-none');
+        if (userInfo) userInfo.classList.add('d-none');
+    }
+}
