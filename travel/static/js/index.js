@@ -8,17 +8,6 @@ const searchHistorySection = document.getElementById('searchHistorySection');
 const searchHistoryList = document.getElementById('searchHistoryList');
 const clearAllHistoryBtn = document.getElementById('clearAllHistory');
 
-const loginForm = document.getElementById('loginForm');
-const registerForm = document.getElementById('registerForm');
-const preferencesForm = document.getElementById('preferencesForm');
-const modalTitle = document.getElementById('modalTitle');
-
-function hideAllForms() {
-    if (loginForm) loginForm.classList.add('d-none');
-    if (registerForm) registerForm.classList.add('d-none');
-    if (preferencesForm) preferencesForm.classList.add('d-none');
-}
-
 
 // Load lịch sử tìm kiếm khi trang load (theo IP, không cần đăng nhập)
 function loadSearchHistory() {
@@ -407,14 +396,52 @@ if (travelDateInput) {
     travelDateInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
 }
 
-// ===== KHỞI TẠO KHI TRANG LOAD =====
-document.addEventListener('DOMContentLoaded', () => {
-    checkAuthStatus();
-    loadSearchHistory();
-    setupEmailSuggestions();
-});
 
+// Thanh
 // ===== ĐĂNG KÝ / ĐĂNG NHẬP =====
+const loginForm = document.getElementById('loginForm');
+const registerForm = document.getElementById('registerForm');
+const preferencesForm = document.getElementById('preferencesForm');
+const modalTitle = document.getElementById('modalTitle');
+
+const authAlert = document.getElementById('authAlert');
+
+// Hàm hiển thị thông báo
+function showAlert(message, type = 'danger') {
+    if (!authAlert) return;
+    authAlert.className = `alert alert-${type}`;
+    authAlert.innerHTML = `<i class="fa-solid fa-${type === 'danger' ? 'exclamation-circle' : 'check-circle'} me-2"></i>${message}`;
+    authAlert.classList.remove('d-none');
+    setTimeout(() => authAlert.classList.add('d-none'), 5000);
+}
+
+function hideAllForms() {
+    if (loginForm) loginForm.classList.add('d-none');
+    if (registerForm) registerForm.classList.add('d-none');
+    if (preferencesForm) preferencesForm.classList.add('d-none');
+}
+
+// Chuyển sang form đăng ký
+const showRegisterLink = document.getElementById('showRegisterLink');
+if (showRegisterLink) {
+    showRegisterLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        hideAllForms();
+        registerForm.classList.remove('d-none');
+        modalTitle.textContent = 'Đăng ký tài khoản';
+    });
+}
+
+// Chuyển sang form đăng nhập
+const showLoginLink = document.getElementById('showLoginLink');
+if (showLoginLink) {
+    showLoginLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        hideAllForms();
+        loginForm.classList.remove('d-none');
+        modalTitle.textContent = 'Đăng nhập';
+    });
+}
 
 // Đăng nhập
 const loginBtn = document.getElementById('loginBtn');
@@ -429,7 +456,7 @@ if (loginBtn) {
             return;
         }
 
-        const btn = e.target;
+        const btn = e.currentTarget;
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang đăng nhập...';
 
@@ -438,7 +465,6 @@ if (loginBtn) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': getCsrfToken()
                 },
                 body: JSON.stringify({email, password})
             });
@@ -455,7 +481,6 @@ if (loginBtn) {
 
                 showAlert('Đăng nhập thành công!', 'success');
 
-                // Đóng modal và cập nhật UI
                 const modal = bootstrap.Modal.getInstance(document.getElementById('authModal'));
                 if (modal) modal.hide();
 
@@ -498,7 +523,7 @@ if (registerBtn) {
             return;
         }
 
-        const btn = e.target;
+        const btn = e.currentTarget;
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang đăng ký...';
 
@@ -507,7 +532,6 @@ if (registerBtn) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': getCsrfToken()
                 },
                 body: JSON.stringify({username, email, password})
             });
@@ -519,10 +543,11 @@ if (registerBtn) {
                 localStorage.setItem('refresh', data.tokens.refresh);
                 localStorage.setItem('user', JSON.stringify(data.user));
 
+                showAlert('Đăng ký thành công! Vui lòng chọn sở thích', 'success');
+
                 // Lưu email để gợi ý lần sau
                 saveRecentEmail(email);
 
-                showAlert('Đăng ký thành công!', 'success');
                 hideAllForms();
                 if (preferencesForm) preferencesForm.classList.remove('d-none');
                 if (modalTitle) modalTitle.textContent = 'Chọn sở thích';
@@ -563,15 +588,21 @@ if (savePreferencesBtn) {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${accessToken}`,
-                    'X-CSRFToken': getCsrfToken()
                 },
                 body: JSON.stringify({ travelTypes, locations })
             });
+
+            if (response.status === 401) {
+                showAlert('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại');
+                logout();
+                return;
+            }
 
             if (response.ok) {
                 showAlert('Đã lưu sở thích!', 'success');
                 const modal = bootstrap.Modal.getInstance(document.getElementById('authModal'));
                 if (modal) modal.hide();
+
                 checkAuthStatus();
                 loadSearchHistory();
             } else {
@@ -583,23 +614,32 @@ if (savePreferencesBtn) {
     });
 }
 
-// Đăng xuất
-function logout() {
-    localStorage.removeItem('access');
-    localStorage.removeItem('refresh');
-    localStorage.removeItem('user');
-    window.location.reload();
-}
+// ===== MỞ MODAL ĐĂNG NHẬP / ĐĂNG KÝ =====
+const showLoginBtn = document.getElementById('showLoginBtn');
+const showRegisterBtn = document.getElementById('showRegisterBtn');
 
-const logoutBtn = document.getElementById('logoutBtn');
-if (logoutBtn) {
-    logoutBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        logout();
+// Mở modal với form đăng nhập
+if (showLoginBtn) {
+    showLoginBtn.addEventListener('click', () => {
+        hideAllForms();
+        if (loginForm) loginForm.classList.remove('d-none');
+        if (modalTitle) modalTitle.textContent = 'Đăng nhập';
+        const authModal = new bootstrap.Modal(document.getElementById('authModal'));
+        authModal.show();
     });
 }
 
-// Thanh
+// Mở modal với form đăng ký
+if (showRegisterBtn) {
+    showRegisterBtn.addEventListener('click', () => {
+        hideAllForms();
+        if (registerForm) registerForm.classList.remove('d-none');
+        if (modalTitle) modalTitle.textContent = 'Đăng ký tài khoản';
+        const authModal = new bootstrap.Modal(document.getElementById('authModal'));
+        authModal.show();
+    });
+}
+
 // ===== KIỂM TRA TRẠNG THÁI ĐĂNG NHẬP =====
 function hasValidAuth() {
     return !!localStorage.getItem('access');
@@ -633,8 +673,43 @@ function checkAuthStatus() {
             if (userInfo) userInfo.classList.add('d-none');
         }
     } else {
+        localStorage.removeItem('access');
+        localStorage.removeItem('refresh');
         localStorage.removeItem('user');
         if (authButtons) authButtons.classList.remove('d-none');
         if (userInfo) userInfo.classList.add('d-none');
     }
 }
+
+// Đăng xuất
+async function logout() {
+    const refresh = localStorage.getItem('refresh');
+
+    if (refresh) {
+        await fetch('/auth/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ refresh })
+        });
+    }
+
+    localStorage.clear();
+    window.location.reload();
+}
+
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        logout();
+    });
+}
+
+// ===== KHỞI TẠO KHI TRANG LOAD =====
+document.addEventListener('DOMContentLoaded', () => {
+    checkAuthStatus();
+    loadSearchHistory();
+    setupEmailSuggestions();
+});

@@ -3,14 +3,14 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import User, TravelPreference
+from .models import TravelPreference
 from .serializers import UserSerializer
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth import login # Import thêm
+from django.contrib.auth import authenticate, get_user_model # Import thêm
 
 # Create your views here.
 class RegisterView(APIView) :
@@ -35,23 +35,33 @@ class RegisterView(APIView) :
             "message": "Đăng ký thành công, vui lòng chọn sở thích du lịch"
         }, status=status.HTTP_201_CREATED)
 
-class LoginView(APIView) :
+
+User = get_user_model()
+
+class LoginView(APIView):
     def post(self, request):
-        email = request.data.get("email", None)
-        password = request.data.get("password", None)
+        email = request.data.get("email")
+        password = request.data.get("password")
 
         if not email or not password:
-            raise AuthenticationFailed("Thiếu email hoặc mật khẩu")
+            return Response(
+                {"detail": "Thiếu email hoặc mật khẩu"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        user = User.objects.filter(email=email).first()
-
-        if user and user.check_password(password):
-            login(request, user) # <--- THÊM DÒNG NÀY để tạo Session cho trình duyệt
-
-        if user is None or not user.check_password(password):
+        try:
+            user_obj = User.objects.get(email=email)
+        except User.DoesNotExist:
             raise AuthenticationFailed("Email hoặc mật khẩu không đúng")
 
-        # Tạo token
+        user = authenticate(
+            username=user_obj.email,   # 🔥 KEY POINT
+            password=password
+        )
+
+        if user is None:
+            raise AuthenticationFailed("Email hoặc mật khẩu không đúng")
+
         refresh = RefreshToken.for_user(user)
 
         return Response({
@@ -64,7 +74,7 @@ class LoginView(APIView) :
                 "refresh": str(refresh),
                 "access": str(refresh.access_token)
             }
-        })
+        }, status=status.HTTP_200_OK)
 
 #
 @api_view(['POST'])
@@ -121,11 +131,6 @@ def save_preferences(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout_view(request):
-    try:
-        refresh_token = request.data["refresh"]
-        token = RefreshToken(refresh_token)
-        token.blacklist()
-    except Exception:
-        return Response({"error": "Invalid token"}, status=400)
-
-    return Response({"message": "Logged out"})
+    refresh_token = request.data["refresh"]
+    token = RefreshToken(refresh_token)
+    token.blacklist()
