@@ -524,15 +524,20 @@
     </div>
 </footer>
 
+<!-- Thanh sửa lại tối ưu phần đăng ký và đăng nhập -->
 <!-- Modal đăng ký/đăng nhập -->
 <div class="modal fade" id="authModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content p-4 border-0">
 
             <!-- Header modal -->
-            <div class="modal-header border-0 p-0 mb-3">
-                <h5 id="modalTitle" class="modal-title">Đăng nhập</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header border-0 text-white py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="w-100 text-center">
+                    <i class="fa-solid fa-plane-departure fa-2x mb-2"></i>
+                    <h4 id="modalTitle" class="modal-title mb-0 fw-bold">Đăng nhập</h4>
+                    <p class="mb-0 small opacity-75">Chào mừng bạn đến với Du Lịch Việt</p>
+                </div>
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"></button>
             </div>
 
             <!-- Body modal -->
@@ -541,43 +546,88 @@
                 <!-- Form Đăng nhập -->
                 <div id="loginForm">
                     <div class="mb-3">
-                        <label for="loginEmail" class="form-label">Email đăng nhập</label>
-                        <input type="email" class="form-control" id="loginEmail" name="email" placeholder="Email">
+                        <label for="loginEmail" class="form-label fw-semibold">
+                            <i class="fa-solid fa-envelope text-muted me-1"></i>
+                            Email
+                        </label>
+                        <input type="email" class="form-control form-control-lg" id="loginEmail"
+                               placeholder="Nhập email của bạn" style="border-radius: 10px;">
                     </div>
+
                     <div class="mb-3">
-                        <label for="loginPassword" class="form-label">Mật khẩu</label>
-                        <input type="password" name="password" id="loginPassword" class="form-control" placeholder="Mật khẩu">
+                        <label for="loginPassword" class="form-label fw-semibold">
+                            <i class="fa-solid fa-lock text-muted me-1"></i>
+                            Mật khẩu
+                        </label>
+                        <div class="input-group">
+                            <input type="password" class="form-control form-control-lg" id="loginPassword"
+                                   placeholder="Nhập mật khẩu" style="border-radius: 10px 0 0 10px;">
+                            <button class="btn btn-outline-secondary" type="button" id="toggleLoginPassword"
+                                    style="border-radius: 0 10px 10px 0;">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
                     </div>
-                    <div class="mb-3 text-center fs-4">
-                        <span>Bạn chưa có tài khoản? </span>
-                        <a href="#" id="showRegisterLink">Đăng ký</a>
+
+                    <button id="loginBtn" class="btn btn-primary btn-lg w-100 mb-3" style="border-radius: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                        <i class="fa-solid fa-right-to-bracket me-2"></i>
+                        Đăng nhập
+                    </button>
+
+                    <div class="text-center">
+                        <span class="text-muted">Chưa có tài khoản? </span>
+                        <a href="#" id="showRegisterLink" class="fw-semibold text-decoration-none">Đăng ký ngay</a>
                     </div>
-                    <button id="loginBtn" class="btn btn-primary w-100">Đăng nhập</button>
                 </div>
 
                 <!-- Form Đăng ký -->
                 <div id="registerForm" class="d-none">
                     <div class="mb-3">
-                        <label for="registerUsername" class="form-label">Tên hiển thị</label>
-                        <input type="text" name="username" id="registerUsername" class="form-control" placeholder="Nhập tên hiển thị">
+                        <label for="registerUsername" class="form-label fw-semibold">
+                            <i class="fa-solid fa-user text-muted me-1"></i>
+                            Tên hiển thị
+                        </label>
+                        <input type="text" class="form-control form-control-lg" id="registerUsername"
+                               placeholder="Nhập tên của bạn" style="border-radius: 10px;">
                     </div>
+
                     <div class="mb-3">
-                        <label for="registerEmail" class="form-label">Email đăng ký</label>
-                        <input type="email" name="email" id="registerEmail" class="form-control" placeholder="Email">
+                        <label for="registerEmail" class="form-label fw-semibold">
+                            <i class="fa-solid fa-envelope text-muted me-1"></i>
+                            Email
+                        </label>
+                        <input type="email" class="form-control form-control-lg" id="registerEmail"
+                               placeholder="Nhập email của bạn" style="border-radius: 10px;">
                     </div>
+
                     <div class="mb-3">
-                        <label for="registerPassword" class="form-label">Mật khẩu</label>
-                        <input type="password" name="password" id="registerPassword" class="form-control" placeholder="Mật khẩu">
+                        <label for="registerPassword" class="form-label fw-semibold">
+                            <i class="fa-solid fa-lock text-muted me-1"></i>
+                            Mật khẩu
+                        </label>
+
+                        <input type="password" class="form-control form-control-lg" id="registerPassword"
+                               placeholder="Tối thiểu 6 ký tự" style="border-radius: 10px 0 0 10px;">
                     </div>
+
                     <div class="mb-3">
-                        <label for="registerConfirmPassword" class="form-label">Nhập lại mật khẩu</label>
-                        <input type="password" name="confirm_password" id="registerConfirmPassword" class="form-control" placeholder="Nhập lại mật khẩu">
+                        <label for="registerConfirmPassword" class="form-label fw-semibold">
+                            <i class="fa-solid fa-lock text-muted me-1"></i>
+                            Xác nhận mật khẩu
+                        </label>
+                        <input type="password" class="form-control form-control-lg" id="registerConfirmPassword"
+                               placeholder="Nhập lại mật khẩu" style="border-radius: 10px;">
                     </div>
-                    <div class="mb-3 text-center fs-4">
-                        <span>Bạn đã có tài khoản? </span>
-                        <a href="#" id="showLoginLink">Đăng nhập</a>
+
+                    <button id="registerBtn" class="btn btn-success btn-lg w-100 mb-3" style="border-radius: 10px;">
+                        <i class="fa-solid fa-user-plus me-2"></i>
+                        Đăng ký
+                    </button>
+
+                    <div class="text-center">
+                        <span class="text-muted">Đã có tài khoản? </span>
+                        <a href="#" id="showLoginLink" class="fw-semibold text-decoration-none">Đăng nhập</a>
                     </div>
-                    <button id="registerBtn" class="btn btn-primary w-100">Đăng ký</button>
                 </div>
 
                 <!-- Form Sở thích / Địa điểm -->
@@ -588,15 +638,15 @@
                         <label class="form-label fw-semibold">Loại hình du lịch yêu thích:</label>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="travelType" value="Biển & Đảo" id="prefSea">
-                            <label class="form-check-label" for="prefSea">Biển & Đảo</label>
+                            <label class="form-check-label" for="prefSea">Biển</label>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="travelType" value="Núi & Cao nguyên" id="prefMountain">
-                            <label class="form-check-label" for="prefMountain">Núi & Cao nguyên</label>
+                            <label class="form-check-label" for="prefMountain">Núi</label>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="travelType" value="Nghỉ dưỡng" id="prefResort">
-                            <label class="form-check-label" for="prefResort">Nghỉ dưỡng & Thư giãn</label>
+                            <label class="form-check-label" for="prefResort">Nghỉ dưỡng</label>
                         </div>
                     </div>
 
@@ -763,235 +813,6 @@
                 index = (index + 1) % slides.length;
                 showSlide(index);
             });
-        }
-    });
-</script>
-
-<!-- Script chuyển popup cho modal -->
-<script>
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-    const modalTitle = document.getElementById('modalTitle');
-
-    document.getElementById('showRegisterLink').addEventListener('click', (e) => {
-        e.preventDefault();
-        loginForm.classList.add('d-none');
-        registerForm.classList.remove('d-none');
-        modalTitle.textContent = 'Đăng ký';
-    });
-
-    document.getElementById('showLoginLink').addEventListener('click', (e) => {
-        e.preventDefault();
-        registerForm.classList.add('d-none');
-        loginForm.classList.remove('d-none');
-        modalTitle.textContent = 'Đăng nhập';
-    });
-
-</script>
-
-<!-- Xử lý đăng ký đăng nhập -->
-<script>
-        // Đăng nhập
-        document.getElementById('loginBtn').addEventListener('click', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-
-            try {
-                const response = await fetch('/auth/login', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({email, password})
-                });
-                const data = await response.json();
-
-                if (response.ok) {
-                    // Lưu token đúng
-                    localStorage.setItem('access', data.tokens.access);
-                    localStorage.setItem('refresh', data.tokens.refresh);
-
-                    localStorage.setItem('user', JSON.stringify(data.user));
-
-                    alert('Đăng nhập thành công!');
-
-                    window.location.reload();  // reload để cập nhật UI
-                } else {
-                    alert(data.detail || data.error || 'Đăng nhập thất bại');
-                }
-            } catch (err) {
-                alert('Lỗi kết nối server: ' + err);
-            }
-        });
-
-        // Đăng ký
-        document.getElementById('registerBtn').addEventListener('click', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('registerUsername').value;
-            const email = document.getElementById('registerEmail').value;
-            const password = document.getElementById('registerPassword').value;
-            const confirmPassword = document.getElementById('registerConfirmPassword').value;
-
-            if (password !== confirmPassword) {
-                alert('Mật khẩu và xác nhận mật khẩu không trùng khớp!');
-                return;
-            }
-
-            // Check độ dài password
-            if (password.length < 6) {
-                alert('Mật khẩu phải có ít nhất 6 ký tự!');
-                return;
-            }
-
-            try {
-                const response = await fetch('/auth/register', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({email, password, username})
-                });
-                const data = await response.json();
-
-                if (response.ok) {
-                    // --- Lưu token vào localStorage ---
-                    localStorage.setItem('access', data.tokens.access);
-                    localStorage.setItem('refresh', data.tokens.refresh);
-
-                    alert('Đăng ký thành công!');
-
-                    document.getElementById('registerForm').classList.add('d-none');
-                    document.getElementById('preferencesForm').classList.remove('d-none');
-                    document.getElementById('modalTitle').textContent = 'Bạn muốn đến đâu?';
-                } else {
-                    alert(JSON.stringify(data));
-                }
-            } catch (err) {
-                alert('Lỗi kết nối server: ' + err);
-            }
-        });
-
-</script>
-
-<!-- Làm phần hiển thị user sau đăng nhập và đăng xuất -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const userText = document.getElementById('userText');
-        const userBtn = document.getElementById('userBtn');
-        const userDropdown = document.getElementById('userDropdown');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const userDataRaw = localStorage.getItem('user');
-        const categorySection = document.getElementById('categorySection');
-        const recommendationsSection = document.getElementById('recommendationsSection');
-
-        // 1. Ẩn mặc định
-        categorySection.style.display = 'none';
-        if (recommendationsSection) recommendationsSection.style.display = 'none';
-
-        let usernameToShow = "Đăng ký / Đăng nhập";
-
-        if (userDataRaw) {
-            try {
-                const user = JSON.parse(userDataRaw);
-                if (user.username) {
-                    usernameToShow = user.username;
-                }
-            } catch (err) {
-                console.error("Lỗi parse user từ localStorage:", err);
-            }
-        }
-
-        userText.textContent = usernameToShow;
-
-        if (usernameToShow !== "Đăng ký / Đăng nhập") {
-            // Show section khi login
-            categorySection.style.display = 'block';
-            if (recommendationsSection) recommendationsSection.style.display = 'block';
-
-            // Bỏ modal, setup dropdown logout
-            userText.removeAttribute('data-bs-toggle');
-            userText.removeAttribute('data-bs-target');
-
-            userText.addEventListener('click', (e) => {
-                e.stopPropagation();
-                userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block';
-            });
-
-            logoutBtn.addEventListener('click', async (e) => {
-                e.preventDefault();
-
-                const refresh = localStorage.getItem('refresh');
-
-                await fetch("/api/logout/", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${localStorage.getItem('access')}`
-                    },
-                    body: JSON.stringify({ refresh })
-                });
-
-                localStorage.clear();
-                window.location.reload();
-            });
-
-            document.addEventListener('click', (e) => {
-                if (!userBtn.contains(e.target)) {
-                    userDropdown.style.display = 'none';
-                }
-            });
-
-        } else {
-            // Chưa login -> mở modal
-            userText.setAttribute('data-bs-toggle', 'modal');
-            userText.setAttribute('data-bs-target', '#authModal');
-        }
-    });
-</script>
-
-<!-- Xử lý phần lấy thông tin đề xuất tour -->
-<script>
-    document.getElementById('savePreferencesBtn').addEventListener('click', async () => {
-        // Tìm đoạn script xử lý savePreferencesBtn
-        const travelTypes = [];
-        // Lấy tất cả các checkbox travelType đã check
-        document.querySelectorAll('input[name="travelType"]:checked').forEach(el => {
-            travelTypes.push(el.value);
-        });
-
-        const locations = [];
-        // Lấy tất cả các checkbox locations đã check
-        document.querySelectorAll('input[name="locations"]:checked').forEach(el => {
-            locations.push(el.value);
-        });
-
-        if (travelTypes.length === 0 || locations.length === 0) {
-            alert('Bạn cần chọn ít nhất một loại hình du lịch và một địa điểm!');
-            return;
-        }
-
-        try {
-            const accessToken = localStorage.getItem('access')
-
-            const response = await fetch('/auth/preferences', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
-                },
-                body: JSON.stringify({ travelTypes, locations })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                alert('Lưu sở thích thành công!');
-                document.getElementById('preferencesForm').classList.add('d-none');
-
-                // Chuyển trang
-                window.location.href = '/';
-            } else {
-                alert('Lỗi lưu sở thích: ' + JSON.stringify(data));
-            }
-        } catch (err) {
-            alert('Lỗi kết nối server: ' + err);
         }
     });
 </script>

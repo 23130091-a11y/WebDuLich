@@ -6,15 +6,20 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'email', 'password', 'avatar', 'username')
+        fields = ('id', 'username', 'email', 'password', 'avatar') #
 
-    def create(self, validated_data):
-        password = validated_data.pop('password')
-        # Lấy username từ validated_data trực tiếp
-        user = User(**validated_data)
-        user.set_password(password)
-        user.save()
-        return user
+        def create(self, validated_data):
+            # Tự tạo username nếu không có
+            username = validated_data.get('username') or validated_data['email'].split('@')[0]
+
+            user = User(
+                email=validated_data['email'],
+                username=username,
+                avatar=validated_data.get('avatar')
+            )
+            user.set_password(validated_data['password'])  # hash password
+            user.save()
+            return user
 
 class UserPreferenceSerializer(serializers.ModelSerializer):
     class Meta:
