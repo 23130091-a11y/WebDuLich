@@ -1,0 +1,373 @@
+{% extends "travel/baseIndex.html" %}
+{% load static %}
+
+{% block title %}Hồ sơ của tôi{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* KHUNG BAO NGOÀI */
+    .profile-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        background: transparent;
+        padding: 0;
+    }
+
+    /* --- CỘT TRÁI (AVATAR) --- */
+    .profile-sidebar {
+        text-align: center;
+        border-right: 1px solid #ced4da;
+        padding-right: 15px;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .avatar-circle {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        color: white;
+        font-size: 64px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-transform: uppercase;
+    }
+
+
+    /*.change-avatar-btn {*/
+    /*    font-size: 0.9rem;*/
+    /*    color: #0d6efd;*/
+    /*    background: none;*/
+    /*    border: none;*/
+    /*    padding: 0;*/
+    /*    cursor: pointer;*/
+    /*    text-decoration: none;*/
+    /*    display: inline-flex;*/
+    /*    align-items: center;*/
+    /*    gap: 5px;*/
+    /*}*/
+    /*.change-avatar-btn:hover {*/
+    /*    text-decoration: underline;*/
+    /*    color: #0a58ca;*/
+    /*}*/
+
+    /* --- CỘT PHẢI (NỘI DUNG) --- */
+    .profile-content {
+        padding-left: 40px;
+    }
+
+    /* Layout Form */
+    .form-group-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .form-group-row:last-child {
+        border-bottom: none;
+    }
+
+    .form-label-col {
+        width: 25%;
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.95rem;
+        padding-right: 10px;
+    }
+
+    .form-input-col {
+        width: 75%;
+    }
+
+    /* Input Style */
+    .travel-input {
+        width: 100%;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        padding: 10px 15px;
+        font-size: 0.95rem;
+        background: #fff;
+        color: #212529;
+    }
+    .travel-input:focus {
+        border-color: #0d6efd;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+    }
+    .travel-input-readonly {
+        background-color: #e9ecef;
+        border: 1px solid #ced4da;
+        font-weight: 500;
+        color: #495057;
+        cursor: not-allowed;
+    }
+
+    .email-verified-text {
+        font-size: 0.75rem;
+        color: #198754;
+        margin-top: 6px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+    }
+
+    /* NÚT LƯU */
+    .btn-save-profile {
+        background-color: #0d6efd;
+        color: white;
+        padding: 10px 30px;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s;
+        box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2);
+    }
+    .btn-save-profile:hover {
+        background-color: #0b5ed7;
+        box-shadow: 0 6px 12px rgba(13, 110, 253, 0.3);
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container profile-container">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="row">
+            <div class="col-md-3 profile-sidebar">
+
+                <div id="profileAvatar" class="avatar-circle"></div>
+
+<!--                <div class="mt-2">-->
+<!--                    <button type="button" class="change-avatar-btn">-->
+<!--                        <i class="fa-solid fa-pen"></i> Thay đổi ảnh đại diện-->
+<!--                    </button>-->
+<!--                </div>-->
+
+                <div class="mt-4">
+                    <a href="#" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                        <i class="fa-solid fa-key me-1"></i> Đổi mật khẩu
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-9 profile-content">
+                <h4 class="fw-bold mb-4">Hồ sơ của tôi</h4>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <div class="mb-4">
+                    <h6 class="text-uppercase text-muted small fw-bold mb-3">Thông tin tài khoản</h6>
+
+                    <div class="form-group-row">
+                        <div class="form-label-col">Tên đăng nhập</div>
+                        <div class="form-input-col">
+                            <input type="text" id="profileUsername" class="travel-input travel-input-readonly" disabled>
+                        </div>
+                    </div>
+
+                    <div class="form-group-row align-items-start">
+                        <div class="form-label-col pt-2">Email</div>
+                        <div class="form-input-col">
+                            <input type="text" id="profileEmail" class="travel-input travel-input-readonly" disabled>
+
+                            <div class="email-verified-text">
+                                <i class="fa-solid fa-circle-check me-1"></i> Email đã được xác thực
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h6 class="text-uppercase text-muted small fw-bold mb-3">Thông tin cá nhân</h6>
+
+                    <div class="form-group-row">
+                        <div class="form-label-col">Họ (Last Name)</div>
+                        <div class="form-input-col">
+                            <input type="text" name="last_name" class="travel-input" value="{{ u_form.last_name.value|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="form-group-row">
+                        <div class="form-label-col">Tên (First Name)</div>
+                        <div class="form-input-col">
+                            <input type="text" name="first_name" class="travel-input" value="{{ u_form.first_name.value|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="form-group-row">
+                        <div class="form-label-col">Số điện thoại</div>
+                        <div class="form-input-col">
+                            <input type="text" name="phone" class="travel-input" value="{{ p_form.phone.value|default:'' }}" placeholder="Nhập SĐT của bạn">
+                        </div>
+                    </div>
+
+                    <div class="form-group-row">
+                        <div class="form-label-col">Ngày sinh</div>
+                        <div class="form-input-col">
+                            <input type="date" name="birthday" class="travel-input" value="{{ p_form.birthday.value|date:'Y-m-d'|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="form-group-row">
+                        <div class="form-label-col">Nghề nghiệp</div>
+                        <div class="form-input-col">
+                            <input type="text" name="profession" class="travel-input" value="{{ p_form.profession.value|default:'' }}" placeholder="VD: Freelancer">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 btn-save-container">
+                    <button type="submit" class="btn-save-profile">
+                        <i class="fa-solid fa-check me-2"></i>Lưu thay đổi
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const access = localStorage.getItem("access");
+    const userRaw = localStorage.getItem("user");
+
+    if (!access || !userRaw) {
+        alert("Bạn chưa đăng nhập");
+        window.location.href = "/";
+        return;
+    }
+
+    let user;
+    try {
+        user = JSON.parse(userRaw);
+    } catch (e) {
+        localStorage.clear();
+        alert("Dữ liệu đăng nhập lỗi, vui lòng đăng nhập lại");
+        window.location.href = "/";
+        return;
+    }
+
+    document.getElementById("profileUsername").value = user.username || "";
+    document.getElementById("profileEmail").value = user.email || "";
+
+function stringToColor(str){
+    let hash =0;
+    for (let i =0 ; i<str.length; i++){
+        hash= str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    const hue = hash % 360;
+    return `hsl(${hue}, 70%, 55%)`;
+}
+
+    const avatar = document.getElementById("profileAvatar");
+    const nameSource = user.username || user.email || "U"
+    avatar.textContent = nameSource.charAt(0).toUpperCase();
+    avatar.style.background = stringToColor(nameSource);
+});
+</script>
+
+
+<!--Load-lưu profile-->
+<script>
+async function loadProfile() {
+    const token = localStorage.getItem("access");
+    if (!token) {
+        alert("Bạn chưa đăng nhập");
+        window.location.href = "/";
+        return;
+    }
+
+    const res = await fetch("/api/profile/", {
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    });
+
+    if (!res.ok) {
+        alert("Token hết hạn");
+        return;
+    }
+
+    const data = await res.json();
+
+    document.getElementById("profileUsername").value = data.username;
+    document.getElementById("profileEmail").value = data.email;
+
+    document.querySelector("input[name='first_name']").value = data.first_name || "";
+    document.querySelector("input[name='last_name']").value = data.last_name || "";
+    document.querySelector("input[name='phone']").value = data.phone || "";
+    document.querySelector("input[name='birthday']").value = data.birthday || "";
+    document.querySelector("input[name='profession']").value = data.profession || "";
+}
+
+document.addEventListener("DOMContentLoaded", loadProfile);
+</script>
+
+
+<!--lưu khi bấm-->
+<script>
+const form = document.querySelector("form");
+
+form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const token = localStorage.getItem("access");
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    const payload = {
+        first_name: form.first_name.value,
+        last_name: form.last_name.value,
+        phone: form.phone.value,
+        birthday: form.birthday.value||null,
+        profession: form.profession.value,
+    };
+
+    try {
+        const res = await fetch("/api/profile/", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+                "X-CSRFToken": csrfToken
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            alert("Lưu thông tin thành công!");
+
+            window.location.reload();
+        } else {
+
+            const errorText = await res.text();
+            console.error("Lỗi server:", errorText);
+            alert("Lỗi: " + errorText);
+        }
+    } catch (err) {
+        console.error("Lỗi mạng:", err);
+        alert("Có lỗi xảy ra khi kết nối tới server.");
+    }
+});
+</script>
+
+
+{% endblock %}

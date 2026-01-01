@@ -270,81 +270,136 @@ h2, h3, h5 {
     transform: scale(1.05);
 }
 
-/* ==============================
-   FOOTER
-============================== */
-.footer{
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    width: 100%;
-    height: 200px;
-    background: #0078ff;
-    color: white;
-    padding: 25px 40px;
-    font-size: 14px;
-    border-top: 1px solid #005fcc;
+/* ===========================
+   FOOTER STYLES
+   =========================== */
 
-}
-.footer-container{
-    width: 95%;
-    max-width: 1400px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    gap: 40px;
-    flex-wrap: wrap;
+.footer {
+    background-color: #0078ff !important;
+    color: #ffffff !important;
+    font-size: 0.95rem;
+    padding-top: 3rem;
+    padding-bottom: 1.5rem;
 }
 
-.footer-col{
-    min-width: 100px;
-}
-
-.footer-col h3{
-    margin-bottom: 15px;
-    font-size: 22px;
-    font-weight: 600;
+/* Tiêu đề các cột */
+.footer h3, .footer h4 {
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: 700;
     text-transform: uppercase;
-    color: white;
+    letter-spacing: 0.5px;
+    margin-bottom: 25px;
+    position: relative;
+    padding-bottom: 10px;
 }
 
-
-.footer-col ul li{
-    font-size: 18px;
-    margin: 6px 0;
-    cursor: pointer;
-    transition: 0.25s;
-
-    color: white;
+.footer h3::after, .footer h4::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 40px;
+    height: 3px;
+    background-color: #ffffff;
+    border-radius: 2px;
 }
 
-.footer-col p{
-    font-size: 18px;
-    margin: 8px 0;
-    line-height: 1.6;
-    color: white;
+/* Link liên kết */
+.footer ul li {
+    margin-bottom: 12px;
 }
 
-.footer-icons{
+.footer ul li a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.footer ul li a:hover {
+    transform: translateX(5px);
+}
+
+/* Thông tin liên hệ (Địa chỉ, SĐT...) */
+.contact-info p {
+    margin-bottom: 12px;
     display: flex;
-    gap: 15px;
-    font-size: 20px;
-    margin-top: 15px;
-
-    color: white;
+    align-items: flex-start;
+    color: rgba(255, 255, 255, 0.95);
 }
-.footer-icons i{
-    cursor: pointer;
-    transition: 0.25s;
+.contact-info i {
+    margin-top: 4px;
+    min-width: 25px;
 }
 
-.footer-col ul li:hover{
-    color: #d8ecff;
-    text-underline: #d8ecff;
+/* Icon Mạng xã hội */
+.footer-icons a {
+    display: inline-block !important;
+
+    width: 40px;
+    height: 40px;
+    text-align: center !important;
+    line-height: 40px !important;
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Viền mỏng */
+    border-radius: 50%;
+    margin-right: 10px;
+    color: #fff !important;
+    background: transparent;
+    transition: all 0.3s ease;
+
+    text-decoration: none !important;
+
 }
 
-.footer-icons i:hover{
-    color: #d8ecff;
+.footer-icons a:hover {
+    background: #ffffff;
+    color: #0078ff !important;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
+/* Form đăng ký nhận tin */
+.newsletter-form .form-control {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    border-radius: 4px 0 0 4px;
+    height: 45px;
+}
+
+.newsletter-form .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.newsletter-form .form-control:focus {
+    background: rgba(255, 255, 255, 0.3);
+    box-shadow: none;
+    border-color: #fff;
+}
+
+.newsletter-form .btn {
+    background-color: #ffffff;
+    color: #0078ff;
+    border: none;
+    border-radius: 0 4px 4px 0;
+    padding: 0 20px;
+    height: 45px;
+    transition: background 0.3s;
+}
+
+.newsletter-form .btn:hover {
+    background-color: #f0f0f0;
+}
+
+/* Dòng bản quyền */
+.copyright {
+    margin-top: 40px;
+    padding-top: 20px;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
 
 /* ============================
    HIỆU ỨNG & HIGHLIGHT GỢI Ý
@@ -409,6 +464,40 @@ h2, h3, h5 {
     align-items: center;
     z-index: 5000;                       /* đảm bảo nằm trên tất cả phần tử khác */
     animation: fadeIn 0.3s ease;
+}
+
+
+/* Nút cuộn lên đầu trang */
+#btnTop {
+    position: fixed;
+    bottom: 30px;            /* cách đáy màn hình */
+    right: 30px;             /* cách phải màn hình */
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: #0d6efd;
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s;
+}
+#btnTop:hover{
+    background: #EEEEEE;
+    color: #0d6efd;
+    transform: translateY(-5px);
+    border-color: #0d6efd;
+}
+
+#btnTop.show {
+    opacity: 1;
+    visibility: visible;
 }
 
 /* Khung nội dung popup */
