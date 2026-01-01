@@ -1,5 +1,6 @@
 from django.urls import path, include
 from . import views
+from django.contrib.auth import views as auth_views
 
 # travel/urls.py (GỢI Ý SỬA ĐỔI)
 app_name = 'travel'
@@ -26,4 +27,9 @@ urlpatterns = [
     # Review APIs (User-Generated Content)
     path('api/review/vote/', views.api_vote_review, name='api_vote_review'),
     path('api/review/report/', views.api_report_review, name='api_report_review'),
+
+    #profile account
+    path('accountProfile/', views.account_profile, name='profile'),
+    path("api/profile/", views.api_profile, name="api_profile"),
+
 ]

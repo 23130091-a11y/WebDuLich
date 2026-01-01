@@ -12,12 +12,57 @@ from datetime import datetime, date
 from users.models import TravelPreference
 from .services import get_weather_forecast, get_route, get_location_coordinates
 from django.core.paginator import Paginator
-from .models import TourPackage, Category, Destination, SearchHistory, Review
+from .models import TourPackage, Category, Destination, SearchHistory, Review, AccountProfile
 import bleach
 
 from .cache_utils import get_cache_key, get_or_set_cache
 from django.views.decorators.http import require_http_methods, require_POST
 from django_ratelimit.decorators import ratelimit
+
+#--Tram--#
+#accountProfile
+from django.shortcuts import render
+
+def account_profile(request):
+    return render(request, 'travel/accountProfile.html')
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from .models import AccountProfile
+
+@api_view(["GET", "PUT"])
+@permission_classes([IsAuthenticated])
+def api_profile(request):
+    user = request.user
+
+    profile, _ = AccountProfile.objects.get_or_create(user=user)
+
+    if request.method == "GET":
+        return Response({
+            "username": user.username,
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "phone": profile.phone,
+            "birthday": profile.birthday,
+            "profession": profile.profession,
+        })
+
+    # PUT – cập nhật
+    user.first_name = request.data.get("first_name", "")
+    user.last_name = request.data.get("last_name", "")
+    user.save()
+
+    profile.phone = request.data.get("phone", "")
+    profile.birthday = request.data.get("birthday") or None
+    profile.profession = request.data.get("profession", "")
+    profile.save()
+
+    return Response({"success": True})
+
+
 
 # ----------------------------
 # Hàm chuẩn hóa tên Category
