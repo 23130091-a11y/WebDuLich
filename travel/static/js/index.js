@@ -461,7 +461,10 @@ if (loginBtn) {
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang đăng nhập...';
 
         try {
+            // const response = await fetch('/auth/login', {
+
             const response = await fetch('/auth/login', {
+
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -713,3 +716,8 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSearchHistory();
     setupEmailSuggestions();
 });
+
+
+
+
+
