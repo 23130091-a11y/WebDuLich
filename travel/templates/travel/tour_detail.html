@@ -1,80 +1,232 @@
-{% extends "travel/base.html" %}
+<!DOCTYPE html>
+<html lang="vi">
 {% load static %}
-
-{% block title %}{{ tour.name }}{% endblock %}
-
-{% block content %}
-
-<div class="container my-5">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ tour.name }} - Web Du Lịch</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
-    <div class="row">
-        <div class="col-lg-8">
-            <h1 class="mb-2">{{ tour.name }}</h1>
-            <p class="lead text-muted">
-                <i class="fas fa-map-marker-alt"></i> 
-                {{ tour.destination.name }} - {{ tour.destination.location }}
-            </p>
-        </div>
-        <div class="col-lg-4 text-right">
-            <p class="text-muted mb-2">Giá tour:</p>
-            <h2 class="text-primary mb-1">
-                {% if tour.price %}
-                {{ tour.price|floatformat:0 }} VNĐ
-                {% else %}
-                <a href="tel:+84123456789" class="text-decoration-none text-primary fs-4">Liên hệ: 0123-456-789</a>
-                {% endif %}
-            </h2>
-        </div>
-    </div>
-    <hr>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/modern-ui.css' %}">
+    
+    <style>
+        :root { --primary-color: #0d6efd; --orange-action: #ff5722; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9fa; }
+        .btn-orange { background-color: var(--orange-action); color: white; border: none; transition: 0.3s; }
+        .btn-orange:hover { background-color: #e64a19; color: white; transform: translateY(-2px); }
+        .tour-sidebar-card { position: sticky; top: 90px; z-index: 10; }
+        #map { height: 400px; border-radius: 15px; z-index: 1; }
+        .section-title { border-left: 4px solid var(--primary-color); padding-left: 15px; margin-bottom: 25px; font-weight: 700; }
+        .itinerary-box { border-left: 2px dashed #dee2e6; padding-left: 25px; margin-left: 10px; }
+        .badge-custom { font-size: 0.9rem; padding: 8px 16px; border-radius: 50px; }
+    </style>
+</head>
 
-    {% if tour.image_main %}
-        <img src="{{ tour.image_main.url }}" class="img-fluid rounded mb-4" alt="{{ tour.name }}" style="max-height: 500px; width: 100%; object-fit: cover;">
-    {% endif %}
-
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <p><strong>Category:</strong> {{ tour.category.name }}</p>
-        </div>
-        <div class="col-md-4">
-            <p><strong>Thời lượng:</strong> {{ tour.duration }}</p>
-        </div>
-        <div class="col-md-4">
-            <p><strong>Rating:</strong> {{ tour.destination.rating }} <i class="fas fa-star text-warning"></i></p>
-        </div>
-    </div>
-
-    <h3 class="mb-3">Chi tiết Tour</h3>
-    <p>{{ tour.details|linebreaksbr }}</p>
-
-    <h3 class="mb-3 mt-5">Các hoạt động chính</h3>
-    <div>
-        {% for tag in tour.tags.all %}
-            <a href="{% url 'category_detail' category_slug=tour.category.slug %}?tag={{ tag.slug }}" class="btn btn-outline-info btn-sm mb-2">
-                {{ tag.name }}
+<body>
+<header class="header sticky-top bg-white shadow-sm">
+    <div class="container">
+        <nav class="navbar navbar-expand-lg px-4 py-2">
+            <a class="navbar-brand fw-bold text-primary" href="{% url 'travel:home' %}">
+                <i class="fa-solid fa-plane-departure me-2"></i>Du Lịch Việt
             </a>
-        {% endfor %}
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="{% url 'travel:home' %}">Trang chủ</a></li>
+                <li class="nav-item"><a class="nav-link" href="javascript:history.back()"><i class="fa-solid fa-arrow-left me-1"></i>Quay lại</a></li>
+            </ul>
+        </nav>
     </div>
+</header>
 
-    {% if related_tours %}
-        <h3 class="mt-5 mb-3">Tour liên quan</h3>
-        <div class="row">
-            {% for related_tour in related_tours %}
-                <div class="col-md-3">
-                    <div class="card mb-4">
-                        <a href="{% url 'tour_detail' tour_slug=related_tour.slug %}">
-                            <img src="{{ related_tour.image_main.url }}" class="card-img-top" alt="{{ related_tour.name }}">
-                        </a>
-                        <div class="card-body">
-                            <h5 class="card-title">{{ related_tour.name }}</h5>
-                            <p class="card-text text-primary">{{ related_tour.price|floatformat:0 }} VNĐ</p>
+<main class="py-4">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'travel:home' %}" class="text-decoration-none">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="#" class="text-decoration-none">{{ tour.destination.name }}</a></li>
+                <li class="breadcrumb-item active text-truncate" style="max-width: 200px;">{{ tour.name }}</li>
+            </ol>
+        </nav>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="mb-4 position-relative">
+                    {% if tour.image_main %}
+                        <img src="{{ tour.image_main.url }}" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 480px; object-fit: cover;" alt="{{ tour.name }}">
+                    {% else %}
+                        <div class="bg-secondary rounded-4 d-flex align-items-center justify-content-center text-white" style="height: 400px;">
+                            <i class="fa-solid fa-image fa-4x"></i>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <section class="card border-0 shadow-sm mb-4 rounded-4">
+                    <div class="card-body p-4">
+                        <h1 class="fw-bold mb-3">{{ tour.name }}</h1>
+                        <div class="d-flex flex-wrap gap-2 mb-4">
+                            <span class="badge badge-custom bg-primary-subtle text-primary">
+                                <i class="fa-solid fa-clock me-1"></i> {{ tour.duration }} Ngày
+                            </span>
+                            <span class="badge badge-custom bg-info-subtle text-info">
+                                <i class="fa-solid fa-location-dot me-1"></i> {{ tour.destination.name }}
+                            </span>
+                            <span class="badge badge-custom bg-success-subtle text-success">
+                                <i class="fa-solid fa-shield-check me-1"></i> Xác nhận tức thì
+                            </span>
+                        </div>
+                        <h5 class="section-title">Giới thiệu chuyến đi</h5>
+                        <div class="text-secondary fs-6" style="line-height: 1.8;">
+                            {{ tour.details|linebreaks }}
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card border-0 shadow-sm mb-4 rounded-4">
+                    <div class="card-body p-4">
+                        <h5 class="section-title">Lịch trình chi tiết</h5>
+                        <div class="itinerary-box">
+                            <div class="text-secondary" style="line-height: 1.8;">
+                                {{ tour.itinerary|linebreaks|default:"Liên hệ với tư vấn viên để nhận lịch trình chi tiết từng giờ." }}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card border-0 shadow-sm mb-4 rounded-4">
+                    <div class="card-body p-4">
+                        <h5 class="section-title">Vị trí & Điểm tập trung</h5>
+                        <div id="map" class="shadow-sm mb-3"></div>
+                        {% if tour.meeting_point %}
+                        <div class="p-3 bg-light rounded-3">
+                            <p class="mb-0 small">
+                                <i class="fa-solid fa-street-view me-2 text-primary"></i>
+                                <strong>Điểm hẹn:</strong> {{ tour.meeting_point }}
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </section>
+
+                <section id="reviews-section" class="card border-0 shadow-sm mb-4 rounded-4">
+                    <div class="card-body p-4">
+                        <h5 class="section-title">Đánh giá từ du khách</h5>
+                        <form id="reviewFormSubmit" class="mb-4 bg-light p-4 rounded-4">
+                            <input type="hidden" id="destinationId" value="{{ tour.destination.id }}">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Xếp hạng</label>
+                                <div class="star-rating-input-ltr fs-3 text-warning">
+                                    <i class="fa-regular fa-star star-btn" data-value="1"></i>
+                                    <i class="fa-regular fa-star star-btn" data-value="2"></i>
+                                    <i class="fa-regular fa-star star-btn" data-value="3"></i>
+                                    <i class="fa-regular fa-star star-btn" data-value="4"></i>
+                                    <i class="fa-regular fa-star star-btn" data-value="5"></i>
+                                    <input type="hidden" name="rating" id="rating" value="5">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <textarea id="comment" class="form-control border-0 shadow-sm" rows="3" placeholder="Chia sẻ cảm nhận của bạn về tour này..."></textarea>
+                            </div>
+                            <button type="submit" id="submitReviewBtn" class="btn btn-primary rounded-pill px-5 fw-bold">Gửi đánh giá</button>
+                        </form>
+                    </div>
+                </section>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-lg tour-sidebar-card rounded-4 overflow-hidden">
+                    <div class="bg-primary p-3 text-white text-center">
+                        <span class="small opacity-75">Giá tốt nhất từ</span>
+                    </div>
+                    <div class="card-body p-4">
+                        <h2 class="text-danger fw-bold mb-1 text-center">
+                            {{ tour.price|floatformat:0 }} <small class="fs-6">VND</small>
+                        </h2>
+                        <p class="text-muted small text-center mb-4">Mỗi khách</p>
+                        
+                        <div class="mb-4 bg-warning-subtle p-3 rounded-3 border border-warning-subtle">
+                            <label class="mb-1 small fw-bold text-warning-emphasis d-block">
+                                <i class="fa-solid fa-calendar-check me-2"></i>Ngày khởi hành
+                            </label>
+                            <input type="date" class="form-control border-0 shadow-sm mt-1">
+                        </div>
+
+                        <div class="d-grid gap-3">
+                            <button class="btn btn-orange btn-lg fw-bold py-3 rounded-pill shadow">
+                                <i class="fa-solid fa-bolt me-2"></i>ĐẶT TOUR NGAY
+                            </button>
+                            <button class="btn btn-outline-primary rounded-pill py-2">
+                                <i class="fa-brands fa-whatsapp me-2"></i>Tư vấn qua Zalo
+                            </button>
+                        </div>
+                        
+                        <hr class="my-4">
+                        <div class="row text-center g-2">
+                            <div class="col-6">
+                                <div class="p-2 border rounded-3">
+                                    <i class="fa-solid fa-rotate-left d-block text-primary mb-1"></i>
+                                    <span style="font-size: 0.75rem;">Hủy miễn phí</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-2 border rounded-3">
+                                    <i class="fa-solid fa-headset d-block text-primary mb-1"></i>
+                                    <span style="font-size: 0.75rem;">Hỗ trợ 24/7</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            {% endfor %}
+            </div>
         </div>
-    {% endif %}
+    </div>
+</main>
 
-</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-{% endblock %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- LOGIC BẢN ĐỒ ---
+        // Ưu tiên tọa độ khởi hành của Tour, nếu không có lấy tọa độ của Destination
+        const lat = {{ tour.start_latitude|default:tour.destination.latitude|default:21.0285 }};
+        const lon = {{ tour.start_longitude|default:tour.destination.longitude|default:105.8542 }};
+        
+        if (lat !== 0) {
+            const map = L.map('map', {
+                scrollWheelZoom: false // Tránh việc cuộn trang bị kẹt vào bản đồ
+            }).setView([lat, lon], 14);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
+
+            const marker = L.marker([lat, lon]).addTo(map);
+            marker.bindPopup(`<b>{{ tour.name }}</b><br>{{ tour.meeting_point|default:"Điểm khởi hành" }}`).openPopup();
+        }
+
+        // --- LOGIC STAR RATING ---
+        const stars = document.querySelectorAll('.star-btn');
+        const ratingInput = document.getElementById('rating');
+
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const val = this.getAttribute('data-value');
+                ratingInput.value = val;
+                
+                stars.forEach(s => {
+                    if(s.getAttribute('data-value') <= val) {
+                        s.classList.replace('fa-regular', 'fa-solid');
+                    } else {
+                        s.classList.replace('fa-solid', 'fa-regular');
+                    }
+                });
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

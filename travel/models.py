@@ -6,24 +6,25 @@ from django.utils.text import slugify
 User = get_user_model()
 
 
+from django.db import models
+from django.utils.text import slugify
+
 # ======================================================================
-# 1. Category Model (tu Project A)
+# 1. Category Model - Danh mục (Biển, Núi, Nghỉ dưỡng...)
 # ======================================================================
 class Category(models.Model):
-    """Danh muc loai hinh du lich"""
-    name = models.CharField(max_length=100, unique=True, verbose_name="Ten danh muc")
+    name = models.CharField(max_length=100, unique=True, verbose_name="Tên danh mục")
     slug = models.SlugField(max_length=100, unique=True, verbose_name="Slug URL")
-    description = models.TextField(blank=True, verbose_name="Mo ta")
+    description = models.TextField(blank=True, verbose_name="Mô tả")
     icon = models.CharField(max_length=50, blank=True, verbose_name="Icon class")
     image = models.ImageField(upload_to='categories/images/', blank=True, null=True)
     
-    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Danh muc"
-        verbose_name_plural = "Danh muc"
+        verbose_name = "Danh mục"
+        verbose_name_plural = "Danh mục"
         ordering = ['name']
 
     def __str__(self):
@@ -36,64 +37,37 @@ class Category(models.Model):
 
 
 # ======================================================================
-# 2. Destination Model (ket hop A + B)
+# 2. Destination Model - Địa danh (Vịnh Hạ Long, Phú Quốc...)
 # ======================================================================
 class Destination(models.Model):
-    """Dia diem du lich - ket hop features tu ca 2 project"""
-    
-    # === Fields tu Project B (giu nguyen) ===
-    name = models.CharField(max_length=200, verbose_name="Ten dia diem")
-    travel_type = models.CharField(max_length=50, verbose_name="Loai hinh du lich")
-    location = models.CharField(max_length=100, verbose_name="Vi tri")
-    address = models.CharField(max_length=255, blank=True, verbose_name="Dia chi chi tiet")
-    description = models.TextField(blank=True, verbose_name="Mo ta")
+    category = models.ForeignKey(
+        Category, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='destinations', verbose_name="Danh mục"
+    )
+    name = models.CharField(max_length=200, verbose_name="Tên địa điểm")
+    travel_type = models.CharField(max_length=50, verbose_name="Loại hình du lịch")
+    location = models.CharField(max_length=100, verbose_name="Vị trí")
+    address = models.CharField(max_length=255, blank=True, verbose_name="Địa chỉ chi tiết")
+    description = models.TextField(blank=True, verbose_name="Mô tả")
     image = models.ImageField(upload_to='destinations/', blank=True)
     
-    # Thong tin dia ly (tu B - cho weather/routing)
-    latitude = models.FloatField(null=True, blank=True, verbose_name="Vi do")
-    longitude = models.FloatField(null=True, blank=True, verbose_name="Kinh do")
+    latitude = models.FloatField(null=True, blank=True, verbose_name="Vĩ độ")
+    longitude = models.FloatField(null=True, blank=True, verbose_name="Kinh độ")
+    avg_price = models.DecimalField(max_digits=12, decimal_places=0, null=True, blank=True, verbose_name="Giá TB (VND)")
     
-    # Thong tin gia (tu B)
-    avg_price = models.DecimalField(
-        max_digits=10, decimal_places=0, null=True, blank=True,
-        verbose_name="Gia trung binh (VND)"
-    )
-    
-    # Metadata JSON (tu B)
     metadata = models.JSONField(default=dict, blank=True, verbose_name="Metadata")
-    
-    # === Fields tu Project A (them moi) ===
-    category = models.ForeignKey(
-        Category, 
-        on_delete=models.SET_NULL, 
-        null=True, 
-        blank=True,
-        related_name='destinations',
-        verbose_name="Danh muc"
-    )
-    rating = models.FloatField(default=0.0, verbose_name="Danh gia trung binh")
-    is_popular = models.BooleanField(default=False, verbose_name="Dia diem noi bat")
+    rating = models.FloatField(default=0.0, verbose_name="Đánh giá")
+    is_popular = models.BooleanField(default=False, verbose_name="Địa điểm nổi bật")
     slug = models.SlugField(max_length=200, unique=True, null=True, blank=True, verbose_name="Slug URL")
-    
-    # Tags dung JSONField thay vi django-taggit
     tags = models.JSONField(default=list, blank=True, verbose_name="Tags")
     
-    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Dia diem"
-        verbose_name_plural = "Dia diem"
+        verbose_name = "Địa điểm"
+        verbose_name_plural = "Địa điểm"
         ordering = ['-created_at']
-        indexes = [
-            models.Index(fields=['location'], name='idx_dest_location'),
-            models.Index(fields=['travel_type'], name='idx_dest_type'),
-            models.Index(fields=['created_at'], name='idx_dest_created'),
-            models.Index(fields=['location', 'travel_type'], name='idx_dest_loc_type'),
-            models.Index(fields=['rating'], name='idx_dest_rating'),
-            models.Index(fields=['is_popular'], name='idx_dest_popular'),
-        ]
 
     def __str__(self):
         return self.name
@@ -105,108 +79,80 @@ class Destination(models.Model):
 
 
 # ======================================================================
-# 3. DestinationImage Model (tu Project A)
+# 3. DestinationImage Model - Thư viện ảnh cho Địa danh
 # ======================================================================
 class DestinationImage(models.Model):
-    """Anh chi tiet cho dia diem"""
     destination = models.ForeignKey(
-        Destination, 
-        on_delete=models.CASCADE, 
-        related_name='images'
+        Destination, on_delete=models.CASCADE, related_name='images'
     )
     image = models.ImageField(upload_to='destinations/images/', blank=True, null=True)
-    caption = models.CharField(max_length=255, blank=True, null=True, verbose_name="Chu thich")
-    order = models.IntegerField(default=0, verbose_name="Thu tu hien thi")
-    
+    caption = models.CharField(max_length=255, blank=True, null=True, verbose_name="Chú thích")
+    order = models.IntegerField(default=0, verbose_name="Thứ tự hiển thị")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Anh dia diem"
-        verbose_name_plural = "Anh dia diem"
+        verbose_name = "Ảnh địa điểm"
+        verbose_name_plural = "Ảnh địa điểm"
         ordering = ['order', '-created_at']
 
-    def __str__(self):
-        return f"Anh cua {self.destination.name}"
-
 
 # ======================================================================
-# 4. TourPackage Model (tu Project A)
+# 4. TourPackage Model - Các gói Tour cụ thể (Tour 3 ngày 2 đêm...)
 # ======================================================================
 class TourPackage(models.Model):
-    """Goi tour du lich"""
-    
-    # Relationships
     destination = models.ForeignKey(
-        Destination, 
-        on_delete=models.CASCADE, 
-        related_name='packages',
-        verbose_name="Dia diem"
+        Destination, on_delete=models.CASCADE, related_name='packages', verbose_name="Địa điểm"
     )
     category = models.ForeignKey(
-        Category, 
-        on_delete=models.SET_NULL, 
-        null=True, 
-        blank=True,
-        related_name='tour_packages',
-        verbose_name="Danh muc"
+        Category, on_delete=models.SET_NULL, null=True, blank=True, 
+        related_name='tour_packages', verbose_name="Danh mục"
     )
-    
-    # Thong tin co ban
-    name = models.CharField(max_length=255, verbose_name="Ten tour")
+    name = models.CharField(max_length=255, verbose_name="Tên tour")
     slug = models.SlugField(max_length=255, unique=True, null=True, blank=True)
-    details = models.TextField(verbose_name="Chi tiet tour")
+    details = models.TextField(verbose_name="Chi tiết tour")
+    price = models.DecimalField(max_digits=12, decimal_places=0, null=True, blank=True, verbose_name="Giá (VND)")
+    duration = models.IntegerField(help_text="Số ngày", verbose_name="Thời lượng")
     
-    # Gia va thoi gian
-    price = models.DecimalField(
-        max_digits=10, decimal_places=0, null=True, blank=True,
-        verbose_name="Gia (VND)"
-    )
-    duration = models.IntegerField(help_text="So ngay", verbose_name="Thoi luong")
+    image_main = models.ImageField(upload_to='packages/main_images/', blank=True, null=True, verbose_name="Ảnh chính")
+    is_active = models.BooleanField(default=True, verbose_name="Đang hoạt động")
+    is_available_today = models.BooleanField(default=False, verbose_name="Có sẵn hôm nay")
     
-    # Dia chi
-    address_detail = models.CharField(
-        max_length=255, blank=True, null=True,
-        verbose_name="Dia chi don/tra khach"
-    )
-    
-    # Hinh anh
-    image_main = models.ImageField(
-        upload_to='packages/main_images/', 
-        blank=True, null=True,
-        verbose_name="Anh chinh"
-    )
-    
-    # Trang thai va lich trinh
-    is_active = models.BooleanField(default=True, verbose_name="Dang hoat dong")
-    is_available_today = models.BooleanField(
-        default=False, 
-        help_text="Tour kha dung trong ngay hien tai",
-        verbose_name="Co san hom nay"
-    )
-    start_date = models.DateField(null=True, blank=True, verbose_name="Ngay bat dau")
-    end_date = models.DateField(null=True, blank=True, verbose_name="Ngay ket thuc")
-    
-    # Tags dung JSONField
+    start_date = models.DateField(null=True, blank=True, verbose_name="Ngày bắt đầu")
+    end_date = models.DateField(null=True, blank=True, verbose_name="Ngày kết thúc")
     tags = models.JSONField(default=list, blank=True, verbose_name="Tags")
-    
-    # Timestamps
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
+    # 1. Điểm đánh giá (Rating)
+    average_rating = models.FloatField(default=5.0) 
+    total_reviews = models.IntegerField(default=0)
+
+    # 2. Vị trí cụ thể của Tour (Dùng cho bản đồ)
+    start_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    start_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    meeting_point = models.CharField(max_length=255, blank=True, help_text="Địa điểm tập trung cụ thể")
+
+    # 3. Yêu thích (Mối quan hệ Many-to-Many với User)
+    favorites = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, 
+        related_name='favorite_tours', 
+        blank=True
+    )
+
+    # 4. Trạng thái nổi bật
+    total_views = models.PositiveIntegerField(default=0)
+    is_featured = models.BooleanField(default=False)
 
     class Meta:
-        verbose_name = "Goi tour"
-        verbose_name_plural = "Goi tour"
+        verbose_name = "Gói tour"
+        verbose_name_plural = "Gói tour"
         ordering = ['name']
-        indexes = [
-            models.Index(fields=['is_active'], name='idx_tour_active'),
-            models.Index(fields=['price'], name='idx_tour_price'),
-            models.Index(fields=['start_date', 'end_date'], name='idx_tour_dates'),
-        ]
 
     def __str__(self):
         return f"{self.name} - {self.destination.name}"
 
     def save(self, *args, **kwargs):
+        # Tự động đồng bộ Category từ Địa danh sang Tour nếu chưa chọn
+        if not self.category and self.destination:
+            self.category = self.destination.category
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
@@ -382,7 +328,7 @@ class ReviewReport(models.Model):
 # ======================================================================
 class RecommendationScore(models.Model):
     """Diem goi y (Pre-calculated)"""
-    destination = models.OneToOneField(Destination, on_delete=models.CASCADE, related_name='recommendation')
+    destination = models.OneToOneField(Destination, on_delete=models.CASCADE, related_name='score_stats')
 
     # Cac chi so danh gia
     overall_score = models.FloatField(default=0.0, verbose_name="Diem tong the (0-100)")
@@ -442,3 +388,32 @@ class SearchHistory(models.Model):
 
     def __str__(self):
         return f"{self.query} ({self.created_at.strftime('%Y-%m-%d %H:%M')})"
+# Trong file models.py của app travel
+class DestinationRecommendation(models.Model):
+    # Dòng này cực kỳ quan trọng: thêm related_name='recommendation'
+    destination = models.OneToOneField(
+        'Destination', 
+        on_delete=models.CASCADE, 
+        related_name='destination_stats' 
+    )
+    total_views = models.IntegerField(default=0)
+    total_favorites = models.IntegerField(default=0)
+    avg_rating = models.FloatField(default=0.0)
+    overall_score = models.FloatField(default=0.0)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Stats for {self.destination.name}"
+    
+class DestinationView(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
+    destination = models.ForeignKey(Destination, on_delete=models.CASCADE, related_name='view_history')
+    ip_address = models.GenericIPAddressField(null=True, blank=True) # Để tính cả khách vãng lai
+    viewed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # Tối ưu hóa truy vấn khi dữ liệu lớn
+        indexes = [
+            models.Index(fields=['destination', 'viewed_at']),
+            models.Index(fields=['user', 'viewed_at']),
+        ]

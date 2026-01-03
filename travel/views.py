@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.core.paginator import Paginator
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods, require_POST
@@ -12,8 +12,12 @@ import os
 from django.conf import settings
 from datetime import datetime, timedelta
 import bleach
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 
-from .models import Destination, Review, RecommendationScore, SearchHistory
+
+from users.models import TravelPreference
+from .models import Destination, Review, RecommendationScore, SearchHistory, Category, TourPackage, DestinationView
 from .ai_engine import search_destinations, analyze_sentiment, get_similar_destinations, get_personalized_for_user
 from .services import get_weather_forecast, get_current_weather, get_route, get_location_coordinates, calculate_distance, get_nearby_hotels, get_nearby_restaurants
 from .cache_utils import get_cache_key, get_or_set_cache
@@ -50,32 +54,32 @@ def save_user_preference(user, destination):
             location=destination.location
         )
 
-
 def home(request):
     """Trang chủ - hiển thị địa điểm nổi bật (with caching)"""
-    # Cache static images list
-    cache_key = get_cache_key('homepage', 'images')
+    categories = Category.objects.all()
+    category_slug = request.GET.get('category')
     
+    # 1. Cache static images list
+    cache_key = get_cache_key('homepage', 'images')
     def get_images():
         base_path = os.path.join(settings.BASE_DIR, 'travel', 'static', 'images')
         results = []
-        
-        for folder in os.listdir(base_path):
-            folder_path = os.path.join(base_path, folder)
-            if os.path.isdir(folder_path):
-                images = [
-                    f"{folder}/{img}" for img in os.listdir(folder_path)
-                    if img.lower().endswith(('.jpg', '.jpeg', '.png', '.webp'))
-                ]
-                
-                if images:
-                    results.append({
-                        "name": folder.title(),
-                        "desc": f"Khám phá vẻ đẹp của {folder.title()}",
-                        "images": images,
-                        "folder": folder,
-                        "img": images[0]
-                    })
+        if os.path.exists(base_path):
+            for folder in os.listdir(base_path):
+                folder_path = os.path.join(base_path, folder)
+                if os.path.isdir(folder_path):
+                    images = [
+                        f"{folder}/{img}" for img in os.listdir(folder_path)
+                        if img.lower().endswith(('.jpg', '.jpeg', '.png', '.webp'))
+                    ]
+                    if images:
+                        results.append({
+                            "name": folder.title(),
+                            "desc": f"Khám phá vẻ đẹp của {folder.title()}",
+                            "images": images,
+                            "folder": folder,
+                            "img": images[0]
+                        })
         return results
     
     results = get_or_set_cache(
@@ -84,12 +88,13 @@ def home(request):
         timeout=settings.CACHE_TTL['homepage']
     )
     
-    # Cache top destinations
+    # 2. Cache top destinations (Thêm đếm số lượng Tour)
     def get_top_destinations():
         return list(
-            Destination.objects.select_related('recommendation')
+            Destination.objects.select_related('score_stats') # Đổi recommendation -> score_stats
             .prefetch_related('reviews')
-            .order_by('-recommendation__overall_score')[:6]
+            .annotate(num_tours=Count('packages')) 
+            .order_by('-score_stats__overall_score')[:6] # Đổi recommendation -> score_stats
         )
     
     top_destinations = get_or_set_cache(
@@ -98,50 +103,153 @@ def home(request):
         timeout=settings.CACHE_TTL['recommendations']
     )
     
-    # Gợi ý cá nhân hóa
+    # 3. Gợi ý cá nhân hóa (Thêm đếm số lượng Tour)
     personalized_destinations = []
     viewed_history = request.session.get('viewed_destinations', [])
     travel_types = []
     locations = []
     
-    # Nếu đã đăng nhập, lấy sở thích từ database
     if request.user.is_authenticated:
         from users.models import TravelPreference
         prefs = TravelPreference.objects.filter(user=request.user)
         travel_types = list(prefs.exclude(travel_type='').values_list('travel_type', flat=True).distinct())
         locations = list(prefs.exclude(location='').values_list('location', flat=True).distinct())
     
-    # Nếu chưa có sở thích từ DB, lấy từ lịch sử xem (session)
     if not travel_types and not locations and viewed_history:
         recent_destinations = Destination.objects.filter(id__in=viewed_history[:5])
         travel_types = list(recent_destinations.values_list('travel_type', flat=True).distinct())
         locations = list(recent_destinations.values_list('location', flat=True).distinct())
     
-    # Tìm địa điểm phù hợp
     if travel_types or locations:
-        from django.db.models import Q
         filters = Q()
         for t in travel_types:
-            if t:
-                filters |= Q(travel_type__icontains=t)
+            if t: filters |= Q(travel_type__icontains=t)
         for loc in locations:
-            if loc:
-                filters |= Q(location__icontains=loc)
+            if loc: filters |= Q(location__icontains=loc)
         
         if filters:
             personalized_destinations = list(
-                Destination.objects.select_related('recommendation')
+                Destination.objects.select_related('score_stats') # Đổi recommendation -> score_stats
+                .annotate(num_tours=Count('packages')) 
                 .filter(filters)
                 .exclude(id__in=viewed_history)
-                .order_by('-recommendation__overall_score')[:6]
+                .order_by('-score_stats__overall_score')[:6] # Đổi recommendation -> score_stats
             )
 
+    # 4. Featured Tours (Cập nhật select_related để tối ưu)
+    def get_featured_tours(cat_slug=None):
+        # Thêm select_related('destination__score_stats') để template hiển thị được điểm
+        queryset = TourPackage.objects.select_related(
+            'destination', 
+            'category', 
+            'destination__score_stats'
+        ).filter(is_active=True)
+        
+        if cat_slug:
+            queryset = queryset.filter(category__slug=cat_slug)
+        return list(queryset[:12])
+
+    # XỬ LÝ CACHE HOẶC LỌC TRỰC TIẾP
+    if category_slug:
+        featured_tours = get_featured_tours(category_slug)
+        selected_cat = categories.filter(slug=category_slug).first()
+        category_name = selected_cat.name if selected_cat else ""
+    else:
+        featured_tours = get_or_set_cache(
+            get_cache_key('homepage', 'featured_tours'),
+            get_featured_tours,
+            timeout=settings.CACHE_TTL['homepage']
+        )
+        category_name = ""
+
     return render(request, 'travel/index.html', {
-        "results": results,
+        "results": results, # Đây là danh sách ảnh static từ get_images
         "top_destinations": top_destinations,
         "personalized_destinations": personalized_destinations,
+        "categories": categories,
+        "featured_tours": featured_tours,
+        "selected_category": category_slug, 
     })
 
+def tour_detail(request, slug):
+    tour = get_object_or_404(TourPackage, slug=slug)
+    
+    context = {
+        'tour': tour
+    }
+    return render(request, 'travel/tour_detail.html', context)
+
+from django.db.models import Min, Max, F
+
+from django.shortcuts import render, get_object_or_404
+from django.db.models import Max, Min, F, Q
+from .models import Category, TourPackage
+
+def category_detail(request, slug):
+    category = get_object_or_404(Category, slug=slug)
+    
+    # Query gốc: Chỉ lấy tour thuộc danh mục này và đang hoạt động
+    base_results = TourPackage.objects.filter(
+        category=category, 
+        is_active=True
+    ).select_related('destination', 'destination__score_stats')
+
+    # --- DỮ LIỆU ĐỂ HIỂN THỊ CÁC NÚT BẤM (UI) ---
+    # Lấy danh sách địa điểm xuất hiện trong danh mục này
+    list_destinations = base_results.values_list('destination__name', flat=True).distinct().order_by('destination__name')
+    
+    # Lấy giá cao nhất để làm mốc cho thanh trượt
+    price_stats = base_results.aggregate(max_p=Max('price'))
+    max_price_db = price_stats['max_p'] or 10000000
+    
+    # Lấy danh sách các Tag duy nhất từ trường JSON/Array tags
+    all_tags_raw = base_results.values_list('tags', flat=True)
+    unique_tags = sorted(list(set(tag for sublist in all_tags_raw for tag in sublist if sublist)))
+    category_tags = [{'name': tag, 'slug': tag} for tag in unique_tags]
+
+    # --- THỰC HIỆN LỌC KẾT QUẢ ---
+    results = base_results
+
+    # 1. Lọc NHIỀU địa điểm (?destination=A&destination=B)
+    selected_destinations = request.GET.getlist('destination')
+    if selected_destinations:
+        results = results.filter(destination__name__in=selected_destinations)
+
+    # 2. Lọc NHIỀU Phân loại (?tag=X&tag=Y)
+    selected_tags = request.GET.getlist('tag')
+    if selected_tags:
+        # SQLite không hỗ trợ lọc mảng trực tiếp (__contains), dùng vòng lặp icontains
+        for tag in selected_tags:
+            if tag:
+                results = results.filter(tags__icontains=tag)
+
+    # 3. Lọc Giá tối đa
+    price_max = request.GET.get('price_max')
+    if price_max:
+        results = results.filter(price__lte=price_max)
+
+    # 4. Sắp xếp kết quả
+    sort = request.GET.get('sort')
+    if sort == 'price_asc':
+        results = results.order_by('price')
+    elif sort == 'price_desc':
+        results = results.order_by('-price')
+    elif sort == 'rating':
+        results = results.order_by('-average_rating')
+    else:
+        # Mặc định theo AI Score (điểm xu hướng)
+        results = results.order_by(F('destination__score_stats__overall_score').desc(nulls_last=True))
+
+    return render(request, 'travel/category_detail.html', {
+        'category': category,
+        'category_name': category.name,
+        'results': results,
+        'list_destinations': list_destinations,
+        'max_price_db': max_price_db,
+        'category_tags': category_tags,
+        'active_tags': selected_tags,
+        'active_destinations': selected_destinations,
+    })
 
 def search(request):
     """Trang tìm kiếm nâng cao với thời tiết và đường đi"""
@@ -246,10 +354,12 @@ def search(request):
 def destination_detail(request, destination_id):
     """Chi tiết địa điểm với thời tiết và đường đi"""
     destination = get_object_or_404(
-        Destination.objects.select_related('recommendation'),
-        id=destination_id
+        Destination.objects.select_related('category', 'score_stats'), 
+        pk=destination_id
     )
     
+    related_packages = destination.packages.filter(is_available_today=True)[:6]
+
     # Lưu lịch sử xem vào session (cho gợi ý cá nhân hóa)
     viewed_history = request.session.get('viewed_destinations', [])
     if destination.id not in viewed_history:
@@ -268,10 +378,7 @@ def destination_detail(request, destination_id):
     reviews = reviews_paginator.get_page(reviews_page)
     
     # Lấy điểm gợi ý
-    try:
-        recommendation = destination.recommendation
-    except RecommendationScore.DoesNotExist:
-        recommendation = None
+    recommendation = RecommendationScore.objects.filter(destination=destination).first()
     
     # Thông tin từ query params
     from_location = request.GET.get('from_location', '').strip()
@@ -322,10 +429,31 @@ def destination_detail(request, destination_id):
     # Lấy địa điểm tương tự
     similar_destinations = get_similar_destinations(destination, limit=4)
     
+    if request.user.is_authenticated:
+        # 1. Lưu vào bảng DestinationView (Lịch sử xem thực tế)
+        # Kiểm tra xem 1 tiếng qua user đã xem chưa để tránh spam view count
+        from datetime import timedelta
+        from django.utils import timezone
+        
+        recent_view_exists = DestinationView.objects.filter(
+            user=request.user,
+            destination=destination,
+            viewed_at__gte=timezone.now() - timedelta(hours=1)
+        ).exists()
+        
+        if not recent_view_exists:
+            DestinationView.objects.create(user=request.user, destination=destination)
+            # Kích hoạt hàm tính lại điểm gợi ý cho destination này
+            # update_destination_scores(destination) 
+
+        # 2. Lưu sở thích (Hàm cũ của bạn)
+        save_user_preference(request.user, destination)
+
     context = {
         'destination': destination,
+        'related_packages': related_packages,
         'reviews': reviews,
-        'reviews_paginator': reviews_paginator,  # For pagination info
+        'reviews_paginator': reviews_paginator,
         'total_reviews': reviews_paginator.count,
         'recommendation': recommendation,
         'distance': distance,
@@ -339,6 +467,81 @@ def destination_detail(request, destination_id):
     
     return render(request, 'travel/destination_detail.html', context)
 
+def get_similar_destinations(current_dest, limit=4):
+    similar = Destination.objects.filter(
+        category=current_dest.category
+    ).exclude(id=current_dest.id)
+    
+    similar = similar.select_related('score_stats').order_by(
+        '-score_stats__overall_score' 
+    )
+    
+    return similar[:limit]
+
+
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
+
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+
+@api_view(['POST'])
+@authentication_classes([SessionAuthentication, BasicAuthentication])
+def toggle_tour_favorite(request, tour_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({'status': 'error', 'message': 'unauthorized'}, status=401)
+
+    tour = get_object_or_404(TourPackage, id=tour_id)
+    
+    # Logic của bạn giữ nguyên
+    if tour.favorites.filter(id=request.user.id).exists():
+        tour.favorites.remove(request.user)
+        is_favorite = False
+    else:
+        tour.favorites.add(request.user)
+        is_favorite = True
+        
+    return JsonResponse({
+        'status': 'success', 
+        'is_favorite': is_favorite
+    })
+
+def home_view(request):
+    # 1. Lấy dữ liệu mặc định (Tour nổi bật)
+    featured_tours = TourPackage.objects.filter(is_featured=True, is_active=True)[:6]
+    
+    # 2. Logic gợi ý cá nhân hóa
+    personalized_tours = []
+    
+    if request.user.is_authenticated:
+        # Lấy danh sách sở thích của User
+        prefs = TravelPreference.objects.filter(user=request.user)
+        
+        if prefs.exists():
+            # Trích xuất các loại hình và địa điểm yêu thích
+            pref_types = prefs.values_list('travel_type', flat=True).distinct()
+            pref_locations = prefs.values_list('location', flat=True).distinct()
+            
+            # Tìm các Tour khớp với sở thích (Dùng toán tử OR | để mở rộng gợi ý)
+            personalized_tours = TourPackage.objects.filter(
+                Q(category__name__in=pref_types) | 
+                Q(destination__name__in=pref_locations),
+                is_active=True
+            ).exclude(id__in=featured_tours).distinct().order_by('-average_rating')[:6]
+            
+        # Nếu chưa có sở thích hoặc chưa tìm được tour phù hợp, gợi ý tour có lượt xem cao
+        if not personalized_tours:
+            personalized_tours = TourPackage.objects.filter(is_active=True).order_by('-total_views')[:6]
+    else:
+        # Nếu chưa đăng nhập, hiển thị tour có đánh giá cao nhất
+        personalized_tours = TourPackage.objects.filter(is_active=True).order_by('-average_rating')[:6]
+
+    context = {
+        'featured_tours': featured_tours,
+        'personalized_tours': personalized_tours,
+    }
+    return render(request, 'index.html', context)
 
 def calculate_distance(lat1, lon1, lat2, lon2):
     """

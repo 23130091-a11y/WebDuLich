@@ -100,3 +100,40 @@
     border-color: var(--bs-primary) !important;
     background-color: var(--bs-primary) !important;
 }
+
+/* Container bọc ngoài cùng */
+.tour-slider-container {
+    overflow-x: auto; /* Cho phép cuộn ngang */
+    scroll-behavior: smooth; /* Cuộn mượt */
+    -webkit-overflow-scrolling: touch; /* Hỗ trợ kéo trên điện thoại */
+    padding-bottom: 10px;
+}
+
+/* Ẩn thanh cuộn trên Chrome/Safari nếu muốn trông gọn hơn */
+.tour-slider-container::-webkit-scrollbar {
+    height: 6px;
+}
+.tour-slider-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+.tour-slider-container::-webkit-scrollbar-thumb {
+    background: #0d6efd; /* Màu xanh Bootstrap */
+    border-radius: 10px;
+}
+
+/* Định nghĩa độ rộng của mỗi thẻ Tour khi nằm trong hàng ngang */
+.tour-item {
+    min-width: 280px; /* Độ rộng tối thiểu của mỗi thẻ */
+    max-width: 280px;
+    flex: 0 0 auto; /* Không cho thẻ bị co lại */
+}
+
+/* Tạo khoảng cách phía dưới cho toàn bộ section */
+section.mt-5 {
+    margin-bottom: 3rem !important; /* Tạo khoảng cách 48px với nội dung dưới */
+}
+
+.x-small {
+    font-size: 0.75rem;
+}

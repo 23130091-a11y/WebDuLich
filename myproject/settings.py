@@ -28,9 +28,9 @@ load_dotenv(BASE_DIR / '.env')
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-CHANGE-THIS-IN-PRODUCTION')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
+DEBUG = True
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = ['*']
 
 # Security Settings
 if not DEBUG:
@@ -77,6 +77,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'drf_spectacular',  # API Documentation
     'users',
+
+    'django.contrib.humanize',
 ]
 
 MIDDLEWARE = [
@@ -253,11 +255,18 @@ AUTH_USER_MODEL = 'users.User'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# settings.py
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        # Dòng này cực kỳ quan trọng để nhận diện User từ trình duyệt
+        'rest_framework.authentication.SessionAuthentication', 
+        'rest_framework.authentication.BasicAuthentication',
         'rest_framework_simplejwt.authentication.JWTStatelessUserAuthentication',
     ),
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.AllowAny', # Hoặc tùy cấu hình của bạn
+    ),
 }
 
 # API Documentation Settings (drf-spectacular)
@@ -283,3 +292,6 @@ SPECTACULAR_SETTINGS = {
         {'name': 'Auth', 'description': 'Xác thực người dùng'},
     ],
 }
+
+# settings.py
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:7777', 'http://localhost:7777']

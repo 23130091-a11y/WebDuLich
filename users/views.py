@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 
 from .models import User, TravelPreference
 from .serializers import UserSerializer
+from django.contrib.auth import login
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -45,6 +46,8 @@ class LoginView(APIView) :
 
         if not is_check :
             raise AuthenticationFailed("Sai mật khẩu")
+        
+        login(request, user)
 
         refresh = RefreshToken.for_user(user)
         #

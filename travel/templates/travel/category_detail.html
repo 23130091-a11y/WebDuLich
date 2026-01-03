@@ -1,372 +1,334 @@
 {% extends "travel/base.html" %}
 {% load static %}
-{% load humanize %} 
+{% load humanize %}
 
-{% block title %}Chi tiết danh mục - Web Du Lịch{% endblock %}
+{% block title %}Danh mục: {{ category_name }}{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* =========================================================
-       CUSTOM CSS CHO TRANG CHI TIẾT DANH MỤC
-       (Áp dụng phong cách Chip và màu sắc hiện đại)
-    ========================================================= */
+    :root { --bs-primary: #0078ff; }
+    
+    /* Ép khung ảnh chuẩn 16:9 - Giải quyết lỗi ảnh mất/méo */
+    .image-wrapper { 
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9; 
+        overflow: hidden; 
+        background-color: #f0f2f5;
+    }
+    .image-wrapper img { 
+        width: 100%; height: 100%; object-fit: cover; 
+        transition: transform 0.3s ease;
+    }
+    .tour-card:hover img { transform: scale(1.05); }
 
-    /* PAGE-SPECIFIC STYLES */
-    .image-wrapper { height: 180px; overflow: hidden; border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem; }
-    .image-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-    .placeholder-image { background-color: #e5e7eb; display:flex; align-items:center; justify-content:center; color:#6c757d; height: 100%; }
-    .offcanvas-footer { border-top: 1px solid #dee2e6; }
-    .card { border: none !important; }
-
-    /* TOUR CARD STYLES (Cải thiện hiệu ứng nổi bật) */
+    /* Card Layout - Giải quyết lỗi card bị dài */
     .tour-card { 
-        transition: all 0.3s ease; 
-        border: 1px solid #e0e0e0; /* Viền mỏng */
-        background-color: #fff;
-        display: flex; /* Dùng flexbox để sticky footer */
-        flex-direction: column;
+        height: 100%; 
+        border: 1px solid #eee !important;
+        transition: 0.3s ease;
     }
-    .tour-card .card-body {
-        flex-grow: 1; /* Cho phép body mở rộng */
-        display: flex;
-        flex-direction: column;
-    }
-    .tour-card:hover { 
-        box-shadow: 0 5px 20px rgba(0, 120, 255, 0.25); /* Đổ bóng mạnh hơn với màu xanh chính */
-        transform: translateY(-5px); /* Nổi lên rõ ràng hơn */
-        border-color: #0078ff; /* Viền xanh khi hover */
-        text-decoration: none; /* Bỏ gạch chân cho thẻ <a> */
-    }
+    .tour-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
 
-    /* MÀU CHỦ ĐẠO MỚI VÀ TIÊU ĐỀ */
-    /* Màu xanh chính (Thay thế indigo-600) */
-    :root {
-        --bs-primary: #0078ff;
-    }
-    .text-indigo-600, .text-primary, .btn-primary { 
-        color: var(--bs-primary) !important; 
-    }
-    .btn-primary {
-        background-color: var(--bs-primary) !important;
-        border-color: var(--bs-primary) !important;
-        color: white !important;
-    }
-    .fw-bold.text-gray-800 { font-size: 28px; }
-    .text-red-600 { color: #dc3545 !important; } /* Màu đỏ hiện đại hơn */
-    .text-amber-500 { color: #ffc107 !important; } /* Màu vàng rating */
-
-    /* FILTER CHIP STYLING (Phong cách hiện đại) */
+    /* Filter Chips */
     .filter-chip {
-        display: inline-block;
-        padding: 8px 15px;
-        border-radius: 20px; /* Bo tròn mạnh */
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        
-        /* Trạng thái Mặc định */
-        background-color: #f5f5f5; /* Nền xám nhạt */
-        color: #495057; 
-        border: 1px solid #e0e0e0;
-        line-height: 1; /* Fix height issue */
+        padding: 6px 16px; border-radius: 20px; border: 1px solid #ddd;
+        background: #fff; font-size: 13px; cursor: pointer; transition: 0.2s;
     }
-    
-    /* Trạng thái Active/Selected (Dùng màu xanh chính) */
-    .filter-chip.active, .filter-chip.active.btn-primary { 
-        background-color: var(--bs-primary) !important; 
-        color: white !important;
-        border-color: var(--bs-primary) !important;
-        box-shadow: 0 1px 3px rgba(0, 120, 255, 0.4);
+    .filter-chip.active { background: var(--bs-primary); color: white; border-color: var(--bs-primary); }
+    .custom-range::-webkit-slider-runnable-track { background: #343a40; height: 6px; border-radius: 3px; }
+    .custom-range::-webkit-slider-thumb { margin-top: -5px; }
+    .btn-check:checked + .btn-outline-secondary { background-color: #0d6efd; border-color: #0d6efd; color: white; }
+    .cursor-pointer { cursor: pointer; }
+    .form-check-input:checked { background-color: #0d6efd; border-color: #0d6efd; }
+
+        /* Làm đẹp thanh cuộn bên trong dropdown */
+    .dropdown-menu div[style*="overflow-y: auto"]::-webkit-scrollbar {
+        width: 4px;
     }
-    
-    .filter-chip:hover:not(.active) {
-        background-color: #e9ecef;
+    .dropdown-menu div[style*="overflow-y: auto"]::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .dropdown-menu div[style*="overflow-y: auto"]::-webkit-scrollbar-thumb {
+        background: #cbd5e0;
+        border-radius: 10px;
+    }
+    .dropdown-menu div[style*="overflow-y: auto"]::-webkit-scrollbar-thumb:hover {
+        background: #a0aec0;
     }
 
-    /* ĐIỀU CHỈNH NÚT CHÍNH CỦA DROPDOWN */
-    .dropdown > .btn-outline-secondary, .dropdown > .btn-primary {
-        /* Làm cho nút chính bo tròn và đẹp hơn */
-        border-radius: 20px !important;
-        padding: 8px 15px !important;
-        font-size: 15px !important;
+    /* Đảm bảo nút không bị vỡ hàng */
+    .filter-btn-location, .tag-toggle {
+        font-size: 13px;
+        padding: 6px 10px;
+        margin-bottom: 2px;
     }
-    
-    /* Rating Star Styling */
-    .rating-star { cursor: pointer; }
-    .rating-star.active { color: #f59e0b; }
-    .rating-star-empty { color: #d1d5db; }
+        .custom-filter-bar {
+        scrollbar-width: none; /* Ẩn scrollbar Firefox */
+        -ms-overflow-style: none; /* Ẩn scrollbar IE */
+    }
+    .custom-filter-bar::-webkit-scrollbar {
+        display: none; /* Ẩn scrollbar Chrome/Safari */
+    }
+    .dropdown-toggle {
+        white-space: nowrap; /* Không cho chữ trong nút xuống dòng */
+    }
+    .dropdown {
+        position: static !important; /* Để menu căn theo thanh filter bar thay vì nút đơn lẻ nếu bị che */
+    }
 
-    /* Offcanvas Service Radio Styling */
-    .filter-radio-service:hover { background-color: #f3f4f6; }
-    .filter-radio-service input:checked + .form-check-label {
-        color: var(--bs-primary); 
-        font-weight: 600;
+    .dropdown-menu {
+        margin-top: 10px !important;
     }
-    .service-radio:checked {
-        border-color: var(--bs-primary) !important;
-        background-color: var(--bs-primary) !important;
+
+    /* Quan trọng: Cho phép menu hiển thị ra ngoài vùng cuộn */
+    .custom-filter-bar {
+        overflow: visible !important; 
+        display: flex;
+        -webkit-overflow-scrolling: touch;
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container my-5">
-    <h2 class="fw-bold mb-1 text-gray-800">Kết quả cho: <span class="text-indigo-600" id="mainFilterTitle">{{ category_name|default:'Biển &amp; Đảo' }}</span></h2>
-    <p class="text-muted small mb-3">{{ results|length }} tour du lịch/hoạt động được tìm thấy.</p>
+    <h2 class="fw-bold mb-4">Tour {{ category_name }}</h2>
 
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-        <div class="d-flex align-items-center mb-2 me-4 flex-wrap gap-2">
-            
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4 bg-white p-3 rounded-4 shadow-sm border">
+
+        <div class="d-flex align-items-center gap-2 flex-nowrap overflow-x-auto pb-3 custom-filter-bar">
+    
             <div class="dropdown">
-                <button class="btn btn-outline-secondary rounded-full dropdown-toggle d-flex align-items-center px-4 py-2 text-sm" type="button" id="diaDiemDropdown" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                    <i class="fa-solid fa-location-dot me-2 text-gray-500"></i> <span id="selectedDiaDiem">Địa điểm</span>
+                <button class="btn btn-light border rounded-pill px-3 py-2 btn-sm fw-medium dropdown-toggle" 
+                        type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                    <i class="fa-solid fa-location-dot me-1 text-primary"></i> 
+                    <span id="selectedDiaDiemText">
+                        {% if active_destinations %}{{ active_destinations|length }} địa điểm{% else %}Địa điểm{% endif %}
+                    </span>
                 </button>
-                <div class="dropdown-menu p-3 shadow-lg border-0 rounded-xl" aria-labelledby="diaDiemDropdown" style="min-width: 250px;">
-                    <p class="fw-bold mb-2">Chọn nhanh</p>
-                    <div class="d-flex flex-wrap gap-2 mb-3" id="diaDiemButtons">
-                        <button class="filter-chip filter-btn-location" data-value="Hà Nội">Hà Nội</button>
-                        <button class="filter-chip filter-btn-location" data-value="Đà Nẵng">Đà Nẵng</button>
-                        <button class="filter-chip filter-btn-location" data-value="TP. HCM">TP. HCM</button>
-                        <button class="filter-chip filter-btn-location" data-value="">Tất cả</button>
+                <div class="dropdown-menu p-3 shadow-lg border-0" style="min-width: 350px;">
+                    <h6 class="dropdown-header ps-0 mb-2 text-dark fw-bold">Chọn các địa điểm</h6>
+                    <div class="row row-cols-2 g-1 mb-3" style="max-height: 250px; overflow-y: auto;">
+                        {% for dest in list_destinations %}
+                        <div class="col">
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-primary w-100 text-start text-truncate filter-btn-location-multiple {% if dest in active_destinations %}active{% endif %}" 
+                                    data-value="{{ dest }}">
+                                {{ dest }}
+                            </button>
+                        </div>
+                        {% endfor %}
                     </div>
-                    <input type="text" class="form-control rounded-lg" id="locationSearchInput" placeholder="Tìm kiếm địa điểm khác...">
-                    <div class="mt-3 text-end">
-                        <button class="btn btn-sm btn-outline-danger me-2 clear-location-filter">Xóa</button>
-                        <button class="btn btn-sm btn-primary rounded-lg apply-location-filter">Áp dụng</button>
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" id="clearLocationBtn">Xóa chọn</button>
+                        <button type="button" class="btn btn-primary btn-sm px-4 apply-location-filter">Áp dụng</button>
                     </div>
                 </div>
             </div>
 
             <div class="dropdown">
-                <button class="btn btn-primary rounded-full dropdown-toggle px-4 py-2 text-sm" type="button" id="loaiHinhDropdownButton" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                    <span id="selectedLoaiHinhText">{{ category_name|default:'Du lịch và biển đảo' }}</span>
+                <button class="btn btn-light border rounded-pill px-3 py-2 btn-sm fw-medium dropdown-toggle" 
+                        type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                    <i class="fa-solid fa-layer-group me-1 text-success"></i> 
+                    <span id="selectedLoaiHinhText">
+                        {% if active_tags %}{{ active_tags|length }} hoạt động{% else %}Phân loại{% endif %}
+                    </span>
                 </button>
-                <div class="dropdown-menu p-3 shadow-lg border-0 rounded-xl" aria-labelledby="loaiHinhDropdownButton" style="min-width: 280px;">
-                    <p class="dropdown-header fw-bold text-muted">Lọc theo hoạt động:</p>
-                    <div class="d-flex flex-wrap gap-2 mb-2" id="tagCheckboxes">
+                <div class="dropdown-menu p-3 shadow-lg border-0" style="min-width: 400px;">
+                    <h6 class="dropdown-header ps-0 mb-2 text-dark fw-bold">Chọn loại hình</h6>
+                    <div class="row row-cols-2 g-2 mb-3" style="max-height: 300px; overflow-y: auto;">
                         {% for tag in category_tags %}
-                            <button type="button"
-                                    class="filter-chip tag-toggle {% if tag.slug in active_tags %}active{% endif %}"
+                        <div class="col">
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-secondary tag-toggle w-100 text-start text-truncate {% if tag.slug in active_tags %}active{% endif %}" 
                                     data-tag="{{ tag.slug }}">
                                 {{ tag.name }}
                             </button>
+                        </div>
+                        {% empty %}
+                        <div class="col-12 text-center small text-muted">Không có phân loại</div>
                         {% endfor %}
                     </div>
-                    <div class="text-end border-top pt-2">
-                        <button class="btn btn-sm btn-primary" id="applyTagsBtn">Áp dụng</button>
-                        <button class="btn btn-sm btn-outline-secondary ms-2" id="clearTagsBtn">Xóa lọc</button>
-                    </div>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item text-primary hover:bg-indigo-50 rounded-lg" href="#" data-bs-toggle="offcanvas" data-bs-target="#filterOffcanvas"><i class="fa-solid fa-list-ul me-1"></i> Xem tất cả loại hình</a>
-                    </div>
-            </div>
-            <div class="dropdown">
-                <button class="btn btn-outline-secondary rounded-full d-flex align-items-center px-3 py-2" type="button" id="dateDropdownButtonInline" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                    <i class="fa-regular fa-calendar-days me-2"></i> <span id="selectedDateTextInline">Ngày</span>
-                </button>
-                <div class="dropdown-menu p-3 shadow-lg border-0 rounded-xl" aria-labelledby="dateDropdownButtonInline" style="min-width:220px;">
-                    <div class="d-grid gap-2">
-                        <button class="filter-chip date-preset {% if selected_date == 'today' %}active{% endif %}" data-value="today">Hôm nay</button>
-                        <button class="filter-chip date-preset {% if selected_date == 'tomorrow' %}active{% endif %}" data-value="tomorrow">Ngày mai</button>
-                        <div class="mt-2">
-                            <label class="form-label small mb-1">Chọn ngày khác</label>
-                            <input type="date" id="datePickerInputInline" class="form-control form-control-sm" />
-                        </div>
-                        <button class="filter-chip date-preset {% if not selected_date %}active{% endif %}" data-value="">Bỏ chọn</button>
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" id="clearTagsBtn">Xóa chọn</button>
+                        <button type="button" class="btn btn-primary btn-sm px-4" id="applyTagsBtn">Áp dụng</button>
                     </div>
                 </div>
             </div>
-            
-            <div class="dropdown ms-2">
-                <button class="btn btn-outline-primary d-flex align-items-center dropdown-toggle rounded-full" type="button" id="priceDropdownButton" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                    <i class="fa-solid fa-tag me-2"></i> <span id="selectedPriceTextInline">Giá</span>
+
+            <div class="dropdown">
+                <button class="btn btn-light border rounded-pill px-3 py-2 btn-sm fw-medium dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fa-solid fa-calendar-day me-1 text-info"></i> Ngày
                 </button>
-                <div class="dropdown-menu p-3 shadow-lg border-0 rounded-xl" aria-labelledby="priceDropdownButton" style="min-width:320px;">
-                    <h6 class="mb-2 fw-bold text-gray-700">Lọc theo khoảng giá</h6>
-                    <div class="d-flex gap-2 mb-3">
-                        <div class="btn-group w-100" role="group" aria-label="Price presets">
-                            <button type="button" class="btn btn-sm btn-outline-secondary price-preset" data-min="0" data-max="500000">&lt;500k</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary price-preset" data-min="500000" data-max="1000000">500k-1M</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary price-preset" data-min="1000000" data-max="10169492">1M+</button>
-                        </div>
+                <div class="dropdown-menu dropdown-menu-end p-3 shadow-lg border-0">
+                    <label class="form-label small fw-bold">Chọn ngày khởi hành:</label>
+                    <input type="date" id="datePickerInput" class="form-control form-control-sm mb-2" value="{{ request.GET.date }}">
+                    <button type="button" class="btn btn-primary btn-sm w-100" 
+                            onclick="applyFilters({'date': document.getElementById('datePickerInput').value})">
+                        Tìm theo ngày
+                    </button>
+                </div>
+            </div>
+
+            <div class="dropdown">
+                <button class="btn btn-light border rounded-pill px-3 py-2 btn-sm fw-medium dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fa-solid fa-tag me-1 text-danger"></i> Giá
+                </button>
+                <div class="dropdown-menu dropdown-menu-end p-3 shadow-lg border-0" style="min-width: 250px;">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Giá tối đa: <span id="priceLabelDropdown" class="text-primary">Không giới hạn</span></label>
+                        <input type="range" class="form-range" 
+                            min="0" 
+                            max="{{ max_price_db|default:10000000 }}" 
+                            step="500000" 
+                            id="priceSliderDropdown"
+                            value="{{ request.GET.price_max|default:max_price_db }}">
                     </div>
-                    <div class="mb-2">
-                        <label class="form-label small text-muted mb-1">Tối đa: <span id="priceLabelDropdown">₫ 10.169.492</span></label>
-                        <input type="range" id="priceSliderDropdown" min="0" max="10169492" value="10169492" step="50000" class="form-range">
-                        <div class="mt-2 d-flex justify-content-end">
-                            <button class="btn btn-sm btn-outline-danger me-2" id="clearPriceFilterDropdown">Xóa</button>
-                            <button class="btn btn-sm btn-primary rounded-lg" id="applyPriceRangeDropdownView">Áp dụng</button>
-                        </div>
-                    </div>
+                    <button type="button" class="btn btn-primary btn-sm w-100" id="applyPriceRangeDropdownView">Áp dụng</button>
                 </div>
             </div>
         </div>
 
-        <div class="d-flex align-items-center mb-2">
-            <div>
-                <button class="btn btn-outline-dark d-flex align-items-center py-2 px-3 rounded-lg shadow-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#filterOffcanvas" aria-controls="filterOffcanvas">
-                    <i class="fa-solid fa-sliders me-2"></i> Lọc chi tiết
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-dark rounded-pill px-3 py-2 btn-sm fw-medium" data-bs-toggle="offcanvas" data-bs-target="#offcanvasFilters">
+                <i class="fa-solid fa-sliders me-2"></i>Bộ lọc
+            </button>
+            
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary rounded-pill px-3 py-2 btn-sm dropdown-toggle fw-medium" type="button" data-bs-toggle="dropdown">
+                    <i class="fa-solid fa-sort me-2"></i>Sắp xếp
                 </button>
-            </div>
-            <div class="dropdown ms-2">
-                <button class="btn btn-outline-secondary d-flex align-items-center rounded-lg" type="button" id="sortDropdownButton" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fa-solid fa-sort me-2"></i> Sắp xếp
-                </button>
-                <ul class="dropdown-menu shadow-lg border-0 rounded-xl" aria-labelledby="sortDropdownButton">
-                    <li><a class="dropdown-item sort-item {% if not active_sort or active_sort == 'rating' %}active{% endif %}" href="#" data-sort="rating">Mặc định (Đánh giá)</a></li>
-                    <li><a class="dropdown-item sort-item {% if active_sort == 'price_asc' %}active{% endif %}" href="#" data-sort="price_asc">Giá: tăng dần</a></li>
-                    <li><a class="dropdown-item sort-item {% if active_sort == 'price_desc' %}active{% endif %}" href="#" data-sort="price_desc">Giá: giảm dần</a></li>
-                    <li><a class="dropdown-item sort-item {% if active_sort == 'latest' %}active{% endif %}" href="#" data-sort="latest">Mới nhất</a></li>
+                <ul class="dropdown-menu shadow-lg border-0">
+                    <li><a class="dropdown-item sort-item" href="#" data-sort="rating">Phổ biến nhất</a></li>
+                    <li><a class="dropdown-item sort-item" href="#" data-sort="price_asc">Giá: Thấp đến Cao</a></li>
+                    <li><a class="dropdown-item sort-item" href="#" data-sort="price_desc">Giá: Cao đến Thấp</a></li>
                 </ul>
             </div>
         </div>
-    </div>
 
-    <div class="row g-4">
-        <div class="col-12">
-            <div class="row g-4" id="resultsContainer">
-                {% if results %}
-                    {% for a in results %}
-                    <div class="col-lg-3 col-md-4 col-sm-6">
-                        <a href="{% url 'tour_detail' tour_slug=a.slug %}" class="card tour-card shadow-sm border-0 rounded-xl overflow-hidden d-flex flex-column h-100">                            
-                            <div class="image-wrapper">
-                                {% if a.image %}
-                                    <img src="{{ a.image }}" alt="{{ a.title }}" loading="lazy" onerror="this.onerror=null; this.src='{% static 'images/placeholder.jpg' %}';">
-                                {% else %}
-                                    <div class="placeholder-image">No Image</div>
-                                {% endif %}
-                            </div>
-                            <div class="card-body d-flex flex-column">
-                                <h5 class="card-title fw-bold fs-6 mb-1 text-truncate text-gray-900">{{ a.title }}</h5>
-                                <p class="card-text text-muted small mb-2"><i class="fa-solid fa-location-dot me-1"></i> {{ a.destination }}</p>
-                                
-                                <div class="d-flex align-items-center mb-2">
-                                    <i class="fa-solid fa-star text-amber-500 me-1 small"></i>
-                                    <span class="small fw-bold me-2 text-gray-700">{{ a.rating|floatformat:1 }}</span>
-                                    <span class="badge bg-light text-muted fw-normal text-truncate" title="{{ a.tags_text }}">{{ a.tags_text|truncatechars:35 }}</span>
-                                </div>
-                                {% if a.price %}
-                                <p class="fw-bold text-red-600 fs-5 mt-auto mb-0" data-price="{{ a.price }}">
-                                    {{ a.price|intcomma }}₫
-                                </p>
-                                {% else %}
-                                <p class="fw-bold text-red-600 fs-5 mt-auto mb-0">Liên hệ để biết giá</p>
-                                {% endif %}
-                            </div>
-                        </a>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        {% for a in results %}
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden tour-card">
+                <a href="{% url 'travel:tour_detail' slug=a.slug %}" class="text-decoration-none text-dark d-flex flex-column h-100">
+                    
+                    <div style="aspect-ratio: 16/9; overflow: hidden; position: relative;">
+                        {% if a.image_main %}
+                            <img src="{{ a.image_main.url }}" class="w-100 h-100 object-fit-cover" alt="{{ a.name }}">
+                        {% else %}
+                            <img src="{% static 'images/placeholder.jpg' %}" class="w-100 h-100 object-fit-cover">
+                        {% endif %}
+
+                        {% if a.destination.score_stats.overall_score >= 80 %}
+                        <span class="badge bg-danger position-absolute top-0 start-0 m-2">
+                            <i class="fa-solid fa-fire me-1"></i>Thịnh hành
+                        </span>
+                        {% endif %}
                     </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="col-12">
-                        <div class="alert alert-info border-0 rounded-xl shadow-sm text-center">
-                            <h4 class="alert-heading">Không tìm thấy kết quả!</h4>
-                            <p>Không có Tour du lịch/Hoạt động nào khớp với các tiêu chí lọc hiện tại của bạn.</p>
+
+                    <div class="card-body p-3 d-flex flex-column">
+                        <div class="d-flex justify-content-between mb-2 small text-muted">
+                            <span><i class="fa-solid fa-chart-line me-1"></i>AI Score: {{ a.destination.score_stats.overall_score|floatformat:0 }}</span>
+                            <span><i class="fa-solid fa-comment-dots me-1"></i>{{ a.destination.score_stats.total_reviews }}</span>
+                        </div>
+
+                        <h6 class="fw-bold text-truncate mb-1">{{ a.name }}</h6>
+                        <p class="text-muted small mb-3">
+                            <i class="fa-solid fa-location-dot me-1"></i>{{ a.destination.name }}
+                        </p>
+
+                        <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-danger fs-5">{{ a.price|intcomma }}₫</span>
+                            <div class="text-warning small fw-bold">
+                                <i class="fa-solid fa-star"></i> {{ a.average_rating|floatformat:1 }}
+                            </div>
                         </div>
                     </div>
-                {% endif %}
+                </a>
             </div>
         </div>
+        {% endfor %}
     </div>
 </div>
-
-<div class="offcanvas offcanvas-end shadow-2xl" tabindex="-1" id="filterOffcanvas" aria-labelledby="filterOffcanvasLabel" style="width: 350px;">
-    <div class="offcanvas-header border-bottom">
-        <h5 class="offcanvas-title fw-bold text-gray-800" id="filterOffcanvasLabel"><i class="fa-solid fa-filter me-2 text-indigo-600"></i> Bộ Lọc Chi Tiết</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+<div class="offcanvas offcanvas-end bg-dark text-white" tabindex="-1" id="offcanvasFilters" aria-labelledby="offcanvasFiltersLabel">
+    <div class="offcanvas-header border-bottom border-secondary">
+        <h5 class="offcanvas-title fw-bold" id="offcanvasFiltersLabel">Bộ lọc nâng cao</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
+    
     <div class="offcanvas-body">
-        
         <div class="mb-4">
-            <p class="fw-bold mb-2 text-gray-700">Dịch vụ/Loại hình chính</p>
-            <div class="list-group rounded-lg overflow-hidden">
-                <label class="list-group-item filter-radio-service d-flex justify-content-between align-items-center">
-                    Du lịch và biển đảo
-                    <input class="form-check-input service-radio" type="radio" name="service" value="Du lịch và biển đảo" {% if category_name == "Du lịch và biển đảo" %}checked{% endif %}>
-                </label>
-                <label class="list-group-item filter-radio-service d-flex justify-content-between align-items-center">
-                    Du lịch núi & cao nguyên
-                    <input class="form-check-input service-radio" type="radio" name="service" value="Du lịch núi & cao nguyên" {% if category_name == "Du lịch núi & cao nguyên" %}checked{% endif %}>
-                </label>
-                 <label class="list-group-item filter-radio-service d-flex justify-content-between align-items-center">
-                    Văn hóa - lịch sử
-                    <input class="form-check-input service-radio" type="radio" name="service" value="Văn hóa - lịch sử" {% if category_name == "Văn hóa - lịch sử" %}checked{% endif %}>
-                </label>
-                <label class="list-group-item filter-radio-service d-flex justify-content-between align-items-center">
-                    Du lịch sinh thái
-                    <input class="form-check-input service-radio" type="radio" name="service" value="Du lịch sinh thái" {% if category_name == "Du lịch sinh thái" %}checked{% endif %}>
-                </label>
-                <label class="list-group-item filter-radio-service d-flex justify-content-between align-items-center">
-                    Ẩm thực - chợ đêm
-                    <input class="form-check-input service-radio" type="radio" name="service" value="Ẩm thực - chợ đêm" {% if category_name == "Ẩm thực - chợ đêm" %}checked{% endif %}>
-                </label>
-                <label class="list-group-item filter-radio-service d-flex justify-content-between align-items-center">
-                    Lễ hội - sự kiện
-                    <input class="form-check-input service-radio" type="radio" name="service" value="Lễ hội - sự kiện" {% if category_name == "Lễ hội - sự kiện" %}checked{% endif %}>
-                </label>
-                <label class="list-group-item filter-radio-service d-flex justify-content-between align-items-center">
-                    Nghỉ dưỡng - thư giãn
-                    <input class="form-check-input service-radio" type="radio" name="service" value="Nghỉ dưỡng - thư giãn" {% if category_name == "Nghỉ dưỡng - thư giãn" %}checked{% endif %}>
-                </label>
+            <label class="form-label fw-bold small text-white-50 text-uppercase">Địa điểm phổ biến</label>
+            <div class="d-flex flex-wrap gap-2 mt-2">
+                {% for dest in list_destinations %}
+                    <button type="button" 
+                            class="btn btn-sm btn-outline-secondary rounded-pill filter-btn-location-offcanvas {% if request.GET.destination == dest %}active{% endif %}" 
+                            data-value="{{ dest }}">
+                        {{ dest }}
+                    </button>
+                {% endfor %}
             </div>
         </div>
 
-        <hr class="my-3">
+        <hr class="border-secondary opacity-25">
 
         <div class="mb-4">
-            <p class="fw-bold mb-2 text-gray-700">Điểm đến phổ biến</p>
-            <div class="d-flex flex-wrap gap-2" id="offcanvasDiaDiemButtons">
-                <button class="filter-chip filter-btn-location-offcanvas" data-value="TP. HCM">TP. HCM</button>
-                <button class="filter-chip filter-btn-location-offcanvas" data-value="Hà Nội">Hà Nội</button>
-                <button class="filter-chip filter-btn-location-offcanvas" data-value="Đà Nẵng">Đà Nẵng</button>
-                <button class="filter-chip filter-btn-location-offcanvas" data-value="">Tất cả</button>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="form-label fw-bold small text-white-50 text-uppercase mb-0">Ngân sách tối đa</label>
+                <span id="priceRangeDisplayOffcanvas" class="fw-bold text-primary">
+                    {{ request.GET.price_max|default:"0" }}đ
+                </span>
+            </div>
+            <input type="range" class="form-range custom-range" 
+                   min="0" max="{{ max_price_db|default:10000000 }}" step="500000" 
+                   id="priceSliderOffcanvas" value="{{ request.GET.price_max|default:max_price_db }}">
+            <div class="d-flex justify-content-between mt-1">
+                <small class="text-muted">0đ</small>
+                <small class="text-muted">{{ max_price_db|floatformat:"0" }}đ</small>
+            </div>
+        </div> <hr class="border-secondary opacity-25">
+
+        <div class="mb-4">
+            <label class="form-label fw-bold small text-white-50 text-uppercase">Thời lượng tour</label>
+            <div class="d-flex flex-wrap gap-2 mt-2">
+                <input type="checkbox" class="btn-check duration-filter" id="dur_1_3" value="1-3" {% if '1-3' in request.GET.duration %}checked{% endif %}>
+                <label class="btn btn-outline-secondary rounded-pill btn-sm px-3" for="dur_1_3">1-3 ngày</label>
+
+                <input type="checkbox" class="btn-check duration-filter" id="dur_4_7" value="4-7" {% if '4-7' in request.GET.duration %}checked{% endif %}>
+                <label class="btn btn-outline-secondary rounded-pill btn-sm px-3" for="dur_4_7">4-7 ngày</label>
+                
+                <input type="checkbox" class="btn-check duration-filter" id="dur_8_plus" value="8+" {% if '8+' in request.GET.duration %}checked{% endif %}>
+                <label class="btn btn-outline-secondary rounded-pill btn-sm px-3" for="dur_8_plus">Trên 8 ngày</label>
             </div>
         </div>
-        
-        <hr class="my-3">
+
+        <hr class="border-secondary opacity-25">
 
         <div class="mb-4">
-            <p class="fw-bold mb-2 text-gray-700">Ngày tham gia</p>
-            <div class="d-grid gap-2" id="offcanvasNgayButtons">
-                <button class="filter-chip filter-btn-ngay-offcanvas" data-value="today">Hôm nay</button>
-                <button class="filter-chip filter-btn-ngay-offcanvas" data-value="tomorrow">Ngày mai</button>
-                <div class="mt-2">
-                    <label class="form-label small mb-1">Chọn ngày</label>
-                    <input type="date" id="offcanvasDatePicker" class="form-control form-control-sm" />
+            <label class="form-label fw-bold small text-white-50 text-uppercase">Đánh giá khách hàng</label>
+            <div class="d-flex flex-column gap-3 mt-3">
+                {% for star in "543" %}
+                <div class="form-check custom-rating-check">
+                    <input class="form-check-input rating-radio" type="radio" name="rating_min" id="rating_{{ star }}" value="{{ star }}" {% if request.GET.rating_min == star %}checked{% endif %}>
+                    <label class="form-check-label text-white d-flex align-items-center cursor-pointer w-100" for="rating_{{ star }}">
+                        <span class="me-auto">{{ star }} Sao trở lên</span>
+                        <div class="text-warning small">
+                            {% for i in "12345" %}
+                                <i class="{% if forloop.counter <= star|add:0 %}fa-solid{% else %}fa-regular{% endif %} fa-star"></i>
+                            {% endfor %}
+                        </div>
+                    </label>
                 </div>
-                <button class="filter-chip filter-btn-ngay-offcanvas" data-value="">Bỏ chọn</button>
+                {% endfor %}
             </div>
         </div>
 
-        <hr class="my-3">
-        
-        <div class="mb-4">
-            <p class="fw-bold mb-2 text-gray-700">Khoảng giá</p>
-            <p class="small text-muted" id="priceRangeDisplayOffcanvas">₫ 10.169.492</p>
-            <div class="mb-2">
-                <input type="range" class="form-range" id="priceSliderOffcanvas" min="0" max="10169492" value="10169492" step="50000">
-            </div>
+        <div class="d-grid gap-2 mt-5">
+            <button type="button" class="btn btn-primary fw-bold py-2" id="applyOffcanvasFilters">Xem kết quả</button>
+            <button type="button" class="btn btn-outline-light btn-sm border-0 text-white-50" id="clearOffcanvasFilters">Xóa tất cả bộ lọc</button>
         </div>
-        
-        <hr class="my-3">
-        
-        <div class="mb-4">
-            <p class="fw-bold mb-2 text-gray-700">Đánh giá tối thiểu</p>
-            <div class="d-flex gap-1 fs-5" id="ratingStarsOffcanvas">
-                <i class="fa-solid fa-star rating-star" data-rating="1"></i>
-                <i class="fa-solid fa-star rating-star" data-rating="2"></i>
-                <i class="fa-solid fa-star rating-star" data-rating="3"></i>
-                <i class="fa-solid fa-star rating-star" data-rating="4"></i>
-                <i class="fa-solid fa-star rating-star" data-rating="5"></i>
-            </div>
-            <input type="hidden" id="minRatingOffcanvas" value="4">
-        </div>
-
-    </div>
-    <div class="offcanvas-footer p-3 d-flex justify-content-between">
-        <button class="btn btn-outline-danger rounded-lg" id="clearOffcanvasFilters">Xóa bộ lọc</button>
-        <button class="btn btn-primary rounded-lg text-white" id="applyOffcanvasFilters">Xem kết quả</button>
     </div>
 </div>
 
@@ -374,406 +336,139 @@
 
 {% block extra_js %}
 <script>
-    const MAX_PRICE = 10169492;
+    // 1. CẤU HÌNH HẰNG SỐ
+    const MAX_PRICE = Number("{{ max_price_db|default:'10000000' }}") || 10000000;
     const formatter = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 });
 
-    // Helper: Formats price for display
-    function formatPriceDisplay(price) {
-        price = Number(price);
-        if (price >= MAX_PRICE) return 'Không giới hạn';
-        return formatter.format(price);
-    }
+    // 2. HÀM TIỆN ÍCH
+    const formatPriceDisplay = (price) => Number(price) >= MAX_PRICE ? 'Không giới hạn' : formatter.format(price);
 
-    // Helper: set or remove query param and navigate
-    function setQueryParamAndReload(key, value) {
-        const url = new URL(window.location.href);
-        // Xử lý giá trị rỗng/null/undefined
-        if (value === null || value === '' || value === undefined) {
-            url.searchParams.delete(key);
-        } else {
-            url.searchParams.set(key, value);
-        }
-        // Xóa các tham số phân trang
-        if (url.searchParams.has('page')) url.searchParams.delete('page');
-        window.location.href = url.toString();
-    }
-    
-    // Helper: Lấy URL hiện tại để thao tác
-    function getCurrentURL() {
-        return new URL(window.location.href);
-    }
-    
-    // Cập nhật tên hiển thị của Loại hình chính (Dropdown)
-    function updateLoaiHinhLabel() {
-        const count = document.querySelectorAll('.tag-toggle.active').length;
-        const labelEl = document.getElementById('selectedLoaiHinhText');
-        if (labelEl) {
-            if (count === 0) {
-                // Nếu không có tag nào được chọn, hiển thị tên category chính
-                labelEl.textContent = '{{ category_name|default:"Du lịch và biển đảo" }}';
-            }
-            else {
-                labelEl.textContent = `${count} hoạt động`;
+    function applyFilters(newParams) {
+        const urlParams = new URLSearchParams(window.location.search);
+        for (const key in newParams) {
+            const value = newParams[key];
+            urlParams.delete(key); 
+            if (Array.isArray(value)) {
+                value.forEach(val => { if (val) urlParams.append(key, val); });
+            } else if (value !== undefined) {
+                if (value === '') urlParams.delete(key);
+                else urlParams.set(key, value);
             }
         }
+        window.location.href = window.location.pathname + '?' + urlParams.toString();
     }
 
-
-    // --- INITIALIZATION & DROPDOWN LOGIC ---
+    // 3. KHỞI TẠO LOGIC KHI TRANG SẴN SÀNG
     document.addEventListener('DOMContentLoaded', function() {
-        const params = getCurrentURL().searchParams;
         
-        // --- 1. LOCATION FILTER LOGIC ---
-        
-        // Helper để đồng bộ trạng thái active cho các nút địa điểm
-        function syncLocationButtons(locationValue) {
-            document.querySelectorAll('.filter-btn-location, .filter-btn-location-offcanvas').forEach(btn => {
-                const isActive = (btn.dataset.value || '') === locationValue;
-                btn.classList.toggle('active', isActive);
+        // --- XỬ LÝ ĐỒNG BỘ GIÁ (Dropdown) ---
+        const priceSlider = document.getElementById('priceSliderDropdown');
+        const priceLabel = document.getElementById('priceLabelDropdown');
+        if (priceSlider && priceLabel) {
+            priceSlider.addEventListener('input', function() {
+                priceLabel.textContent = formatPriceDisplay(this.value);
             });
-            
-            const diaDiemText = document.getElementById('selectedDiaDiem');
-            if (diaDiemText) {
-                 diaDiemText.textContent = locationValue || 'Địa điểm';
-            }
+            // Hiển thị giá hiện tại khi load trang
+            priceLabel.textContent = formatPriceDisplay(priceSlider.value);
         }
-        
-        // On Load: Khởi tạo trạng thái địa điểm
-        const initialDest = params.get('destination') || '';
-        syncLocationButtons(initialDest);
 
-        // Location Apply button listener (Dropdown)
-        document.querySelector('.apply-location-filter').addEventListener('click', function() {
-            const selectedBtn = document.querySelector('#diaDiemButtons .filter-btn-location.active');
-            const manualInput = document.getElementById('locationSearchInput').value.trim();
-            
-            let destination = manualInput;
-            if (selectedBtn && !manualInput) { // Ưu tiên nút bấm nếu không nhập tay
-                 destination = selectedBtn.dataset.value;
-            } else if (selectedBtn && manualInput) {
-                 // Nếu người dùng chọn nút và nhập tay, ưu tiên nhập tay
-            } else if (!selectedBtn && !manualInput) {
-                 destination = '';
-            }
-            
-            setQueryParamAndReload('destination', destination);
-        });
-        
-        // Location Clear button listener (Dropdown)
-        document.querySelector('.clear-location-filter').addEventListener('click', function() {
-            document.getElementById('locationSearchInput').value = '';
-            setQueryParamAndReload('destination', '');
-        });
-
-        // Click trên nút địa điểm sẽ tự động set giá trị vào input
-        document.querySelectorAll('.filter-btn-location').forEach(btn => {
-            btn.addEventListener('click', function() {
-                // Nếu là nút 'Tất cả' thì xóa input
-                const value = this.dataset.value === '' ? '' : this.dataset.value;
-                document.getElementById('locationSearchInput').value = value;
-                // Tuy nhiên không reload ngay, chờ nhấn "Áp dụng"
+        // --- XỬ LÝ CHỌN NHIỀU ĐỊA ĐIỂM (Dropdown) ---
+        document.querySelectorAll('.filter-btn-location-multiple').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation(); // Không cho đóng dropdown khi chọn
+                this.classList.toggle('active');
+                const count = document.querySelectorAll('.filter-btn-location-multiple.active').length;
+                const label = document.getElementById('selectedDiaDiemText');
+                if(label) label.textContent = count > 0 ? `${count} địa điểm` : 'Địa điểm';
             });
         });
 
-
-        // --- 2. DATE FILTER LOGIC (Dropdown) ---
-        
-        // Helper: Hàm xử lý click nút preset/input ngày
-        function setDateParam(val) {
-            setQueryParamAndReload('date', val);
-        }
-
-        // Click Preset Buttons
-        document.querySelectorAll('.date-preset').forEach(btn => {
-            btn.addEventListener('click', function() {
-                setDateParam(this.dataset.value);
+        // --- XỬ LÝ CHỌN NHIỀU PHÂN LOẠI (Dropdown) ---
+        document.querySelectorAll('.tag-toggle').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation(); // Không cho đóng dropdown khi chọn
+                this.classList.toggle('active');
+                const count = document.querySelectorAll('.tag-toggle.active').length;
+                const label = document.getElementById('selectedLoaiHinhText');
+                if(label) label.textContent = count > 0 ? `${count} hoạt động` : 'Phân loại';
             });
         });
-        
-        // Input Date Picker (Dropdown)
-        document.getElementById('datePickerInputInline').addEventListener('change', function() {
-            if (this.value) setDateParam(this.value);
-        });
-        
-        // On Load: Đồng bộ input date picker
-        const dateParam = params.get('date');
-        if (dateParam && dateParam !== 'today' && dateParam !== 'tomorrow') {
-            document.getElementById('datePickerInputInline').value = dateParam;
-        }
 
-
-        // --- 3. PRICE SLIDER DROPDOWN LOGIC ---
-        const sliderDropdown = document.getElementById('priceSliderDropdown');
-        const labelDropdown = document.getElementById('priceLabelDropdown');
-        const applyViewBtnDropdown = document.getElementById('applyPriceRangeDropdownView');
-        const clearPriceFilterDropdown = document.getElementById('clearPriceFilterDropdown');
-
-        function syncDropdownPriceLabel() {
-            if (sliderDropdown && labelDropdown) {
-                const maxVal = Number(sliderDropdown.value);
-                labelDropdown.textContent = formatPriceDisplay(maxVal);
-            }
-        }
-
-        if (sliderDropdown) {
-            sliderDropdown.addEventListener('input', syncDropdownPriceLabel);
-            const priceMaxParam = params.get('price_max');
-            if (priceMaxParam) sliderDropdown.value = priceMaxParam;
-            syncDropdownPriceLabel();
-        }
-
-        if (applyViewBtnDropdown) applyViewBtnDropdown.addEventListener('click', function() { 
-            let maxVal = sliderDropdown ? sliderDropdown.value : '';
-            if (Number(maxVal) >= MAX_PRICE) maxVal = ''; // Clear max filter if full range selected
-            // Giữ price_min hiện tại
-            const minVal = params.get('price_min') || '';
-            
-            const url = getCurrentURL();
-            url.searchParams.delete('price_max');
-            url.searchParams.delete('price_min');
-            if (minVal) url.searchParams.set('price_min', minVal);
-            if (maxVal) url.searchParams.set('price_max', maxVal);
-            
-            if (url.searchParams.has('page')) url.searchParams.delete('page');
-            window.location.href = url.toString();
-        });
-        
-        clearPriceFilterDropdown.addEventListener('click', function() {
-             const url = getCurrentURL();
-             url.searchParams.delete('price_min');
-             url.searchParams.delete('price_max');
-             if (url.searchParams.has('page')) url.searchParams.delete('page');
-             window.location.href = url.toString();
+        // --- NÚT ÁP DỤNG TRÊN DROPDOWN ---
+        document.querySelector('.apply-location-filter')?.addEventListener('click', function() {
+            const selected = Array.from(document.querySelectorAll('.filter-btn-location-multiple.active')).map(b => b.dataset.value);
+            applyFilters({ 'destination': selected });
         });
 
-
-        // Price preset buttons logic
-        document.querySelectorAll('.price-preset').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const min = this.dataset.min || '';
-                const max = this.dataset.max || '';
-                
-                // Update slider value to reflect selected preset max
-                if (sliderDropdown) sliderDropdown.value = max || MAX_PRICE;
-                syncDropdownPriceLabel(); // Update dropdown label
-
-                const url = getCurrentURL();
-                
-                url.searchParams.delete('price_min');
-                url.searchParams.delete('price_max');
-                
-                if (min) url.searchParams.set('price_min', min);
-                if (max && Number(max) < MAX_PRICE) url.searchParams.set('price_max', max);
-                
-                if (url.searchParams.has('page')) url.searchParams.delete('page');
-                window.location.href = url.toString();
-            });
+        document.getElementById('applyTagsBtn')?.addEventListener('click', function() {
+            const selected = Array.from(document.querySelectorAll('.tag-toggle.active')).map(b => b.dataset.tag);
+            applyFilters({ 'tag': selected });
         });
-        
-        // --- 4. SORT LOGIC ---
+
+        document.getElementById('applyPriceRangeDropdownView')?.addEventListener('click', function() {
+            const val = document.getElementById('priceSliderDropdown').value;
+            applyFilters({ 'price_max': val >= MAX_PRICE ? '' : val });
+        });
+
+        // --- NÚT XÓA TRÊN DROPDOWN ---
+        document.getElementById('clearLocationBtn')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('.filter-btn-location-multiple').forEach(b => b.classList.remove('active'));
+            document.getElementById('selectedDiaDiemText').textContent = 'Địa điểm';
+        });
+
+        document.getElementById('clearTagsBtn')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('.tag-toggle').forEach(b => b.classList.remove('active'));
+            document.getElementById('selectedLoaiHinhText').textContent = 'Phân loại';
+        });
+
+        // --- SẮP XẾP ---
         document.querySelectorAll('.sort-item').forEach(item => {
             item.addEventListener('click', function(e) {
                 e.preventDefault();
-                const sortValue = this.dataset.sort === 'rating' ? '' : this.dataset.sort;
-                setQueryParamAndReload('sort', sortValue);
-            });
-        });
-        
-        // --- 5. TAGS/HOẠT ĐỘNG LOGIC (Dropdown) ---
-        
-        // Toggle Tag Chip
-        document.querySelectorAll('.tag-toggle').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault(); // Ngăn chặn sự kiện dropup
-                this.classList.toggle('active');
-                updateLoaiHinhLabel();
+                applyFilters({ 'sort': this.dataset.sort });
             });
         });
 
-        // Apply Tags
-        document.getElementById('applyTagsBtn') && document.getElementById('applyTagsBtn').addEventListener('click', function() {
-            const selected = Array.from(document.querySelectorAll('.tag-toggle.active')).map(b => b.dataset.tag).filter(Boolean);
-            const url = getCurrentURL();
-            // remove existing tag params
-            url.searchParams.delete('tag');
-            selected.forEach(t => url.searchParams.append('tag', t));
-            if (url.searchParams.has('page')) url.searchParams.delete('page');
-            window.location.href = url.toString();
-        });
-        
-        // Clear Tags
-        document.getElementById('clearTagsBtn') && document.getElementById('clearTagsBtn').addEventListener('click', function() {
-            const url = getCurrentURL();
-            url.searchParams.delete('tag');
-            if (url.searchParams.has('page')) url.searchParams.delete('page');
-            window.location.href = url.toString();
-        });
-        
-        updateLoaiHinhLabel(); // Update label on load based on URL tags
-    });
-
-
-    // --- OFFCANVAS SPECIFIC LOGIC ---
-    document.addEventListener('DOMContentLoaded', function() {
-        const params = getCurrentURL().searchParams;
-        const sliderOffcanvas = document.getElementById('priceSliderOffcanvas');
-        const displayOffcanvas = document.getElementById('priceRangeDisplayOffcanvas');
-        const applyOffcanvasBtn = document.getElementById('applyOffcanvasFilters');
-        const clearOffcanvasBtn = document.getElementById('clearOffcanvasFilters');
-        const offcanvasDatePicker = document.getElementById('offcanvasDatePicker');
-        const ratingStars = document.getElementById('ratingStarsOffcanvas');
-        const minRatingHidden = document.getElementById('minRatingOffcanvas');
-        
-        // --- OFFCANVAS: PRICE SLIDER ---
-        function syncOffcanvasPriceLabel() {
-            if (sliderOffcanvas && displayOffcanvas) {
-                const maxVal = Number(sliderOffcanvas.value);
-                displayOffcanvas.textContent = formatPriceDisplay(maxVal);
-            }
+        // --- BỘ LỌC NÂNG CAO (OFFCANVAS) ---
+        const priceSliderOff = document.getElementById('priceSliderOffcanvas');
+        const priceLabelOff = document.getElementById('priceRangeDisplayOffcanvas');
+        if (priceSliderOff && priceLabelOff) {
+            priceSliderOff.addEventListener('input', function() {
+                priceLabelOff.textContent = formatPriceDisplay(this.value);
+            });
+            priceLabelOff.textContent = formatPriceDisplay(priceSliderOff.value);
         }
 
-        if (sliderOffcanvas) {
-            sliderOffcanvas.addEventListener('input', syncOffcanvasPriceLabel);
+        document.getElementById('applyOffcanvasFilters')?.addEventListener('click', function() {
+            // Lấy địa điểm từ offcanvas (nếu có chọn active)
+            const location = document.querySelector('.filter-btn-location-offcanvas.active')?.dataset.value;
+            const maxPrice = document.getElementById('priceSliderOffcanvas').value;
+            const rating = document.querySelector('.rating-radio:checked')?.value;
             
-            // Sync initial value from URL
-            const priceMaxParam = params.get('price_max');
-            if (priceMaxParam) sliderOffcanvas.value = priceMaxParam;
-            else sliderOffcanvas.value = MAX_PRICE; // Set max value if no filter
-            
-            syncOffcanvasPriceLabel();
-        }
+            // Lấy nhiều thời lượng tour
+            const durations = Array.from(document.querySelectorAll('.duration-filter:checked')).map(cb => cb.value);
 
-        // --- OFFCANVAS: RATING STARS ---
-        function syncRatingStars(minRating) {
-            ratingStars.querySelectorAll('.rating-star').forEach(star => {
-                const rating = Number(star.dataset.rating);
-                if (rating <= minRating) {
-                    star.classList.add('active'); // highlight sao
-                } else {
-                    star.classList.remove('active');
-                }
-            });
-            minRatingHidden.value = minRating; // lưu giá trị gửi lên backend
-        }
-
-        // Click chọn sao
-        ratingStars.querySelectorAll('.rating-star').forEach(star => {
-            star.addEventListener('click', function() {
-                const selectedRating = Number(this.dataset.rating);
-                syncRatingStars(selectedRating);
+            applyFilters({
+                'destination': location ? [location] : undefined, // Nếu chọn 1 ở offcanvas thì gửi dạng mảng 1 ptu
+                'price_max': maxPrice >= MAX_PRICE ? '' : maxPrice,
+                'rating_min': rating,
+                'duration': durations
             });
         });
 
-        // Lấy giá trị rating từ URL (nếu có) để sync hiển thị
-        const ratingMinParam = params.get('rating_min');
-        syncRatingStars(Number(ratingMinParam) || 4); // default 4 sao
-
-        // Khi nhấn "Apply Filters" => backend vẫn dùng minRatingHidden.value
-        applyOffcanvasBtn.addEventListener('click', function() {
-            const url = getCurrentURL();
-
-            // … các filter khác giữ nguyên …
-
-            // 5. Đánh giá tối thiểu
-            const minRating = minRatingHidden.value;
-            url.searchParams.delete('rating_min');
-            if (minRating && Number(minRating) > 0) url.searchParams.set('rating_min', minRating);
-
-            // Reload
-            if (url.searchParams.has('page')) url.searchParams.delete('page');
-            window.location.href = url.toString();
+        document.getElementById('clearOffcanvasFilters')?.addEventListener('click', function() {
+            window.location.href = window.location.pathname; // Xóa sạch về mặc định
         });
 
-        // Location: Already synced by syncLocationButtons
-        
-        // --- OFFCANVAS: MAIN FILTER LOGIC ---
-        
-        // Apply Filters button
-        applyOffcanvasBtn.addEventListener('click', function() {
-            const url = getCurrentURL();
-            
-            // 1. Dịch vụ/Loại hình chính
-            const selectedService = document.querySelector('.service-radio:checked');
-            if (selectedService) {
-                // Tham số category trong views.py cần là SLUG của tên dịch vụ
-                const serviceValue = selectedService.value; // Dịch vụ chưa chuẩn hóa
-                url.searchParams.set('category', serviceValue); // Django views.py sẽ tự normalize
-            }
-            
-            // 2. Địa điểm (Lấy từ nút active)
-            const selectedLocationBtn = document.querySelector('#offcanvasDiaDiemButtons .filter-btn-location-offcanvas.active');
-            const destValue = selectedLocationBtn ? (selectedLocationBtn.dataset.value || '') : '';
-            url.searchParams.delete('destination');
-            if (destValue) url.searchParams.set('destination', destValue);
-            
-            // 3. Ngày (Ưu tiên input date, sau đó đến nút preset)
-            let dateValue = '';
-            if (offcanvasDatePicker && offcanvasDatePicker.value) {
-                dateValue = offcanvasDatePicker.value;
-            } else {
-                const selectedDateBtn = document.querySelector('#offcanvasNgayButtons .filter-btn-ngay-offcanvas.active');
-                dateValue = selectedDateBtn ? (selectedDateBtn.dataset.value || '') : '';
-            }
-            url.searchParams.delete('date');
-            if (dateValue) url.searchParams.set('date', dateValue);
-            
-            // 4. Giá (Max Price only)
-            const maxVal = sliderOffcanvas ? sliderOffcanvas.value : '';
-            url.searchParams.delete('price_max');
-            // Cần giữ price_min nếu có
-            const minVal = params.get('price_min') || '';
-            url.searchParams.delete('price_min');
-            if (minVal) url.searchParams.set('price_min', minVal);
-            if (maxVal && Number(maxVal) < MAX_PRICE) url.searchParams.set('price_max', maxVal);
-            
-            // 5. Đánh giá tối thiểu
-            const minRating = minRatingHidden ? minRatingHidden.value : '';
-            url.searchParams.delete('rating_min');
-            if (minRating && Number(minRating) > 0) url.searchParams.set('rating_min', minRating);
-            
-            // Reload
-            if (url.searchParams.has('page')) url.searchParams.delete('page');
-            window.location.href = url.toString();
-        });
-        
-        // Clear Filters button
-        clearOffcanvasBtn.addEventListener('click', function() {
-            // Xóa tất cả các tham số lọc: category, destination, date, price_min, price_max, rating_min, tag
-            const url = getCurrentURL();
-            url.searchParams.delete('category');
-            url.searchParams.delete('destination');
-            url.searchParams.delete('date');
-            url.searchParams.delete('price_min');
-            url.searchParams.delete('price_max');
-            url.searchParams.delete('rating_min');
-            url.searchParams.delete('tag');
-            
-            if (url.searchParams.has('page')) url.searchParams.delete('page');
-            window.location.href = url.toString();
-        });
-        
-        // --- OFFCANVAS: DATE PRESET LOGIC ---
-        document.querySelectorAll('.filter-btn-ngay-offcanvas').forEach(btn => {
+        // Xử lý nút địa điểm trong Offcanvas (chọn đơn)
+        document.querySelectorAll('.filter-btn-location-offcanvas').forEach(btn => {
             btn.addEventListener('click', function() {
-                // Toggble active state
-                document.querySelectorAll('.filter-btn-ngay-offcanvas').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.filter-btn-location-offcanvas').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
-                // Clear input date
-                offcanvasDatePicker.value = ''; 
             });
         });
-        offcanvasDatePicker.addEventListener('change', function() {
-            // Clear preset buttons when manual date is set
-            document.querySelectorAll('.filter-btn-ngay-offcanvas').forEach(b => b.classList.remove('active'));
-        });
-        
-        // --- OFFCANVAS: SERVICE RADIO LOGIC ---
-        document.querySelectorAll('.service-radio').forEach(radio => {
-            radio.addEventListener('change', function() {
-                // Thao tác này chỉ chọn filter, không reload ngay. Chờ nút Áp dụng.
-            });
-        });
-        
     });
 </script>
 {% endblock %}

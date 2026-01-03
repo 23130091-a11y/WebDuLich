@@ -871,3 +871,75 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSearchHistory();
     setupEmailSuggestions();
 });
+
+// ===== NÚT YÊU THÍCH =====
+// index.js
+const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCookie('csrftoken');
+
+if (!csrftoken) {
+    console.warn("Cảnh báo: Không tìm thấy CSRF Token. Nút yêu thích có thể không hoạt động.");
+}
+// 1. Định nghĩa hàm lấy Cookie ra ngoài cùng để dùng chung
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 2. Lắng nghe sự kiện click trên toàn bộ document
+    document.addEventListener('click', function(e) {
+        
+        // Tìm xem phần tử bị click (e.target) có phải là nút .favorite-btn hoặc nằm trong nó không
+        const btn = e.target.closest('.favorite-btn');
+
+        if (btn) {
+            e.preventDefault(); // Chặn load lại trang
+
+            const url = btn.getAttribute('data-url');
+            const icon = btn.querySelector('i');
+            const csrftoken = getCookie('csrftoken');
+
+            // 3. Gửi yêu cầu AJAX
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.status === 403) {
+                    alert("Lỗi 403: Vấn đề bảo mật (CSRF). Hãy thử F5 lại trang.");
+                    return;
+                }
+                if (response.status === 401) {
+                    alert("Vui lòng đăng nhập để thực hiện.");
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.status === 'success') {
+                    // 4. Cập nhật icon dựa trên trạng thái trả về
+                    if (data.is_favorite) {
+                        icon.classList.replace('fa-regular', 'fa-solid');
+                    } else {
+                        icon.classList.replace('fa-solid', 'fa-regular');
+                    }
+                }
+            })
+            .catch(error => console.error('Lỗi:', error));
+        }
+    });
+});

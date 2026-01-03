@@ -1098,3 +1098,20 @@ html {
 #clearAllHistory:hover {
     opacity: 1;
 }
+
+.tour-card-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tour-card-hover:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.tour-card-hover img {
+    transition: transform 0.5s ease;
+}
+
+.tour-card-hover:hover img {
+    transform: scale(1.1);
+}

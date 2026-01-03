@@ -680,3 +680,39 @@
 .form-control:valid:not(:placeholder-shown) {
     border-color: #198754;
 }
+
+
+.tour-item {
+        flex: 0 0 300px; /* Ép mọi card luôn rộng đúng 300px */
+        max-width: 300px;
+        scroll-snap-align: start;
+    }
+
+    /* 2. Tạo hiệu ứng cuộn ngang chuyên nghiệp */
+    .tour-slider-wrapper {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 20px; /* Khoảng cách giữa các card */
+        overflow-x: auto;
+        padding: 10px 5px 20px 5px;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none; /* Ẩn scrollbar trên Firefox */
+    }
+
+    /* Ẩn scrollbar trên Chrome */
+    .tour-slider-wrapper::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* 3. Cố định chiều cao ảnh và nội dung để các card đều tăm tắp */
+    .card-img-top {
+        height: 180px;
+        object-fit: cover;
+    }
+
+    .card-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 160px; /* Giúp các nút Xem chi tiết luôn thẳng hàng ngang */
+    }
