@@ -446,11 +446,11 @@ def tour_detail(request, tour_slug):
     }
     return render(request, 'travel/tour_detail.html', context)
 
-# Cần sửa lại (destination chưa hoàn thiện nên để đỡ)
+# List destination (chưa dùng tới)
 def destination_list(request):
     from django.db.models import F
 
-    qs = (
+    destinations = (
         Destination.objects
         .select_related('recommendation')
         .prefetch_related('images', 'travel_type')
@@ -458,7 +458,7 @@ def destination_list(request):
     )
 
     return render(request, 'travel/destination_list.html', {
-            'destinations': qs
+            'destinations': destinations
         })
 
 # Thanh
@@ -485,26 +485,30 @@ def save_user_preference(user, destination):
     if destination.location:
         TravelPreference.objects.get_or_create(
             user=user,
-            travel_type='__location__',
+            travel_type='',
             location=destination.location
         )
 
 # Search (sửa)
 def search(request):
+    """Trang tìm kiếm nâng cao với thời tiết và đường đi"""
     query = request.GET.get('q', '').strip()
     location = request.GET.get('location', '').strip()
     travel_type = request.GET.get('type', '').strip()
     min_rating = request.GET.get('min_rating', '').strip()
     max_price = request.GET.get('max_price', '').strip()
 
-    qs = Destination.objects.all() \
-        .select_related('category') \
-        .prefetch_related('travel_type', 'images')
+    qs = (
+        Destination.objects
+        .select_related('category', 'recommendation')
+        .prefetch_related('images', 'travel_type')
+    )
 
     if query:
         qs = qs.filter(
             Q(name__icontains=query) |
-            Q(location__icontains=query)
+            Q(location__icontains=query) |
+            Q(description__icontains=query)
         )
 
     if location:
@@ -513,21 +517,34 @@ def search(request):
     if travel_type:
         qs = qs.filter(travel_type__slug=travel_type)
 
-    try:
-        if min_rating:
+    if min_rating:
+        try:
             qs = qs.filter(avg_rating__gte=float(min_rating))
-    except ValueError:
-        pass
+        except ValueError:
+            pass
 
     if max_price:
-        qs = qs.filter(avg_price__lte=float(max_price))
+        try:
+            qs = qs.filter(avg_price__lte=float(max_price))
+        except ValueError:
+            pass
 
-    qs = qs.distinct()
+    qs = qs.distinct().order_by('-recommendation__overall_score')
+
+    # Lưu lịch sử search
+    if query:
+        SearchHistory.objects.create(
+            query=query,
+            user=request.user if request.user.is_authenticated else None,
+            user_ip=get_client_ip(request),
+            results_count=qs.count()
+        )
 
     paginator = Paginator(qs, 12)
     page_obj = paginator.get_page(request.GET.get('page', 1))
 
     context = {
+        'query': query,
         'destinations': page_obj,
         'total_results': paginator.count,
         'all_locations': Destination.objects.values_list('location', flat=True).distinct(),
@@ -660,7 +677,7 @@ def api_search(request):
     if not query:
         return JsonResponse({'results': []})
 
-    cache_key = get_cache_key('api_search', query=query.lower()[:5])
+    cache_key = get_cache_key('api_search', query=query.lower()[:5]) # có thể điều chỉnh ở đây trong tương lai
 
     def perform_search():
         from .utils_helpers import normalize_search_text
@@ -669,10 +686,6 @@ def api_search(request):
             Destination.objects
             .select_related('recommendation')
             .prefetch_related('travel_type')
-            .filter(
-                Q(name__icontains=query) |
-                Q(location__icontains=query)
-            )[:50]
         )
 
         query_normalized = normalize_search_text(query)
@@ -700,7 +713,7 @@ def api_search(request):
                 'location': dest.location,
                 'travel_type': [t.slug for t in dest.travel_type.all()], # theo slug
                 'score': round(rec.overall_score, 1) if rec else 0,
-                'avg_rating': round(dest.avg_rating, 1),
+                'avg_rating': round(dest.avg_rating, 1) if dest.avg_rating is not None else None,
                 'avg_price': float(dest.avg_price) if dest.avg_price else None,
             })
 
@@ -726,6 +739,10 @@ def api_search_provinces(request):
 
     return JsonResponse({'provinces': provinces})
 
+"""review = Review.objects.create(...)
+if travel_type_obj:
+    review.travel_types.add(travel_type_obj)
+"""
 @require_POST
 @ratelimit(key='ip', rate='10/h', method='POST', block=True)
 def api_submit_review(request):
@@ -754,7 +771,6 @@ def api_submit_review(request):
 
     # Optional fields for richer reviews
     visit_date = data.get('visit_date', '')
-    travel_type = data.get('travel_type', '')
     travel_with = data.get('travel_with', '')
 
     # Validation
@@ -764,8 +780,19 @@ def api_submit_review(request):
     # Sanitize inputs để tránh XSS
     author_name = bleach.clean(author_name)[:100]
     comment = bleach.clean(comment)[:2000]  # Tăng limit cho comment chi tiết hơn
-    travel_type = bleach.clean(travel_type)[:50]
+    travel_type_slug = bleach.clean(data.get('travel_type', '')).strip()
     travel_with = bleach.clean(travel_with)[:50]
+
+    travel_type_obj = None
+
+    if travel_type_slug:
+        try:
+            travel_type_obj = TravelType.objects.get(slug=travel_type_slug)
+        except TravelType.DoesNotExist:
+            return JsonResponse(
+                {'error': 'Loại hình du lịch không hợp lệ'},
+                status=400
+            )
 
     # Get client info
     client_ip = get_client_ip(request)
@@ -786,7 +813,8 @@ def api_submit_review(request):
         return JsonResponse({'error': 'Tên phải có ít nhất 2 ký tự'}, status=400)
 
     try:
-        destination = Destination.objects.get(id=int(destination_id))
+        # destination = Destination.objects.get(id=int(destination_id))
+        destination = get_object_or_404(Destination, id=destination_id)
         rating = int(rating)
 
         if rating < 1 or rating > 5:
@@ -860,7 +888,7 @@ def api_submit_review(request):
             user_ip=client_ip,
             user_agent=user_agent,
             visit_date=parsed_visit_date,
-            travel_type=travel_type,
+            travel_types=travel_type_obj,
             travel_with=travel_with,
             sentiment_score=sentiment_score,
             positive_keywords=pos_keywords,
@@ -932,10 +960,12 @@ def api_vote_review(request):
         ).first()
 
         if user:
+            # tối ưu query một lần
             existing_vote = ReviewVote.objects.filter(
-                review=review,
-                user=user
-            ).first() or existing_vote
+                review=review
+            ).filter(
+                Q(user=user) | Q(user_ip=client_ip)
+            ).first()
 
         if existing_vote:
             # Update existing vote
@@ -1017,9 +1047,11 @@ def api_report_review(request):
         user = request.user if request.user.is_authenticated else None
 
         # Check if already reported by this IP
+        # Tối ưu lại: Nếu muốn 1 người/reporter (IP hoặc user) chỉ được report 1 lần, nên check cả IP và user
         existing_report = ReviewReport.objects.filter(
-            review=review,
-            reporter_ip=client_ip
+            review=review
+        ).filter(
+            Q(reporter_user=user) | Q(reporter_ip=client_ip)
         ).exists()
 
         if existing_report:
@@ -1059,7 +1091,7 @@ def api_report_review(request):
 # Sửa tính điểm
 def update_destination_scores(destination):
     """Cập nhật điểm gợi ý cho destination sau khi có review mới"""
-    from django.db.models import Avg, Count
+    from django.db.models import Avg, Count, Q
     import logging
     logger = logging.getLogger(__name__)
 
@@ -1073,37 +1105,30 @@ def update_destination_scores(destination):
         stats = reviews.aggregate(
             avg_rating=Avg('rating'),
             total_reviews=Count('id'),
-            avg_sentiment=Avg('sentiment_score')
+            avg_sentiment=Avg('sentiment_score'),
+            positive_reviews=Count('id', filter=Q(rating__gte=4))
         )
 
         avg_rating = stats['avg_rating'] or 0
         total_reviews = stats['total_reviews'] or 0
         avg_sentiment = stats['avg_sentiment'] or 0
+        positive_reviews = stats['positive_reviews'] or 0
+        positive_ratio = (positive_reviews / total_reviews * 100) if total_reviews > 0 else 0
 
         logger.info(f"Updating scores for {destination.name}: {total_reviews} reviews, avg_rating={avg_rating}")
 
-        # Tính tỷ lệ đánh giá tích cực (rating >= 4)
-        positive_reviews = reviews.filter(rating__gte=4).count()
-        positive_ratio = (positive_reviews / total_reviews * 100) if total_reviews > 0 else 0
-
         rec, _ = RecommendationScore.objects.get_or_create(destination=destination)
 
-        # Tính điểm tổng thể
-        # Formula: 40% rating + 30% sentiment + 30% popularity
+        # Tính điểm
         views_score = min(rec.total_views / 1000.0, 1.0)
         favorite_score = min(rec.total_favorites / 200.0, 1.0)
         review_score = (avg_rating / 5) * 100
         sentiment_score = ((avg_sentiment + 1) / 2) * 100
         popularity_score = (views_score * 0.6 + favorite_score * 0.4) * 100
+        overall_score = review_score * 0.5 + sentiment_score * 0.3 + popularity_score * 0.2
 
-        overall_score = (
-                review_score * 0.5 +
-                sentiment_score * 0.3 +
-                popularity_score * 0.2
-        )
-
-        # Cập nhật hoặc tạo RecommendationScore
-        recommendation, created = RecommendationScore.objects.update_or_create(
+        # Update or create RecommendationScore
+        RecommendationScore.objects.update_or_create(
             destination=destination,
             defaults={
                 'overall_score': overall_score,
@@ -1111,18 +1136,13 @@ def update_destination_scores(destination):
                 'sentiment_score': sentiment_score,
                 'popularity_score': popularity_score,
                 'total_reviews': total_reviews,
-                'avg_rating': avg_rating,
                 'positive_review_ratio': positive_ratio
             }
         )
 
-        logger.info(f"RecommendationScore {'created' if created else 'updated'} for {destination.name}")
-
         # Cập nhật rating trong Destination
         destination.avg_rating = avg_rating
         destination.save(update_fields=['avg_rating'])
-
-        # Refresh destination để lấy recommendation mới
         destination.refresh_from_db()
 
     except Exception as e:
