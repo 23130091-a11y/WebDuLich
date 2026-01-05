@@ -17,7 +17,7 @@ urlpatterns = [
     # Thêm route cho destination detail
     # Sửa lại chỗ này
     path('destination/<int:destination_id>/', views.destination_detail, name='destination_detail'),
-    path('destinations/', views.destination_list, name='destination_list'),
+    path('destinations/', views.destination_list, name='destination_list'), # chưa sd
 
     # API endpoints
     path('api/search/', views.api_search, name='api_search'),
