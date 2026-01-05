@@ -1,0 +1,47 @@
+favorite.html
+
+{% extends 'travel/base.html' %}
+
+{% load static %}
+
+{% block title %}Địa điểm yêu thích - Web Du Lịch{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/favorite.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container my-5">
+    <h2 class="mb-4">
+        <i class="fa-solid fa-heart text-danger me-2"></i>
+        Địa điểm yêu thích của bạn
+    </h2>
+
+    {% if favorites %}
+    <div class="row">
+        {% for fav in favorites %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">{{ fav.destination.name }}</h5>
+                    <p class="text-muted small">
+                        {{ fav.destination.category.name }}
+                    </p>
+                    <p class="card-text">
+                        {{ fav.destination.description|truncatechars:100 }}
+                    </p>
+                    <a href="#" class="btn btn-outline-primary btn-sm">
+                        Xem chi tiết
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">Bạn chưa yêu thích địa điểm nào.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

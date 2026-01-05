@@ -10,14 +10,12 @@ Features:
 - Retry mechanism for robustness
 """
 
-import os
 import re
 import torch
 import logging
 import hashlib
-from collections import Counter
 from decimal import Decimal
-from typing import Tuple, List, Dict, Any, Optional
+from typing import Tuple, List, Dict, Any
 
 from django.db.models import Q, Avg, Count
 from django.core.cache import cache
@@ -365,50 +363,45 @@ class RecommendationEngine:
             Dict với các scores: overall, review, sentiment, popularity
         """
         from .models import RecommendationScore
-        
-        reviews = destination.reviews.all()
-        
-        if not reviews.exists():
-            return {
-                'overall_score': 0.0,
-                'review_score': 0.0,
-                'sentiment_score': 0.0,
-                'popularity_score': 0.0,
-                'total_reviews': 0,
-                'avg_rating': 0.0
-            }
-        
-        # 1. Review Score (40% weight)
-        avg_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
-        review_score = (avg_rating / 5.0) * 10  # Scale to 0-10
-        
-        # 2. Sentiment Score (30% weight)
+        reviews = destination.reviews.filter(status='approved')
+
+        total_reviews = reviews.count()
         avg_sentiment = reviews.aggregate(avg=Avg('sentiment_score'))['avg'] or 0
-        sentiment_score = ((avg_sentiment + 1) / 2) * 10  # Scale -1,1 to 0-10
-        
-        # 3. Popularity Score (20% weight)
-        review_count = reviews.count()
-        popularity_score = min(review_count / 10.0, 1.0) * 10  # Max at 10 reviews
-        
-        # 4. Price Score (10% weight)
-        price_score = self._calculate_price_score(destination)
-        
-        # Weighted average
-        overall_score = (
-            review_score * 0.4 +
+
+        rec, _ = RecommendationScore.objects.get_or_create(destination=destination)
+
+        def clamp(score, min_val=0, max_val=100):
+            return max(min_val, min(max_val, score))
+
+        review_score = clamp((float(destination.avg_rating) / 5) * 100 if destination.avg_rating else 0)
+        sentiment_score = clamp(((avg_sentiment + 1) / 2) * 100)
+
+        views_score = min(rec.total_views / 1000, 1.0)
+        favorite_score = min(rec.total_favorites / 200, 1.0)
+        popularity_score = clamp((views_score * 0.6 + favorite_score * 0.4) * 100)
+
+        overall_score = round(
+            review_score * 0.5 +
             sentiment_score * 0.3 +
-            popularity_score * 0.2 +
-            price_score * 0.1
+            popularity_score * 0.2,
+            2
         )
-        
+
+        rec.review_score = review_score
+        rec.sentiment_score = sentiment_score
+        rec.popularity_score = popularity_score
+        rec.total_reviews = total_reviews
+        rec.overall_score = overall_score
+        rec.save()
+
         return {
-            'overall_score': round(overall_score, 2),
-            'review_score': round(review_score, 2),
-            'sentiment_score': round(sentiment_score, 2),
-            'popularity_score': round(popularity_score, 2),
-            'total_reviews': review_count,
-            'avg_rating': round(avg_rating, 2)
+            "overall_score": overall_score,
+            "review_score": review_score,
+            "sentiment_score": sentiment_score,
+            "popularity_score": popularity_score,
+            "total_reviews": total_reviews,
         }
+
     
     def _calculate_relevance_score(self, destination, query: str, filters: Dict) -> float:
         """Tính điểm relevance cho search results"""
@@ -416,7 +409,7 @@ class RecommendationEngine:
         
         # Base recommendation score (50% weight)
         if hasattr(destination, 'recommendation') and destination.recommendation:
-            score += destination.recommendation.overall_score * 0.5
+            score += (destination.recommendation.overall_score / 100) * 40
         
         # Query relevance (30% weight)
         if query:
@@ -586,7 +579,7 @@ def get_similar_destinations(destination, limit: int = 4) -> List:
     for dest_id, data in candidates.items():
         dest = data['dest']
         if hasattr(dest, 'recommendation') and dest.recommendation:
-            data['score'] += dest.recommendation.overall_score * 0.1
+            data['score'] += dest.recommendation.overall_score * 0.05
     
     # Sắp xếp theo điểm và lấy top
     sorted_candidates = sorted(candidates.values(), key=lambda x: x['score'], reverse=True)
