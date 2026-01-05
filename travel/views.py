@@ -17,6 +17,7 @@ from .models import Destination, Review, RecommendationScore, SearchHistory
 from .ai_engine import search_destinations, analyze_sentiment, get_similar_destinations, get_personalized_for_user
 from .services import get_weather_forecast, get_current_weather, get_route, get_location_coordinates, calculate_distance, get_nearby_hotels, get_nearby_restaurants
 from .cache_utils import get_cache_key, get_or_set_cache
+from .spam_detector import check_spam
 import math
 
 
@@ -530,29 +531,48 @@ def api_submit_review(request):
                 'code': 'DUPLICATE_REVIEW'
             }, status=429)
         
-        # Content quality check (only if comment is provided)
-        if comment:
-            # Kiểm tra spam patterns (links, repeated chars, etc.)
-            spam_patterns = [
-                r'http[s]?://',  # URLs
-                r'(.)\1{5,}',    # Repeated characters (aaaaa)
-                r'[A-Z]{10,}',   # All caps spam
-            ]
-            import re
-            for pattern in spam_patterns:
-                if re.search(pattern, comment):
-                    return JsonResponse({
-                        'error': 'Nội dung không hợp lệ. Vui lòng không đăng link hoặc spam.',
-                        'code': 'SPAM_DETECTED'
-                    }, status=400)
+        # SPAM DETECTION (v2.2 - 3-layer defense)
+        spam_result = check_spam(
+            comment=comment,
+            user_ip=client_ip,
+            user_id=user.id if user else None,
+            destination_id=int(destination_id)
+        )
+        
+        # Handle spam based on action
+        if spam_result['action'] == 'block':
+            logger.warning(f"Spam blocked: {spam_result['flags']} from IP {client_ip}")
+            return JsonResponse({
+                'error': 'Nội dung không hợp lệ. Vui lòng không đăng link, số điện thoại hoặc spam.',
+                'code': 'SPAM_DETECTED'
+            }, status=400)
+        
+        # Determine review status based on spam result
+        review_status = Review.STATUS_APPROVED
+        if spam_result['action'] == 'pending':
+            review_status = Review.STATUS_PENDING
+            logger.info(f"Review pending: {spam_result['flags']} from IP {client_ip}")
+        elif spam_result['action'] == 'shadow':
+            review_status = Review.STATUS_SHADOW
+            logger.info(f"Review shadow-banned: {spam_result['flags']} from IP {client_ip}")
         
         # Phân tích sentiment (nếu có comment)
         sentiment_score = 0.0
         pos_keywords = []
         neg_keywords = []
+        sentiment_metadata = {}
         if comment:
             try:
-                sentiment_score, pos_keywords, neg_keywords = analyze_sentiment(comment)
+                # Pass rating for calibration (v2.2 improvement)
+                result = analyze_sentiment(comment, rating=rating)
+                # analyze_sentiment trả về 4 giá trị: (score, pos_keywords, neg_keywords, metadata)
+                if len(result) == 4:
+                    sentiment_score, pos_keywords, neg_keywords, sentiment_metadata = result
+                elif len(result) == 3:
+                    sentiment_score, pos_keywords, neg_keywords = result
+                else:
+                    sentiment_score = result[0] if result else 0.0
+                logger.info(f"Sentiment analysis: score={sentiment_score}, pos={pos_keywords}, neg={neg_keywords}")
             except Exception as e:
                 logger.warning(f"Sentiment analysis failed: {e}")
                 # Continue without sentiment if analysis fails
@@ -581,22 +601,34 @@ def api_submit_review(request):
             positive_keywords=pos_keywords,
             negative_keywords=neg_keywords,
             is_verified=user is not None,  # Verified if logged in
-            status=Review.STATUS_APPROVED,  # Auto-approve (có thể đổi thành PENDING)
+            status=review_status,  # Based on spam detection
+            spam_score=spam_result['spam_score'],
+            spam_flags=spam_result['flags'],
+            is_low_quality=spam_result['is_low_quality'],
         )
         
-        # Cập nhật điểm gợi ý cho destination
-        update_destination_scores(destination)
+        # Cập nhật điểm gợi ý cho destination (chỉ nếu approved)
+        if review_status == Review.STATUS_APPROVED:
+            update_destination_scores(destination)
         
         # Lưu preference nếu user đã đăng nhập
         if user:
             save_user_preference(user, destination)
         
-        logger.info(f"New review #{review.id} for {destination.name} by {author_name}")
+        logger.info(f"New review #{review.id} for {destination.name} by {author_name} (status={review_status})")
+        
+        # Response message based on status
+        if review_status == Review.STATUS_PENDING:
+            message = 'Cảm ơn bạn! Đánh giá của bạn đang chờ duyệt.'
+        elif review_status == Review.STATUS_SHADOW:
+            message = 'Cảm ơn bạn đã chia sẻ trải nghiệm!'  # User doesn't know they're shadow-banned
+        else:
+            message = 'Cảm ơn bạn đã chia sẻ trải nghiệm!'
         
         return JsonResponse({
             'success': True,
             'review_id': review.id,
-            'message': 'Cảm ơn bạn đã chia sẻ trải nghiệm!',
+            'message': message,
             'is_verified': review.is_verified,
             'sentiment': {
                 'score': round(sentiment_score, 2),

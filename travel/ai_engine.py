@@ -4,6 +4,10 @@ Gộp sentiment analysis và recommendation engine thành 1 module duy nhất
 
 Features:
 - PhoBERT sentiment analysis với fallback rule-based
+- Enhanced rule-based với JSON keywords
+- Aspect-based sentiment analysis
+- Negation, intensifier, downtoner handling
+- Sarcasm detection
 - Recommendation scoring algorithm
 - Caching system tích hợp
 - Search functionality
@@ -12,10 +16,11 @@ Features:
 
 import os
 import re
+import json
 import torch
 import logging
 import hashlib
-from collections import Counter
+from collections import Counter, defaultdict
 from decimal import Decimal
 from typing import Tuple, List, Dict, Any, Optional
 
@@ -27,41 +32,128 @@ from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_excep
 
 logger = logging.getLogger(__name__)
 
+# ==================== LOAD JSON KEYWORDS ====================
+
+def load_json_keywords():
+    """Load sentiment and aspect keywords from JSON files"""
+    # Try multiple locations (prioritize travel/ directory)
+    possible_dirs = [
+        os.path.join(settings.BASE_DIR, 'travel'),  # WebDuLich-fix-conflic/travel/ (PREFERRED)
+        settings.BASE_DIR,  # WebDuLich-fix-conflic/
+        settings.BASE_DIR.parent if hasattr(settings.BASE_DIR, 'parent') else None,  # WebDuLich-fix-conflic/../
+    ]
+    
+    sentiment_data = {}
+    aspect_data = {}
+    
+    for base_dir in possible_dirs:
+        if base_dir is None:
+            continue
+            
+        sentiment_file = os.path.join(base_dir, 'travel_sentiment_keywords.json')
+        aspect_file = os.path.join(base_dir, 'travel_aspect_keywords.json')
+        
+        if not sentiment_data and os.path.exists(sentiment_file):
+            try:
+                with open(sentiment_file, 'r', encoding='utf-8') as f:
+                    sentiment_data = json.load(f)
+                logger.info(f"Loaded sentiment keywords from {sentiment_file}")
+            except Exception as e:
+                logger.warning(f"Could not load sentiment keywords from {sentiment_file}: {e}")
+        
+        if not aspect_data and os.path.exists(aspect_file):
+            try:
+                with open(aspect_file, 'r', encoding='utf-8') as f:
+                    aspect_data = json.load(f)
+                logger.info(f"Loaded aspect keywords from {aspect_file}")
+            except Exception as e:
+                logger.warning(f"Could not load aspect keywords from {aspect_file}: {e}")
+        
+        if sentiment_data and aspect_data:
+            break
+    
+    if not sentiment_data:
+        logger.warning("Sentiment keywords not loaded - using empty dict")
+    if not aspect_data:
+        logger.warning("Aspect keywords not loaded - using empty dict")
+    
+    return sentiment_data, aspect_data
+
+# Load keywords at module level
+SENTIMENT_DATA, ASPECT_DATA = load_json_keywords()
+
 # ==================== CONSTANTS ====================
 
-# Từ khóa tích cực
-POSITIVE_KEYWORDS = [
-    'đẹp', 'tuyệt vời', 'tốt', 'ngon', 'sạch sẽ', 'thân thiện', 'chuyên nghiệp',
-    'rẻ', 'hợp lý', 'thoải mái', 'yên tĩnh', 'tiện nghi', 'hiện đại', 'sang trọng',
-    'view đẹp', 'phong cảnh', 'nên đi', 'recommend', 'khuyên', 'tuyệt', 'xuất sắc',
-    'ấn tượng', 'thích', 'hài lòng', 'ok', 'ổn', 'được', 'hay', 'nice', 'good',
-    'tuyệt hảo', 'hoàn hảo', 'chu đáo', 'nhiệt tình', 'nhanh', 'sáng sủa',
-    'rộng rãi', 'thoáng mát', 'mát mẻ', 'trong lành', 'hùng vĩ', 'thơ mộng'
-]
-
-# Từ khóa tiêu cực
-NEGATIVE_KEYWORDS = [
-    'tệ', 'xấu', 'bẩn', 'dơ', 'đắt', 'chặt chém', 'lừa đảo', 'kém', 'tồi',
-    'thất vọng', 'tránh', 'lãng phí', 'kém chất lượng', 'tệ hại', 'ồn ào',
-    'chật chội', 'cũ kỹ', 'hư hỏng', 'thái độ xấu', 'bad', 'poor', 'terrible',
-    'chán', 'nhàm', 'buồn', 'sợ', 'nguy hiểm', 'mệt', 'nóng', 'lạnh',
-    'đông đúc', 'chen chúc', 'chờ lâu', 'muộn', 'trễ', 'hỏng', 'gãy'
-]
-
-# Từ phủ định
+# Từ phủ định (negation)
 NEGATION_WORDS = [
-    'không', 'chẳng', 'chả', 'đừng', 'chưa', 'không phải', 'không hề',
-    'không bao giờ', 'chẳng bao giờ', 'không còn', 'chẳng còn', 'không thể',
-    'chưa bao giờ', 'chưa từng', 'không được', 'chẳng được', 'không có',
+    'không', 'ko', 'k', 'chẳng', 'chả', 'đừng', 'chưa',
+    'không phải', 'không hề', 'không bao giờ', 'chẳng bao giờ',
+    'không còn', 'chẳng còn', 'không thể', 'chưa bao giờ',
+    'chưa từng', 'không được', 'chẳng được', 'không có',
     'thiếu', 'mất', 'hết', 'không thấy', 'chẳng thấy'
 ]
 
-# Từ tăng cường
-INTENSIFIERS = {
-    'rất': 1.5, 'cực kỳ': 2.0, 'vô cùng': 2.0, 'quá': 1.5, 'siêu': 1.8,
-    'hơi': 0.5, 'khá': 0.8, 'tương đối': 0.7, 'cũng': 0.6,
-    'thật sự': 1.5, 'thực sự': 1.5, 'hoàn toàn': 1.8, 'tuyệt đối': 2.0
+# Từ giảm nhẹ (downtoner)
+DOWNTONERS = {
+    'hơi': 0.6,
+    'khá': 0.6,
+    'tương đối': 0.6,
+    'cũng': 0.6,
+    'hơi hơi': 0.5
 }
+
+# Từ tăng cường (intensifier)
+INTENSIFIERS_STRONG = {
+    'cực kỳ': 1.4,
+    'cực kì': 1.4,
+    'siêu': 1.4,
+    'vô cùng': 1.4,
+    'cực': 1.4,
+    'cực luôn': 1.4
+}
+
+INTENSIFIERS_MEDIUM = {
+    'rất': 1.25,
+    'quá': 1.25,
+    'thật sự': 1.25,
+    'thực sự': 1.25,
+    'rất là': 1.25,
+    'hoàn toàn': 1.25,
+    'tuyệt đối': 1.25
+}
+
+# Merge all intensifiers
+INTENSIFIERS = {**INTENSIFIERS_STRONG, **INTENSIFIERS_MEDIUM}
+
+# Sarcasm indicators
+SARCASM_INDICATORS = [
+    'ha', 'haha', 'hihi', 'hehe',
+    ':))', '=))', '🙂🙂', '😏', '😅',
+    'nhỉ', 'nhể', 'nhở', 'nhé'
+]
+
+# Contrast words - phần sau thường quan trọng hơn
+CONTRAST_WORDS = [
+    'nhưng', 'tuy nhiên', 'tuy', 'mặc dù', 'dù', 'song',
+    'thế nhưng', 'nhưng mà', 'tuy vậy', 'dù vậy', 'dù sao'
+]
+
+# Negative behavior patterns - chỉ báo tiêu cực mạnh
+NEGATIVE_BEHAVIOR_PATTERNS = [
+    ('không', 'quay lại'),
+    ('không', 'recommend'),
+    ('không', 'giới thiệu'),
+    ('không', 'đề xuất'),
+    ('không', 'nên đi'),
+    ('không', 'đáng'),
+    ('chẳng', 'quay lại'),
+    ('sẽ không', 'quay lại'),
+    ('lần sau', 'không'),
+    ('không bao giờ', 'quay lại'),
+    ('không bao giờ', 'đến'),
+    ('thất vọng', 'hoàn toàn'),
+    ('hoàn toàn', 'thất vọng'),
+]
 
 # Stopwords tiếng Việt
 STOPWORDS = [
@@ -71,11 +163,62 @@ STOPWORDS = [
 ]
 
 
+# ==================== TEXT NORMALIZATION ====================
+
+class TextNormalizer:
+    """Text normalization với teencode và slang mapping"""
+    
+    def __init__(self):
+        self.slang_map = SENTIMENT_DATA.get('slang_map', {})
+        # Sort by length (longest first) for proper multi-word matching
+        self.sorted_slang = sorted(self.slang_map.items(), key=lambda x: len(x[0]), reverse=True)
+    
+    def normalize(self, text: str) -> str:
+        """
+        Chuẩn hóa text:
+        - Lowercase
+        - Map teencode/slang (longest-first matching)
+        - Giữ dấu tiếng Việt
+        - Normalize whitespace
+        """
+        if not text:
+            return ""
+        
+        # Lowercase
+        text = text.lower()
+        
+        # Normalize whitespace first
+        text = re.sub(r'\s+', ' ', text).strip()
+        
+        # Replace slang/teencode (longest phrases first)
+        # Add padding for easier boundary matching
+        text = ' ' + text + ' '
+        
+        for slang, standard in self.sorted_slang:
+            # Add spaces around slang for word boundary matching
+            slang_pattern = ' ' + slang + ' '
+            standard_replace = ' ' + standard + ' '
+            text = text.replace(slang_pattern, standard_replace)
+        
+        # Remove padding and normalize spaces
+        text = text.strip()
+        text = re.sub(r'\s+', ' ', text)
+        
+        return text
+    
+    def tokenize(self, text: str) -> List[str]:
+        """Tokenize text into words"""
+        # Keep Vietnamese characters and basic punctuation
+        text = re.sub(r'[^\w\sàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ.,!?]', ' ', text)
+        tokens = text.split()
+        return [t for t in tokens if t]
+
+
 # ==================== SENTIMENT ANALYZER ====================
 
 class SentimentAnalyzer:
     """
-    Unified Sentiment Analyzer với PhoBERT + Rule-based fallback
+    Enhanced Sentiment Analyzer với PhoBERT + Advanced Rule-based fallback
     """
     
     def __init__(self):
@@ -83,6 +226,12 @@ class SentimentAnalyzer:
         self.tokenizer = None
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_loaded = False
+        self.normalizer = TextNormalizer()
+        
+        # Load keywords from JSON
+        self.positive_keywords = SENTIMENT_DATA.get('positive', {})
+        self.negative_keywords = SENTIMENT_DATA.get('negative', {})
+        self.neutral_soft = SENTIMENT_DATA.get('neutral_soft', [])
         
     def load_model(self):
         """Load PhoBERT model (lazy loading)"""
@@ -91,7 +240,17 @@ class SentimentAnalyzer:
         
         try:
             logger.info("Loading PhoBERT sentiment model...")
-            model_name = "wonrax/phobert-base-vietnamese-sentiment"
+            
+            # Try to load fine-tuned model first
+            finetuned_path = os.path.join(settings.BASE_DIR, 'travel', 'models', 'phobert-travel-sentiment-final')
+            
+            if os.path.exists(finetuned_path):
+                model_name = finetuned_path
+                logger.info(f"✅ Using FINE-TUNED model from: {finetuned_path}")
+            else:
+                # Fallback to original model
+                model_name = "wonrax/phobert-base-vietnamese-sentiment"
+                logger.info(f"⚠️  Fine-tuned model not found, using original: {model_name}")
             
             self.tokenizer = AutoTokenizer.from_pretrained(model_name)
             self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
@@ -106,22 +265,23 @@ class SentimentAnalyzer:
             logger.warning("Will use rule-based sentiment analysis")
             self.model_loaded = False
     
-    def analyze(self, text: str) -> Tuple[float, List[str], List[str]]:
+    def analyze(self, text: str) -> Tuple[float, List[str], List[str], Dict[str, Any]]:
         """
         Phân tích sentiment của text
         
         Returns:
-            tuple: (sentiment_score, positive_keywords, negative_keywords)
+            tuple: (sentiment_score, positive_keywords, negative_keywords, metadata)
                 - sentiment_score: float từ -1 đến 1
                 - positive_keywords: list từ khóa tích cực
                 - negative_keywords: list từ khóa tiêu cực
+                - metadata: dict chứa thông tin phân tích (aspects, sarcasm_risk, etc.)
         """
         if not text or not text.strip():
-            return 0.0, [], []
+            return 0.0, [], [], {}
         
         # Check cache first
         text_hash = hashlib.md5(text.encode()).hexdigest()[:16]
-        cache_key = f'sentiment:{text_hash}'
+        cache_key = f'sentiment_v2:{text_hash}'
         
         cached_result = cache.get(cache_key)
         if cached_result is not None:
@@ -149,16 +309,20 @@ class SentimentAnalyzer:
         retry=retry_if_exception_type((RuntimeError, torch.cuda.OutOfMemoryError)),
         reraise=True
     )
-    def _phobert_analysis(self, text: str) -> Tuple[float, List[str], List[str]]:
+    def _phobert_analysis(self, text: str) -> Tuple[float, List[str], List[str], Dict[str, Any]]:
         """
-        PhoBERT sentiment analysis with retry mechanism.
+        PhoBERT sentiment analysis with confidence gating and smart combine.
         
-        Retries up to 3 times with exponential backoff on:
-        - RuntimeError (model loading issues)
-        - CUDA OutOfMemoryError
+        Strategy:
+        - PhoBERT chỉ win khi confidence cao
+        - Rule-based win khi có keyword mạnh hoặc PhoBERT không tự tin
+        - Combine weighted khi cả hai đều có giá trị
         """
         try:
-            # Tokenize
+            # 1. Get rule-based analysis first (always needed for keywords/aspects)
+            rule_score, pos_keywords, neg_keywords, metadata = self._rule_based_analysis(text)
+            
+            # 2. Get PhoBERT prediction
             inputs = self.tokenizer(
                 text,
                 return_tensors="pt",
@@ -168,132 +332,378 @@ class SentimentAnalyzer:
             )
             inputs = {k: v.to(self.device) for k, v in inputs.items()}
             
-            # Predict
             with torch.no_grad():
                 outputs = self.model(**inputs)
                 probabilities = torch.softmax(outputs.logits, dim=-1)
             
-            # Convert to sentiment score
             probs = probabilities.cpu().numpy()[0]
             
-            if len(probs) == 2:  # Binary classification
+            # 3. Calculate PhoBERT score with proper scaling
+            if len(probs) == 2:  # Binary classification (neg, pos)
                 neg_prob, pos_prob = probs
-                sentiment_score = pos_prob - neg_prob
-            else:  # 3-class classification
+                neu_prob = 0.0
+            else:  # 3-class classification (neg, neu, pos)
                 neg_prob, neu_prob, pos_prob = probs
-                sentiment_score = pos_prob - neg_prob
             
-            # Extract keywords using rule-based method
-            _, pos_keywords, neg_keywords = self._rule_based_analysis(text)
+            # Scale PhoBERT score properly: (pos - neg) * (1 - neu)
+            # This reduces score when neutral is high
+            phobert_score = (pos_prob - neg_prob) * (1 - neu_prob * 0.5)
             
-            return float(sentiment_score), pos_keywords, neg_keywords
+            # 4. Calculate confidence (top1 - top2)
+            probs_sorted = sorted([pos_prob, neu_prob, neg_prob], reverse=True)
+            confidence = probs_sorted[0] - probs_sorted[1]
+            
+            # 5. Smart combine with gating logic
+            final_score, combine_method = self._combine_scores(
+                rule_score, phobert_score, confidence, 
+                len(pos_keywords), len(neg_keywords)
+            )
+            
+            # Update metadata
+            metadata['method'] = combine_method
+            metadata['phobert_score'] = float(phobert_score)
+            metadata['rule_score'] = float(rule_score)
+            metadata['confidence'] = float(confidence)
+            metadata['probs'] = {
+                'pos': float(pos_prob),
+                'neu': float(neu_prob),
+                'neg': float(neg_prob)
+            }
+            
+            return float(final_score), pos_keywords, neg_keywords, metadata
             
         except Exception as e:
             logger.error(f"PhoBERT analysis failed: {e}")
             return self._rule_based_analysis(text)
     
-    def _rule_based_analysis(self, text: str) -> Tuple[float, List[str], List[str]]:
-        """Rule-based sentiment analysis (fallback)"""
-        text_clean = self._preprocess_text(text)
-        sentences = self._split_sentences(text_clean)
+    def _combine_scores(
+        self, 
+        rule_score: float, 
+        phobert_score: float, 
+        confidence: float,
+        num_pos_keywords: int,
+        num_neg_keywords: int
+    ) -> Tuple[float, str]:
+        """
+        PhoBERT-Primary Combine Strategy (v3.2)
+        
+        Chiến lược: PhoBERT là PRIMARY, Rule-based là CALIBRATION
+        
+        Nguyên tắc:
+        1. PhoBERT luôn đóng vai trò chính (55-70% weight)
+        2. Rule-based dùng để calibrate và xử lý edge cases
+        3. Mixed sentiment → kéo về neutral dựa trên PhoBERT
+        4. Neutral soft words → giữ gần neutral (threshold 0.2)
+        
+        Returns:
+            (final_score, method_name)
+        """
+        total_keywords = num_pos_keywords + num_neg_keywords
+        
+        # === CASE 1: Mixed sentiment (có cả pos và neg keywords) ===
+        # Đây là case quan trọng nhất - cần kéo về neutral
+        if num_pos_keywords > 0 and num_neg_keywords > 0:
+            # PhoBERT quyết định hướng, nhưng dampen mạnh về neutral
+            balance = min(num_pos_keywords, num_neg_keywords) / max(num_pos_keywords, num_neg_keywords)
+            
+            # Damping mạnh hơn khi balance cao (keywords cân bằng)
+            damping = 0.40 + (balance * 0.30)
+            
+            # PhoBERT 60%, rule 40%
+            combined = 0.60 * phobert_score + 0.40 * rule_score
+            dampened = combined * (1 - damping)
+            return max(-1.0, min(1.0, dampened)), "phobert_mixed_neutral_pull"
+        
+        # === CASE 2: Chỉ có neutral soft keywords (ok, được, tạm, ổn) ===
+        # Rule score thấp (<0.12) thường là neutral soft only
+        if total_keywords > 0 and abs(rule_score) < 0.12:
+            # Neutral soft → kéo mạnh về neutral
+            # PhoBERT 40%, rule 60%, rồi dampen mạnh
+            combined = 0.40 * phobert_score + 0.60 * rule_score
+            dampened = combined * 0.35  # Giữ 35% magnitude → gần neutral
+            return max(-1.0, min(1.0, dampened)), "phobert_neutral_soft_strong_pull"
+        
+        # === CASE 3: Weak positive keywords (0.12 <= rule < 0.25) ===
+        # Có keywords nhưng yếu → dampen về neutral hơn
+        if total_keywords > 0 and 0.12 <= abs(rule_score) < 0.25:
+            # PhoBERT 50%, rule 50%, dampen nhẹ
+            combined = 0.50 * phobert_score + 0.50 * rule_score
+            dampened = combined * 0.6  # Giữ 60%
+            return max(-1.0, min(1.0, dampened)), "phobert_weak_signal_calibrated"
+        
+        # === CASE 4: PhoBERT confidence thấp (<0.20) ===
+        if confidence < 0.20:
+            # PhoBERT không chắc → mix với rule nhiều hơn
+            # PhoBERT 45%, rule 55%
+            final = 0.45 * phobert_score + 0.55 * rule_score
+            return max(-1.0, min(1.0, final)), "phobert_low_conf_rule_assist"
+        
+        # === CASE 5: PhoBERT high confidence (>0.45) ===
+        if confidence >= 0.45:
+            # PhoBERT rất tự tin → 70% PhoBERT, 30% rule
+            final = 0.70 * phobert_score + 0.30 * rule_score
+            return max(-1.0, min(1.0, final)), "phobert_dominant_high_conf"
+        
+        # === CASE 6: Không có keywords → PhoBERT quyết định ===
+        if total_keywords == 0:
+            # Không có domain signal → tin PhoBERT nhưng dampen
+            dampened = phobert_score * 0.70
+            return max(-1.0, min(1.0, dampened)), "phobert_only_no_keywords"
+        
+        # === CASE 7: PhoBERT và Rule đồng thuận (cùng dấu, cùng mạnh) ===
+        if (phobert_score > 0.2 and rule_score > 0.2) or (phobert_score < -0.2 and rule_score < -0.2):
+            # Cả hai đồng ý mạnh → PhoBERT lead, boost
+            # PhoBERT 65%, rule 35%
+            final = 0.65 * phobert_score + 0.35 * rule_score
+            
+            # Boost khi đồng thuận rất mạnh
+            if abs(phobert_score) > 0.5 and abs(rule_score) > 0.5:
+                final = final * 1.15
+            
+            return max(-1.0, min(1.0, final)), "phobert_rule_strong_agreement"
+        
+        # === CASE 8: PhoBERT và Rule conflict (khác dấu) ===
+        if (phobert_score > 0.15 and rule_score < -0.15) or (phobert_score < -0.15 and rule_score > 0.15):
+            # Conflict → PhoBERT lead nhưng dampen mạnh
+            # PhoBERT 55%, rule 45%
+            final = 0.55 * phobert_score + 0.45 * rule_score
+            final = final * 0.65  # Dampen 35%
+            return max(-1.0, min(1.0, final)), "phobert_rule_conflict_dampen"
+        
+        # === DEFAULT: Balanced mix với PhoBERT lead ===
+        # PhoBERT 60%, rule 40%
+        final = 0.60 * phobert_score + 0.40 * rule_score
+        return max(-1.0, min(1.0, final)), "phobert_primary_balanced"
+    
+    def _rule_based_analysis(self, text: str) -> Tuple[float, List[str], List[str], Dict[str, Any]]:
+        """Enhanced rule-based sentiment analysis with advanced features"""
+        # Normalize text
+        text_normalized = self.normalizer.normalize(text)
+        
+        # Split into sentences
+        sentences = self._split_sentences(text_normalized)
         
         total_score = 0.0
         positive_keywords = []
         negative_keywords = []
+        aspect_scores = defaultdict(list)
+        sarcasm_risk = False
+        
+        # Check for sarcasm indicators
+        for indicator in SARCASM_INDICATORS:
+            if indicator in text_normalized:
+                sarcasm_risk = True
+                break
+        
+        # Check for negative behavior patterns (strong negative signal)
+        negative_behavior_penalty = 0.0
+        for pattern in NEGATIVE_BEHAVIOR_PATTERNS:
+            if len(pattern) == 2:
+                word1, word2 = pattern
+                if word1 in text_normalized and word2 in text_normalized:
+                    # Check if they appear in order
+                    idx1 = text_normalized.find(word1)
+                    idx2 = text_normalized.find(word2)
+                    if idx1 < idx2 and idx2 - idx1 < 30:  # Within 30 chars
+                        negative_behavior_penalty -= 0.5
+                        negative_keywords.append(f"{word1} {word2}")
+        
+        # Check for contrast words and weight accordingly
+        has_contrast = any(cw in text_normalized for cw in CONTRAST_WORDS)
         
         for sentence in sentences:
-            # Tìm từ khóa tích cực
-            for keyword in POSITIVE_KEYWORDS:
-                if keyword in sentence:
-                    is_negated = self._check_negation(sentence, keyword)
-                    intensity = self._get_intensity(sentence, keyword)
-                    
-                    if is_negated:
-                        total_score -= 0.5 * intensity
-                        negative_keywords.append(f"không {keyword}")
-                    else:
-                        total_score += 0.5 * intensity
-                        positive_keywords.append(keyword)
+            # Process each sentence
+            sentence_score, pos_kw, neg_kw, aspects = self._analyze_sentence(sentence)
             
-            # Tìm từ khóa tiêu cực
-            for keyword in NEGATIVE_KEYWORDS:
-                if keyword in sentence:
-                    is_negated = self._check_negation(sentence, keyword)
-                    intensity = self._get_intensity(sentence, keyword)
-                    
-                    if is_negated:
-                        total_score += 0.5 * intensity
-                        positive_keywords.append(f"không {keyword}")
-                    else:
-                        total_score -= 0.5 * intensity
-                        negative_keywords.append(keyword)
+            total_score += sentence_score
+            positive_keywords.extend(pos_kw)
+            negative_keywords.extend(neg_kw)
+            
+            # Collect aspect scores
+            for aspect, score in aspects.items():
+                aspect_scores[aspect].append(score)
+        
+        # Apply negative behavior penalty
+        total_score += negative_behavior_penalty
+        
+        # If has contrast word and mixed sentiment, weight toward negative
+        # "đẹp nhưng đắt" → phần sau (đắt) quan trọng hơn
+        if has_contrast and positive_keywords and negative_keywords:
+            # Reduce positive impact by 20%
+            if total_score > 0:
+                total_score *= 0.8
         
         # Normalize score to [-1, 1]
         sentiment_score = max(-1.0, min(1.0, total_score))
         
-        return sentiment_score, list(set(positive_keywords)), list(set(negative_keywords))
+        # Calculate average aspect scores
+        avg_aspect_scores = {
+            aspect: sum(scores) / len(scores)
+            for aspect, scores in aspect_scores.items()
+        }
+        
+        metadata = {
+            'aspects': avg_aspect_scores,
+            'sarcasm_risk': sarcasm_risk,
+            'method': 'rule_based'
+        }
+        
+        return sentiment_score, list(set(positive_keywords)), list(set(negative_keywords)), metadata
     
-    def _preprocess_text(self, text: str) -> str:
-        """Tiền xử lý văn bản"""
-        if not text:
-            return ""
-        text = text.lower()
-        text = re.sub(r'[^\w\sàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]', ' ', text)
-        text = re.sub(r'\s+', ' ', text).strip()
-        return text
+    def _analyze_sentence(self, sentence: str) -> Tuple[float, List[str], List[str], Dict[str, float]]:
+        """
+        Analyze a single sentence with advanced rule handling
+        
+        Returns:
+            (score, positive_keywords, negative_keywords, aspect_scores)
+        """
+        tokens = self.normalizer.tokenize(sentence)
+        sentence_score = 0.0
+        pos_keywords = []
+        neg_keywords = []
+        aspect_scores = defaultdict(float)
+        
+        # Try to match multi-word phrases first (longer phrases have priority)
+        all_keywords = {**self.positive_keywords, **self.negative_keywords}
+        matched_positions = set()
+        
+        # Sort keywords by length (descending) to match longer phrases first
+        sorted_keywords = sorted(all_keywords.keys(), key=lambda x: len(x.split()), reverse=True)
+        
+        for keyword in sorted_keywords:
+            keyword_tokens = keyword.split()
+            keyword_len = len(keyword_tokens)
+            
+            # Find all occurrences of this keyword
+            for i in range(len(tokens) - keyword_len + 1):
+                # Skip if any position is already matched
+                if any(pos in matched_positions for pos in range(i, i + keyword_len)):
+                    continue
+                
+                # Check if tokens match
+                if ' '.join(tokens[i:i+keyword_len]) == keyword:
+                    # Mark positions as matched
+                    for pos in range(i, i + keyword_len):
+                        matched_positions.add(pos)
+                    
+                    # Get base score
+                    base_score = all_keywords[keyword]
+                    
+                    # Check for modifiers (negation, intensifier, downtoner)
+                    modified_score, is_negated = self._apply_modifiers(
+                        tokens, i, base_score
+                    )
+                    
+                    # Add to total
+                    sentence_score += modified_score
+                    
+                    # Track keywords
+                    if modified_score > 0:
+                        if is_negated and base_score < 0:
+                            pos_keywords.append(f"không {keyword}")
+                        else:
+                            pos_keywords.append(keyword)
+                    elif modified_score < 0:
+                        if is_negated and base_score > 0:
+                            neg_keywords.append(f"không {keyword}")
+                        else:
+                            neg_keywords.append(keyword)
+                    
+                    # Track aspect
+                    aspect = self._get_aspect(keyword)
+                    if aspect:
+                        aspect_scores[aspect] += modified_score
+        
+        # Process neutral_soft words as weak positive (ok, ổn, được, tạm...)
+        # Score thấp (0.10) để không làm câu mixed thành positive
+        for i, token in enumerate(tokens):
+            if i in matched_positions:
+                continue
+            if token in self.neutral_soft:
+                # Neutral soft words = very weak positive (0.05)
+                # Gần như neutral, chỉ hơi positive một chút
+                soft_score = 0.05
+                
+                # Check for negation before neutral_soft
+                window_start = max(0, i - 3)
+                window = tokens[window_start:i]
+                is_negated = any(t in NEGATION_WORDS for t in window)
+                
+                if is_negated:
+                    # "không ok" = weak negative
+                    sentence_score -= 0.05
+                    neg_keywords.append(f"không {token}")
+                else:
+                    sentence_score += soft_score
+                    pos_keywords.append(token)
+                
+                matched_positions.add(i)
+        
+        return sentence_score, pos_keywords, neg_keywords, dict(aspect_scores)
+    
+    def _apply_modifiers(self, tokens: List[str], keyword_pos: int, base_score: float) -> Tuple[float, bool]:
+        """
+        Apply negation, intensifier, and downtoner modifiers
+        
+        Returns:
+            (modified_score, is_negated)
+        """
+        # Check window before keyword (up to 3 tokens)
+        window_start = max(0, keyword_pos - 3)
+        window = tokens[window_start:keyword_pos]
+        
+        is_negated = False
+        multiplier = 1.0
+        
+        # Check for negation (highest priority)
+        for token in window:
+            if token in NEGATION_WORDS:
+                is_negated = True
+                break
+        
+        # Check for intensifiers and downtoners
+        for token in window:
+            if token in INTENSIFIERS:
+                multiplier = INTENSIFIERS[token]
+                break
+            elif token in DOWNTONERS:
+                multiplier = DOWNTONERS[token]
+                break
+        
+        # Apply modifications
+        if is_negated:
+            # Negation: flip sign and reduce magnitude
+            # Special case: "không tệ" should be weak positive (but not too strong)
+            if base_score < 0:
+                # "không tệ" -> weak positive, capped at 0.20
+                modified_score = min(abs(base_score) * 0.5, 0.20)
+            else:
+                # "không đẹp" -> negative
+                modified_score = -base_score * 0.8
+        else:
+            # Apply multiplier
+            modified_score = base_score * multiplier
+        
+        # Clamp to [-1, 1]
+        modified_score = max(-1.0, min(1.0, modified_score))
+        
+        return modified_score, is_negated
+    
+    def _get_aspect(self, keyword: str) -> Optional[str]:
+        """Get aspect category for a keyword"""
+        aspects = ASPECT_DATA.get('aspects', {})
+        
+        for aspect_id, aspect_info in aspects.items():
+            if keyword in aspect_info.get('keywords', []):
+                return aspect_id
+        
+        return None
+    
     
     def _split_sentences(self, text: str) -> List[str]:
         """Tách văn bản thành các câu"""
-        sentences = re.split(r'[.!?;,]', text)
+        sentences = re.split(r'[.!?;,\n]', text)
         return [s.strip() for s in sentences if s.strip()]
-    
-    def _check_negation(self, sentence: str, keyword: str, window_size: int = 3) -> bool:
-        """Kiểm tra từ khóa có bị phủ định không"""
-        words = sentence.split()
-        keyword_pos = -1
-        
-        # Tìm vị trí keyword
-        for i, word in enumerate(words):
-            if keyword in word:
-                keyword_pos = i
-                break
-        
-        if keyword_pos == -1:
-            return False
-        
-        # Kiểm tra window phía trước
-        start = max(0, keyword_pos - window_size)
-        window = words[start:keyword_pos]
-        
-        for negation in NEGATION_WORDS:
-            if any(negation in word for word in window):
-                return True
-        
-        return False
-    
-    def _get_intensity(self, sentence: str, keyword: str) -> float:
-        """Tính độ mạnh của từ khóa dựa trên intensifiers"""
-        words = sentence.split()
-        keyword_pos = -1
-        
-        for i, word in enumerate(words):
-            if keyword in word:
-                keyword_pos = i
-                break
-        
-        if keyword_pos == -1:
-            return 1.0
-        
-        # Kiểm tra intensifiers xung quanh keyword
-        intensity = 1.0
-        for i in range(max(0, keyword_pos - 2), min(len(words), keyword_pos + 3)):
-            word = words[i]
-            for intensifier, multiplier in INTENSIFIERS.items():
-                if intensifier in word:
-                    intensity *= multiplier
-                    break
-        
-        return min(intensity, 3.0)  # Cap at 3.0
 
 
 # ==================== RECOMMENDATION ENGINE ====================
@@ -482,18 +892,53 @@ def get_recommendation_engine() -> RecommendationEngine:
 
 # ==================== PUBLIC API FUNCTIONS ====================
 
-def analyze_sentiment(text: str) -> Tuple[float, List[str], List[str]]:
+def analyze_sentiment(text: str, rating: int = None) -> Tuple[float, List[str], List[str], Dict[str, Any]]:
     """
-    Public API for sentiment analysis
+    Public API for sentiment analysis with optional post-processing
     
     Args:
         text: Text to analyze
+        rating: Optional rating (1-5) for calibration
         
     Returns:
-        tuple: (sentiment_score, positive_keywords, negative_keywords)
+        tuple: (sentiment_score, positive_keywords, negative_keywords, metadata)
     """
     analyzer = get_sentiment_analyzer()
-    return analyzer.analyze(text)
+    score, pos_kw, neg_kw, metadata = analyzer.analyze(text)
+    
+    # POST-PROCESSING (v2.2 improvements)
+    
+    # 1. Short review boost (< 8 words with weak positive signals)
+    word_count = len(text.split())
+    if word_count < 8 and 0 < score < 0.15:
+        # Short review with weak positive → boost slightly
+        if any(kw in ['ok', 'ổn', 'được', 'tạm'] for kw in pos_kw):
+            score = min(score * 1.5, 0.25)  # Boost to weak positive
+            metadata['post_processing'] = 'short_review_boost'
+    
+    # 2. Rating-based calibration (optional, if rating is provided)
+    if rating is not None:
+        original_score = score
+        
+        if rating == 5 and score < 0.5:
+            # Rating 5 should be strong positive
+            score = max(score, 0.6)
+            metadata['calibrated'] = True
+            metadata['calibration_reason'] = f'rating_5_boost (from {original_score:.3f})'
+        
+        elif rating == 4 and score < 0.15:
+            # Rating 4 should be at least weak positive
+            score = max(score, 0.20)
+            metadata['calibrated'] = True
+            metadata['calibration_reason'] = f'rating_4_boost (from {original_score:.3f})'
+        
+        elif rating == 1 and score > -0.5:
+            # Rating 1 should be strong negative
+            score = min(score, -0.6)
+            metadata['calibrated'] = True
+            metadata['calibration_reason'] = f'rating_1_adjust (from {original_score:.3f})'
+    
+    return score, pos_kw, neg_kw, metadata
 
 def search_destinations(query: str, filters: Dict[str, Any]) -> List:
     """

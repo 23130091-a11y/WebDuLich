@@ -1,0 +1,890 @@
+﻿id,text,rating,sentiment_score,pseudo_label,label,pos_keywords,neg_keywords,needs_review
+895,"biển đẹp, nhưng đồ ăn hơi đắt",3,0.028800000000000006,NEU,NEU,['đẹp'],['đắt'],YES
+894,"Giá trên trời, không đáng tiền",1,0.0,NEG,NEG,[],[],NO
+893,"Theo mình Thất vọng hoàn toàn, không như quảng cáo",1,0.0,NEG,NEG,[],[],NO
+892,"Chặt chém du khách, lừa đảo nha",1,0.0,NEG,NEG,[],[],NO
+891,"Theo mình Bẩn quá, toilet hôi hám",1,0.0,NEG,NEG,[],[],NO
+889,"Không gian yên bình, thơ mộng",4,0.0,POS,POS,[],[],NO
+890,"Cá nhân mình nghĩ Dịch vụ tệ, không bao giờ quay lại",1,0.0,NEG,NEG,[],[],NO
+888,"Giá hợp lý, đáng để trải nghiệm",4,0.0,POS,POS,[],[],NO
+886,"Địa điểm xinh, nhân viên dễ thương",4,0.0,POS,POS,[],[],NO
+887,"Theo mình Phòng sạch sẽ, tiện nghi đầy đủ nha",4,0.0,POS,POS,[],[],NO
+884,Hài lòng với chuyến đi,4,0.0,POS,POS,[],[],NO
+885,"Nên đi, view đẹp lắm",4,0.0,POS,POS,[],[],NO
+883,"Mình thấy Khá ổn, cảnh đẹp, dịch vụ tốt",4,0.0,POS,POS,[],[],NO
+882,"Đáng tiền, trải nghiệm tốt",4,0.0,POS,POS,[],[],NO
+881,"Siêu đẹp, chụp hình cực xịn",5,0.0,POS,POS,[],[],NO
+879,"Hoàn hảo, xứng đáng 5 sao",5,0.0,POS,POS,[],[],NO
+880,"Tuyệt đẹp, không thể bỏ lỡ",5,0.0,POS,POS,[],[],NO
+877,"Theo mình View đỉnh cao, phục vụ nhiệt tình",5,0.0,POS,POS,[],[],NO
+878,"Rất hài lòng, sẽ quay lại ạ",5,0.0,POS,POS,[],[],NO
+875,"Địa điểm tuyệt vời, rất đáng đi",5,0.0,POS,POS,[],[],NO
+876,"Theo mình Cảnh đẹp xuất sắc, recommend mạnh",5,0.0,POS,POS,[],[],NO
+874,"Theo mình Được, nhưng kỳ vọng cao hơn",3,0.0,NEU,NEU,[],[],YES
+873,Giá rẻ nhưng cơ sở vật chất hơi kém nhé,3,0.0,NEU,NEU,[],[],YES
+871,View đẹp nhưng xa trung tâm,3,0.0,NEU,NEU,[],[],YES
+872,Nhân viên thân thiện nhưng phòng cũ nhé,3,0.0,NEU,NEU,[],[],YES
+870,Đồ ăn ngon nhưng giá hơi mắc,3,0.0,NEU,NEU,[],[],YES
+869,Phòng sạch nhưng wifi yếu nha,3,0.0,NEU,NEU,[],[],YES
+868,Cảnh đẹp nhưng đông quá,3,0.0,NEU,NEU,[],[],YES
+867,"Theo mình Ok thôi, cũng được",3,0.0,NEU,NEU,[],[],YES
+866,"Tạm ổn, giá hơi cao",3,0.0,NEU,NEU,[],[],YES
+865,"Bình thường, không có gì đặc biệt nhé",3,0.0,NEU,NEU,[],[],YES
+862,"Cá nhân mình nghĩ Cơ sở vật chất xuống cấp, hư hỏng nhiều",2,0.0,NEG,NEG,[],[],NO
+864,Đắt mà chất lượng kém,2,0.0,NEG,NEG,[],[],NO
+863,"Không sạch sẽ, mùi khó chịu",2,0.0,NEG,NEG,[],[],NO
+860,"Theo mình Nhân viên thái độ kém, phục vụ tệ",2,0.0,NEG,NEG,[],[],NO
+861,"Quá đông, chen chúc, chờ lâu",2,0.0,NEG,NEG,[],[],NO
+858,"Thất vọng hoàn toàn, không như quảng cáo nha",1,0.0,NEG,NEG,[],[],NO
+859,"Giá trên trời, không đáng tiền",1,0.0,NEG,NEG,[],[],NO
+856,"Bẩn quá, toilet hôi hám",1,0.0,NEG,NEG,[],[],NO
+857,"Chặt chém du khách, lừa đảo",1,0.0,NEG,NEG,[],[],NO
+855,"Dịch vụ tệ, không bao giờ quay lại nha",1,0.0,NEG,NEG,[],[],NO
+854,"Không gian yên bình, thơ mộng",4,0.0,POS,POS,[],[],NO
+852,"Cá nhân mình nghĩ Phòng sạch sẽ, tiện nghi đầy đủ",4,0.0,POS,POS,[],[],NO
+853,"Giá hợp lý, đáng để trải nghiệm",4,0.0,POS,POS,[],[],NO
+851,"Địa điểm xinh, nhân viên dễ thương luôn",4,0.0,POS,POS,[],[],NO
+850,"Nên đi, view đẹp lắm",4,0.0,POS,POS,[],[],NO
+847,"Theo mình Đáng tiền, trải nghiệm tốt",4,0.0,POS,POS,[],[],NO
+848,"Khá ổn, cảnh đẹp, dịch vụ tốt ạ",4,0.0,POS,POS,[],[],NO
+849,Hài lòng với chuyến đi,4,0.0,POS,POS,[],[],NO
+846,"Siêu đẹp, chụp hình cực xịn",5,0.0,POS,POS,[],[],NO
+845,"Tuyệt đẹp, không thể bỏ lỡ",5,0.0,POS,POS,[],[],NO
+843,"Rất hài lòng, sẽ quay lại",5,0.0,POS,POS,[],[],NO
+844,"Hoàn hảo, xứng đáng 5 sao",5,0.0,POS,POS,[],[],NO
+842,"View đỉnh cao, phục vụ nhiệt tình",5,0.0,POS,POS,[],[],NO
+841,"Cảnh đẹp xuất sắc, recommend mạnh",5,0.0,POS,POS,[],[],NO
+840,"Địa điểm tuyệt vời, rất đáng đi",5,0.0,POS,POS,[],[],NO
+839,"Mình thấy Được, nhưng kỳ vọng cao hơn",3,0.0,NEU,NEU,[],[],YES
+838,Giá rẻ nhưng cơ sở vật chất hơi kém nhé,3,0.0,NEU,NEU,[],[],YES
+837,Nhân viên thân thiện nhưng phòng cũ luôn,3,0.0,NEU,NEU,[],[],YES
+836,View đẹp nhưng xa trung tâm,3,0.0,NEU,NEU,[],[],YES
+835,Cá nhân mình nghĩ Đồ ăn ngon nhưng giá hơi mắc,3,0.0,NEU,NEU,[],[],YES
+834,Phòng sạch nhưng wifi yếu,3,0.0,NEU,NEU,[],[],YES
+833,Cảnh đẹp nhưng đông quá ạ,3,0.0,NEU,NEU,[],[],YES
+827,"Cơ sở vật chất xuống cấp, hư hỏng nhiều",2,0.0,NEG,NEG,[],[],NO
+832,"Ok thôi, cũng được",3,0.0,NEU,NEU,[],[],YES
+831,"Tạm ổn, giá hơi cao",3,0.0,NEU,NEU,[],[],YES
+830,"Bình thường, không có gì đặc biệt",3,0.0,NEU,NEU,[],[],YES
+829,Đắt mà chất lượng kém,2,0.0,NEG,NEG,[],[],NO
+828,"Không sạch sẽ, mùi khó chịu",2,0.0,NEG,NEG,[],[],NO
+826,"Quá đông, chen chúc, chờ lâu",2,0.0,NEG,NEG,[],[],NO
+825,"Nhân viên thái độ kém, phục vụ tệ",2,0.0,NEG,NEG,[],[],NO
+824,"Giá trên trời, không đáng tiền",1,0.0,NEG,NEG,[],[],NO
+823,"Thất vọng hoàn toàn, không như quảng cáo",1,0.0,NEG,NEG,[],[],NO
+822,"Chặt chém du khách, lừa đảo",1,0.0,NEG,NEG,[],[],NO
+821,"Bẩn quá, toilet hôi hám",1,0.0,NEG,NEG,[],[],NO
+815,"Cá nhân mình nghĩ Nên đi, view đẹp lắm",4,0.0,POS,POS,[],[],NO
+819,"Mình thấy Không gian yên bình, thơ mộng",4,0.0,POS,POS,[],[],NO
+818,"Giá hợp lý, đáng để trải nghiệm",4,0.0,POS,POS,[],[],NO
+809,"Hoàn hảo, xứng đáng 5 sao",5,0.0,POS,POS,[],[],NO
+808,"Rất hài lòng, sẽ quay lại",5,0.0,POS,POS,[],[],NO
+820,"Dịch vụ tệ, không bao giờ quay lại nha",1,0.0,NEG,NEG,[],[],NO
+811,"Siêu đẹp, chụp hình cực xịn",5,0.0,POS,POS,[],[],NO
+810,"Tuyệt đẹp, không thể bỏ lỡ",5,0.0,POS,POS,[],[],NO
+812,"Đáng tiền, trải nghiệm tốt",4,0.0,POS,POS,[],[],NO
+813,"Khá ổn, cảnh đẹp, dịch vụ tốt",4,0.0,POS,POS,[],[],NO
+816,"Địa điểm xinh, nhân viên dễ thương",4,0.0,POS,POS,[],[],NO
+817,"Phòng sạch sẽ, tiện nghi đầy đủ ạ",4,0.0,POS,POS,[],[],NO
+814,Hài lòng với chuyến đi,4,0.0,POS,POS,[],[],NO
+806,"Cảnh đẹp xuất sắc, recommend mạnh nhé",5,0.0,POS,POS,[],[],NO
+807,"View đỉnh cao, phục vụ nhiệt tình",5,0.0,POS,POS,[],[],NO
+804,"Được, nhưng kỳ vọng cao hơn luôn",3,0.0,NEU,NEU,[],[],YES
+805,"Địa điểm tuyệt vời, rất đáng đi",5,0.0,POS,POS,[],[],NO
+803,Giá rẻ nhưng cơ sở vật chất hơi kém ạ,3,0.0,NEU,NEU,[],[],YES
+802,Nhân viên thân thiện nhưng phòng cũ,3,0.0,NEU,NEU,[],[],YES
+801,View đẹp nhưng xa trung tâm,3,0.0,NEU,NEU,[],[],YES
+800,Đồ ăn ngon nhưng giá hơi mắc,3,0.0,NEU,NEU,[],[],YES
+798,Cảnh đẹp nhưng đông quá,3,0.0,NEU,NEU,[],[],YES
+799,Mình thấy Phòng sạch nhưng wifi yếu,3,0.0,NEU,NEU,[],[],YES
+797,"Ok thôi, cũng được",3,0.0,NEU,NEU,[],[],YES
+796,"Tạm ổn, giá hơi cao",3,0.0,NEU,NEU,[],[],YES
+794,Đắt mà chất lượng kém,2,0.0,NEG,NEG,[],[],NO
+795,"Bình thường, không có gì đặc biệt",3,0.0,NEU,NEU,[],[],YES
+793,"Mình thấy Không sạch sẽ, mùi khó chịu",2,0.0,NEG,NEG,[],[],NO
+792,"Cơ sở vật chất xuống cấp, hư hỏng nhiều nhé",2,0.0,NEG,NEG,[],[],NO
+790,"Nhân viên thái độ kém, phục vụ tệ",2,0.0,NEG,NEG,[],[],NO
+791,"Theo mình Quá đông, chen chúc, chờ lâu",2,0.0,NEG,NEG,[],[],NO
+788,"Thất vọng hoàn toàn, không như quảng cáo",1,0.0,NEG,NEG,[],[],NO
+789,"Mình thấy Giá trên trời, không đáng tiền",1,0.0,NEG,NEG,[],[],NO
+787,"Chặt chém du khách, lừa đảo nha",1,0.0,NEG,NEG,[],[],NO
+786,"Bẩn quá, toilet hôi hám nha",1,0.0,NEG,NEG,[],[],NO
+784,"Không gian yên bình, thơ mộng",4,0.0,POS,POS,[],[],NO
+785,"Dịch vụ tệ, không bao giờ quay lại",1,0.0,NEG,NEG,[],[],NO
+782,"Phòng sạch sẽ, tiện nghi đầy đủ",4,0.0,POS,POS,[],[],NO
+783,"Giá hợp lý, đáng để trải nghiệm",4,0.0,POS,POS,[],[],NO
+780,"Nên đi, view đẹp lắm",4,0.0,POS,POS,[],[],NO
+781,"Cá nhân mình nghĩ Địa điểm xinh, nhân viên dễ thương",4,0.0,POS,POS,[],[],NO
+778,"Khá ổn, cảnh đẹp, dịch vụ tốt",4,0.0,POS,POS,[],[],NO
+779,Cá nhân mình nghĩ Hài lòng với chuyến đi,4,0.0,POS,POS,[],[],NO
+776,"Siêu đẹp, chụp hình cực xịn",5,0.0,POS,POS,[],[],NO
+777,"Đáng tiền, trải nghiệm tốt",4,0.0,POS,POS,[],[],NO
+775,"Tuyệt đẹp, không thể bỏ lỡ",5,0.0,POS,POS,[],[],NO
+774,"Hoàn hảo, xứng đáng 5 sao",5,0.0,POS,POS,[],[],NO
+773,"Rất hài lòng, sẽ quay lại",5,0.0,POS,POS,[],[],NO
+772,"View đỉnh cao, phục vụ nhiệt tình",5,0.0,POS,POS,[],[],NO
+771,"Cảnh đẹp xuất sắc, recommend mạnh",5,0.0,POS,POS,[],[],NO
+770,"Địa điểm tuyệt vời, rất đáng đi nha",5,0.0,POS,POS,[],[],NO
+769,"Được, nhưng kỳ vọng cao hơn",3,0.0,NEU,NEU,[],[],YES
+767,Nhân viên thân thiện nhưng phòng cũ,3,0.0,NEU,NEU,[],[],YES
+768,Theo mình Giá rẻ nhưng cơ sở vật chất hơi kém,3,0.0,NEU,NEU,[],[],YES
+766,View đẹp nhưng xa trung tâm,3,0.0,NEU,NEU,[],[],YES
+764,Theo mình Phòng sạch nhưng wifi yếu,3,0.0,NEU,NEU,[],[],YES
+765,Theo mình Đồ ăn ngon nhưng giá hơi mắc,3,0.0,NEU,NEU,[],[],YES
+762,"Cá nhân mình nghĩ Ok thôi, cũng được",3,0.0,NEU,NEU,[],[],YES
+761,"Tạm ổn, giá hơi cao",3,0.0,NEU,NEU,[],[],YES
+763,Cảnh đẹp nhưng đông quá,3,0.0,NEU,NEU,[],[],YES
+760,"Mình thấy Bình thường, không có gì đặc biệt",3,0.0,NEU,NEU,[],[],YES
+759,Đắt mà chất lượng kém,2,0.0,NEG,NEG,[],[],NO
+757,"Cơ sở vật chất xuống cấp, hư hỏng nhiều",2,0.0,NEG,NEG,[],[],NO
+758,"Không sạch sẽ, mùi khó chịu",2,0.0,NEG,NEG,[],[],NO
+756,"Quá đông, chen chúc, chờ lâu",2,0.0,NEG,NEG,[],[],NO
+755,"Nhân viên thái độ kém, phục vụ tệ nha",2,0.0,NEG,NEG,[],[],NO
+753,"Thất vọng hoàn toàn, không như quảng cáo",1,0.0,NEG,NEG,[],[],NO
+754,"Cá nhân mình nghĩ Giá trên trời, không đáng tiền",1,0.0,NEG,NEG,[],[],NO
+752,"Chặt chém du khách, lừa đảo",1,0.0,NEG,NEG,[],[],NO
+751,"Bẩn quá, toilet hôi hám",1,0.0,NEG,NEG,[],[],NO
+750,"Dịch vụ tệ, không bao giờ quay lại",1,0.0,NEG,NEG,[],[],NO
+749,"Cá nhân mình nghĩ Không gian yên bình, thơ mộng",4,0.0,POS,POS,[],[],NO
+748,"Giá hợp lý, đáng để trải nghiệm",4,0.0,POS,POS,[],[],NO
+747,"Phòng sạch sẽ, tiện nghi đầy đủ",4,0.0,POS,POS,[],[],NO
+746,"Địa điểm xinh, nhân viên dễ thương",4,0.0,POS,POS,[],[],NO
+745,"Nên đi, view đẹp lắm",4,0.0,POS,POS,[],[],NO
+744,Hài lòng với chuyến đi luôn,4,0.0,POS,POS,[],[],NO
+743,"Khá ổn, cảnh đẹp, dịch vụ tốt",4,0.0,POS,POS,[],[],NO
+742,"Đáng tiền, trải nghiệm tốt",4,0.0,POS,POS,[],[],NO
+741,"Siêu đẹp, chụp hình cực xịn",5,0.0,POS,POS,[],[],NO
+740,"Cá nhân mình nghĩ Tuyệt đẹp, không thể bỏ lỡ",5,0.0,POS,POS,[],[],NO
+739,"Hoàn hảo, xứng đáng 5 sao",5,0.0,POS,POS,[],[],NO
+737,"View đỉnh cao, phục vụ nhiệt tình",5,0.0,POS,POS,[],[],NO
+738,"Rất hài lòng, sẽ quay lại nha",5,0.0,POS,POS,[],[],NO
+735,"Địa điểm tuyệt vời, rất đáng đi",5,0.0,POS,POS,[],[],NO
+736,"Cá nhân mình nghĩ Cảnh đẹp xuất sắc, recommend mạnh",5,0.0,POS,POS,[],[],NO
+734,"Được, nhưng kỳ vọng cao hơn",3,0.0,NEU,NEU,[],[],YES
+731,View đẹp nhưng xa trung tâm nha,3,0.0,NEU,NEU,[],[],YES
+732,Theo mình Nhân viên thân thiện nhưng phòng cũ,3,0.0,NEU,NEU,[],[],YES
+733,Giá rẻ nhưng cơ sở vật chất hơi kém,3,0.0,NEU,NEU,[],[],YES
+730,Đồ ăn ngon nhưng giá hơi mắc,3,0.0,NEU,NEU,[],[],YES
+728,Theo mình Cảnh đẹp nhưng đông quá,3,0.0,NEU,NEU,[],[],YES
+727,"Ok thôi, cũng được",3,0.0,NEU,NEU,[],[],YES
+729,Phòng sạch nhưng wifi yếu nhé,3,0.0,NEU,NEU,[],[],YES
+726,"Tạm ổn, giá hơi cao",3,0.0,NEU,NEU,[],[],YES
+725,"Bình thường, không có gì đặc biệt",3,0.0,NEU,NEU,[],[],YES
+723,"Không sạch sẽ, mùi khó chịu",2,0.0,NEG,NEG,[],[],NO
+724,Đắt mà chất lượng kém,2,0.0,NEG,NEG,[],[],NO
+722,"Cơ sở vật chất xuống cấp, hư hỏng nhiều",2,0.0,NEG,NEG,[],[],NO
+721,"Quá đông, chen chúc, chờ lâu",2,0.0,NEG,NEG,[],[],NO
+720,"Nhân viên thái độ kém, phục vụ tệ",2,0.0,NEG,NEG,[],[],NO
+719,"Theo mình Giá trên trời, không đáng tiền",1,0.0,NEG,NEG,[],[],NO
+718,"Thất vọng hoàn toàn, không như quảng cáo",1,0.0,NEG,NEG,[],[],NO
+716,"Bẩn quá, toilet hôi hám",1,0.0,NEG,NEG,[],[],NO
+715,"Dịch vụ tệ, không bao giờ quay lại",1,0.0,NEG,NEG,[],[],NO
+717,"Chặt chém du khách, lừa đảo",1,0.0,NEG,NEG,[],[],NO
+697,Nhân viên thân thiện nhưng phòng cũ,3,0.0,NEU,NEU,[],[],YES
+705,"Tuyệt đẹp, không thể bỏ lỡ",5,0.0,POS,POS,[],[],NO
+706,"Cá nhân mình nghĩ Siêu đẹp, chụp hình cực xịn",5,0.0,POS,POS,[],[],NO
+707,"Đáng tiền, trải nghiệm tốt",4,0.0,POS,POS,[],[],NO
+708,"Khá ổn, cảnh đẹp, dịch vụ tốt",4,0.0,POS,POS,[],[],NO
+702,"View đỉnh cao, phục vụ nhiệt tình",5,0.0,POS,POS,[],[],NO
+701,"Theo mình Cảnh đẹp xuất sắc, recommend mạnh",5,0.0,POS,POS,[],[],NO
+700,"Địa điểm tuyệt vời, rất đáng đi",5,0.0,POS,POS,[],[],NO
+699,"Được, nhưng kỳ vọng cao hơn",3,0.0,NEU,NEU,[],[],YES
+698,Giá rẻ nhưng cơ sở vật chất hơi kém,3,0.0,NEU,NEU,[],[],YES
+709,Theo mình Hài lòng với chuyến đi luôn,4,0.0,POS,POS,[],[],NO
+710,"Cá nhân mình nghĩ Nên đi, view đẹp lắm",4,0.0,POS,POS,[],[],NO
+711,"Địa điểm xinh, nhân viên dễ thương",4,0.0,POS,POS,[],[],NO
+712,"Phòng sạch sẽ, tiện nghi đầy đủ",4,0.0,POS,POS,[],[],NO
+713,"Giá hợp lý, đáng để trải nghiệm",4,0.0,POS,POS,[],[],NO
+714,"Không gian yên bình, thơ mộng",4,0.0,POS,POS,[],[],NO
+704,"Mình thấy Hoàn hảo, xứng đáng 5 sao",5,0.0,POS,POS,[],[],NO
+696,View đẹp nhưng xa trung tâm,3,0.0,NEU,NEU,[],[],YES
+703,"Rất hài lòng, sẽ quay lại",5,0.0,POS,POS,[],[],NO
+694,Phòng sạch nhưng wifi yếu ạ,3,0.0,NEU,NEU,[],[],YES
+695,Đồ ăn ngon nhưng giá hơi mắc,3,0.0,NEU,NEU,[],[],YES
+692,"Ok thôi, cũng được",3,0.0,NEU,NEU,[],[],YES
+693,Cá nhân mình nghĩ Cảnh đẹp nhưng đông quá,3,0.0,NEU,NEU,[],[],YES
+691,"Tạm ổn, giá hơi cao",3,0.0,NEU,NEU,[],[],YES
+686,"Quá đông, chen chúc, chờ lâu",2,0.0,NEG,NEG,[],[],NO
+687,"Cơ sở vật chất xuống cấp, hư hỏng nhiều",2,0.0,NEG,NEG,[],[],NO
+688,"Không sạch sẽ, mùi khó chịu",2,0.0,NEG,NEG,[],[],NO
+689,Đắt mà chất lượng kém,2,0.0,NEG,NEG,[],[],NO
+690,"Bình thường, không có gì đặc biệt",3,0.0,NEU,NEU,[],[],YES
+682,"Chặt chém du khách, lừa đảo",1,0.0,NEG,NEG,[],[],NO
+683,"Theo mình Thất vọng hoàn toàn, không như quảng cáo nha",1,0.0,NEG,NEG,[],[],NO
+684,"Giá trên trời, không đáng tiền",1,0.0,NEG,NEG,[],[],NO
+685,"Nhân viên thái độ kém, phục vụ tệ",2,0.0,NEG,NEG,[],[],NO
+679,"Không gian yên bình, thơ mộng",4,0.0,POS,POS,[],[],NO
+681,"Cá nhân mình nghĩ Bẩn quá, toilet hôi hám",1,0.0,NEG,NEG,[],[],NO
+680,"Dịch vụ tệ, không bao giờ quay lại",1,0.0,NEG,NEG,[],[],NO
+678,"Giá hợp lý, đáng để trải nghiệm",4,0.0,POS,POS,[],[],NO
+677,"Phòng sạch sẽ, tiện nghi đầy đủ",4,0.0,POS,POS,[],[],NO
+676,"Địa điểm xinh, nhân viên dễ thương",4,0.0,POS,POS,[],[],NO
+675,"Cá nhân mình nghĩ Nên đi, view đẹp lắm",4,0.0,POS,POS,[],[],NO
+674,Hài lòng với chuyến đi luôn,4,0.0,POS,POS,[],[],NO
+673,"Khá ổn, cảnh đẹp, dịch vụ tốt",4,0.0,POS,POS,[],[],NO
+672,"Đáng tiền, trải nghiệm tốt",4,0.0,POS,POS,[],[],NO
+671,"Cá nhân mình nghĩ Siêu đẹp, chụp hình cực xịn nhé",5,0.0,POS,POS,[],[],NO
+670,"Cá nhân mình nghĩ Tuyệt đẹp, không thể bỏ lỡ",5,0.0,POS,POS,[],[],NO
+669,"Cá nhân mình nghĩ Hoàn hảo, xứng đáng 5 sao",5,0.0,POS,POS,[],[],NO
+668,"Rất hài lòng, sẽ quay lại",5,0.0,POS,POS,[],[],NO
+667,"View đỉnh cao, phục vụ nhiệt tình",5,0.0,POS,POS,[],[],NO
+664,"Được, nhưng kỳ vọng cao hơn",3,0.0,NEU,NEU,[],[],YES
+663,Giá rẻ nhưng cơ sở vật chất hơi kém,3,0.0,NEU,NEU,[],[],YES
+666,"Cảnh đẹp xuất sắc, recommend mạnh luôn",5,0.0,POS,POS,[],[],NO
+665,"Cá nhân mình nghĩ Địa điểm tuyệt vời, rất đáng đi",5,0.0,POS,POS,[],[],NO
+662,Mình thấy Nhân viên thân thiện nhưng phòng cũ nha,3,0.0,NEU,NEU,[],[],YES
+661,View đẹp nhưng xa trung tâm,3,0.0,NEU,NEU,[],[],YES
+660,Đồ ăn ngon nhưng giá hơi mắc,3,0.0,NEU,NEU,[],[],YES
+659,Mình thấy Phòng sạch nhưng wifi yếu,3,0.0,NEU,NEU,[],[],YES
+658,Cảnh đẹp nhưng đông quá,3,0.0,NEU,NEU,[],[],YES
+657,"Ok thôi, cũng được",3,0.0,NEU,NEU,[],[],YES
+656,"Tạm ổn, giá hơi cao",3,0.0,NEU,NEU,[],[],YES
+655,"Bình thường, không có gì đặc biệt",3,0.0,NEU,NEU,[],[],YES
+654,Đắt mà chất lượng kém,2,0.0,NEG,NEG,[],[],NO
+653,"Không sạch sẽ, mùi khó chịu",2,0.0,NEG,NEG,[],[],NO
+650,"Nhân viên thái độ kém, phục vụ tệ",2,0.0,NEG,NEG,[],[],NO
+651,"Quá đông, chen chúc, chờ lâu",2,0.0,NEG,NEG,[],[],NO
+652,"Mình thấy Cơ sở vật chất xuống cấp, hư hỏng nhiều",2,0.0,NEG,NEG,[],[],NO
+648,"Mình thấy Thất vọng hoàn toàn, không như quảng cáo",1,0.0,NEG,NEG,[],[],NO
+647,"Chặt chém du khách, lừa đảo nhé",1,0.0,NEG,NEG,[],[],NO
+649,"Giá trên trời, không đáng tiền",1,0.0,NEG,NEG,[],[],NO
+646,"Bẩn quá, toilet hôi hám",1,0.0,NEG,NEG,[],[],NO
+645,"Dịch vụ tệ, không bao giờ quay lại",1,0.0,NEG,NEG,[],[],NO
+634,"Mình thấy Hoàn hảo, xứng đáng 5 sao",5,0.0,POS,POS,[],[],NO
+641,"Địa điểm xinh, nhân viên dễ thương",4,0.0,POS,POS,[],[],NO
+642,"Phòng sạch sẽ, tiện nghi đầy đủ ạ",4,0.0,POS,POS,[],[],NO
+644,"Không gian yên bình, thơ mộng nha",4,0.0,POS,POS,[],[],NO
+643,"Giá hợp lý, đáng để trải nghiệm",4,0.0,POS,POS,[],[],NO
+640,"Nên đi, view đẹp lắm nhé",4,0.0,POS,POS,[],[],NO
+624,Cá nhân mình nghĩ Phòng sạch nhưng wifi yếu ạ,3,0.0,NEU,NEU,[],[],YES
+625,Đồ ăn ngon nhưng giá hơi mắc,3,0.0,NEU,NEU,[],[],YES
+626,View đẹp nhưng xa trung tâm,3,0.0,NEU,NEU,[],[],YES
+627,Theo mình Nhân viên thân thiện nhưng phòng cũ,3,0.0,NEU,NEU,[],[],YES
+628,Giá rẻ nhưng cơ sở vật chất hơi kém,3,0.0,NEU,NEU,[],[],YES
+629,"Mình thấy Được, nhưng kỳ vọng cao hơn",3,0.0,NEU,NEU,[],[],YES
+630,"Địa điểm tuyệt vời, rất đáng đi",5,0.0,POS,POS,[],[],NO
+631,"Cảnh đẹp xuất sắc, recommend mạnh",5,0.0,POS,POS,[],[],NO
+632,"Mình thấy View đỉnh cao, phục vụ nhiệt tình",5,0.0,POS,POS,[],[],NO
+633,"Cá nhân mình nghĩ Rất hài lòng, sẽ quay lại ạ",5,0.0,POS,POS,[],[],NO
+635,"Mình thấy Tuyệt đẹp, không thể bỏ lỡ",5,0.0,POS,POS,[],[],NO
+636,"Siêu đẹp, chụp hình cực xịn nhé",5,0.0,POS,POS,[],[],NO
+637,"Đáng tiền, trải nghiệm tốt",4,0.0,POS,POS,[],[],NO
+638,"Khá ổn, cảnh đẹp, dịch vụ tốt",4,0.0,POS,POS,[],[],NO
+639,Hài lòng với chuyến đi,4,0.0,POS,POS,[],[],NO
+623,Cảnh đẹp nhưng đông quá,3,0.0,NEU,NEU,[],[],YES
+619,Mình thấy Đắt mà chất lượng kém,2,0.0,NEG,NEG,[],[],NO
+620,"Bình thường, không có gì đặc biệt",3,0.0,NEU,NEU,[],[],YES
+621,"Theo mình Tạm ổn, giá hơi cao",3,0.0,NEU,NEU,[],[],YES
+622,"Ok thôi, cũng được",3,0.0,NEU,NEU,[],[],YES
+618,"Mình thấy Không sạch sẽ, mùi khó chịu nha",2,0.0,NEG,NEG,[],[],NO
+616,"Quá đông, chen chúc, chờ lâu",2,0.0,NEG,NEG,[],[],NO
+611,"Bẩn quá, toilet hôi hám",1,0.0,NEG,NEG,[],[],NO
+612,"Chặt chém du khách, lừa đảo",1,0.0,NEG,NEG,[],[],NO
+613,"Thất vọng hoàn toàn, không như quảng cáo",1,0.0,NEG,NEG,[],[],NO
+614,"Giá trên trời, không đáng tiền",1,0.0,NEG,NEG,[],[],NO
+610,"Dịch vụ tệ, không bao giờ quay lại",1,0.0,NEG,NEG,[],[],NO
+615,"Nhân viên thái độ kém, phục vụ tệ",2,0.0,NEG,NEG,[],[],NO
+617,"Cơ sở vật chất xuống cấp, hư hỏng nhiều",2,0.0,NEG,NEG,[],[],NO
+598,"Mình thấy Rất hài lòng, sẽ quay lại",5,0.0,POS,POS,[],[],NO
+606,"Địa điểm xinh, nhân viên dễ thương",4,0.0,POS,POS,[],[],NO
+596,"Cảnh đẹp xuất sắc, recommend mạnh",5,0.0,POS,POS,[],[],NO
+597,"Mình thấy View đỉnh cao, phục vụ nhiệt tình",5,0.0,POS,POS,[],[],NO
+608,"Giá hợp lý, đáng để trải nghiệm",4,0.0,POS,POS,[],[],NO
+605,"Nên đi, view đẹp lắm",4,0.0,POS,POS,[],[],NO
+607,"Phòng sạch sẽ, tiện nghi đầy đủ",4,0.0,POS,POS,[],[],NO
+602,"Đáng tiền, trải nghiệm tốt",4,0.0,POS,POS,[],[],NO
+601,"Siêu đẹp, chụp hình cực xịn ạ",5,0.0,POS,POS,[],[],NO
+603,"Theo mình Khá ổn, cảnh đẹp, dịch vụ tốt",4,0.0,POS,POS,[],[],NO
+609,"Không gian yên bình, thơ mộng",4,0.0,POS,POS,[],[],NO
+604,Hài lòng với chuyến đi,4,0.0,POS,POS,[],[],NO
+599,"Hoàn hảo, xứng đáng 5 sao nha",5,0.0,POS,POS,[],[],NO
+600,"Theo mình Tuyệt đẹp, không thể bỏ lỡ",5,0.0,POS,POS,[],[],NO
+595,"Địa điểm tuyệt vời, rất đáng đi",5,0.0,POS,POS,[],[],NO
+594,"ổn nha, nếu bạn thích không khí cổ xưa thì có thể ghé thử để khám phá, còn đồ ăn thì hơi đắt thiệt",3,0.07649999999999998,NEU,NEU,"['thích', 'ổn']",['đắt'],YES
+593,"đồ ăn thì ngon, nhưng giá đồ ăn đắt, phong cảnh cũng bình thường",2,-0.2734683437640235,NEG,NEG,[],['đắt'],NO
+592,"xung quanh bán đồ ăn hơi đắt, còn lại ok",1,-0.13347071396591234,NEG,NEG,[],['đắt'],NO
+591,"cũng bình thường, ngoài việc có đông người còn lại tôi thấy bình thường",4,0.16135025589020077,POS,POS,[],['đông'],NO
+590,"tôi thấy giá ổn, còn đồ ăn thì ok nha",4,0.003312674530426496,POS,POS,[],[],NO
+589,"cảnh thì đẹp đó, nhưng giá cả hơi mắc nha",1,0.3014023542199417,NEU,NEU,['đẹp'],['mắc'],NO
+588,quang cảnh không đẹp cho lắm,4,-0.6436914900830292,NEU,NEU,[],['không đẹp'],NO
+586,ok tốt nhaa,3,0.0035740839717615935,NEU,NEU,[],[],YES
+584,gần mà không ok lắm,3,-0.5324224253118581,NEU,NEU,[],[],YES
+583,khá khê nha,3,0.40586168602050243,NEU,NEU,[],[],YES
+582,một nơi linh thiêng,5,0.00850341115847808,POS,POS,[],[],NO
+577,cũng ok á mn,3,0.013628656612196366,NEU,NEU,[],[],YES
+576,okkkkkkkkzz,3,0.0,NEU,NEU,[],[],YES
+575,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+574,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+570,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+572,"Được, nhưng kỳ vọng cao hơn một chút.",3,-0.9693408901656572,NEU,NEU,[],[],YES
+573,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+571,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+562,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+569,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+567,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+563,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+568,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+566,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+565,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+564,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+561,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+559,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+560,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+558,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+555,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+556,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+557,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+554,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+553,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+551,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+550,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+552,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+549,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+548,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+547,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+546,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+545,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+544,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+542,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+543,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+540,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+539,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+541,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+536,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+535,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+538,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+532,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+534,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+537,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+533,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+530,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+531,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+528,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+529,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+527,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+526,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+525,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+524,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+522,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+523,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+521,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+520,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+518,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+519,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+516,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+517,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+514,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+515,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+513,"Tạm ổn, không quá đặc biệt nhưng cũng không tệ.",3,0.5590751845033435,NEU,NEU,['không tệ'],[],YES
+512,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+511,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+510,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+509,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+508,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+507,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+505,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+506,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+503,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+504,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+502,"Ổn, giá hơi cao so với những gì nhận được.",3,0.05513217071721144,NEU,NEU,[],[],YES
+501,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+500,"Tạm ổn, không quá đặc biệt nhưng cũng không tệ.",3,0.5590751845033435,NEU,NEU,['không tệ'],[],YES
+499,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+498,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+497,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+496,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+495,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+494,"Ổn, giá hơi cao so với những gì nhận được.",3,0.05513217071721144,NEU,NEU,[],[],YES
+493,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+492,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+491,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+489,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+490,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+488,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+487,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+486,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+485,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+484,Hoàn hảo! Đáng đồng tiền bát gạo. 5 sao xứng đáng!,5,1.0,POS,POS,"['hoàn hảo', 'xứng đáng']",[],NO
+483,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+482,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+481,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+480,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+479,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+478,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+477,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+476,Hoàn hảo! Đáng đồng tiền bát gạo. 5 sao xứng đáng!,5,1.0,POS,POS,"['hoàn hảo', 'xứng đáng']",[],NO
+475,"Ổn, giá hơi cao so với những gì nhận được.",3,0.05513217071721144,NEU,NEU,[],[],YES
+474,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+473,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+472,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+470,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+471,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+469,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+468,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+467,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+466,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+464,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+465,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+462,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+463,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+461,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+460,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+457,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+459,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+458,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+456,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+455,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+454,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+445,"Bình thường, có thể đi thử một lần.",3,0.7852795154948566,NEU,NEU,[],[],YES
+450,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+452,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+451,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+448,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+446,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+447,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+453,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+449,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+443,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+442,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+434,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+439,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+441,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+435,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+436,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+437,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+440,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+438,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+444,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+431,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+433,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+432,Hoàn hảo! Đáng đồng tiền bát gạo. 5 sao xứng đáng!,5,1.0,POS,POS,"['hoàn hảo', 'xứng đáng']",[],NO
+430,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+428,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+427,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+426,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+424,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+423,"Được, nhưng kỳ vọng cao hơn một chút.",3,-0.9693408901656572,NEU,NEU,[],[],YES
+425,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+429,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+421,"Ổn, giá hơi cao so với những gì nhận được.",3,0.05513217071721144,NEU,NEU,[],[],YES
+422,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+420,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+418,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+417,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+419,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+414,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+412,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+415,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+413,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+416,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+411,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+410,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+409,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+408,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+407,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+406,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+405,Hoàn hảo! Đáng đồng tiền bát gạo. 5 sao xứng đáng!,5,1.0,POS,POS,"['hoàn hảo', 'xứng đáng']",[],NO
+404,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+403,okkkkaaaaa,2,0.003007217626117775,NEG,NEG,[],[],NO
+402,giá cả hơi đắt,2,-0.502230798215057,NEG,NEG,[],['đắt'],NO
+401,nên trải nghiệm,4,-0.9111654104881282,NEU,NEU,[],[],NO
+400,cái này ok nhaa,4,0.007386860913332072,POS,POS,[],[],NO
+399,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+398,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+397,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+396,"Bình thường, có thể đi thử một lần.",3,0.7852795154948566,NEU,NEU,[],[],YES
+395,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+394,Hoàn hảo! Đáng đồng tiền bát gạo. 5 sao xứng đáng!,5,1.0,POS,POS,"['hoàn hảo', 'xứng đáng']",[],NO
+391,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+393,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+392,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+390,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+387,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+382,Hoàn hảo! Đáng đồng tiền bát gạo. 5 sao xứng đáng!,5,1.0,POS,POS,"['hoàn hảo', 'xứng đáng']",[],NO
+386,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+388,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+383,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+384,Hoàn hảo! Đáng đồng tiền bát gạo. 5 sao xứng đáng!,5,1.0,POS,POS,"['hoàn hảo', 'xứng đáng']",[],NO
+385,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+389,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+380,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+381,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+379,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+378,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+377,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+376,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+375,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+374,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+373,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+369,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+372,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+371,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+367,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+368,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+370,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+366,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+365,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+364,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+362,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+363,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+361,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+360,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+357,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+359,Hoàn hảo! Đáng đồng tiền bát gạo. 5 sao xứng đáng!,5,1.0,POS,POS,"['hoàn hảo', 'xứng đáng']",[],NO
+358,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+356,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+355,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+354,"Được, nhưng kỳ vọng cao hơn một chút.",3,-0.9693408901656572,NEU,NEU,[],[],YES
+353,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+349,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+347,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+348,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+351,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+352,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+350,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+345,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+346,"Bình thường, có thể đi thử một lần.",3,0.7852795154948566,NEU,NEU,[],[],YES
+344,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+343,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+342,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+341,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+339,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+340,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+338,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+336,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+337,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+334,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+335,"Tạm ổn, không quá đặc biệt nhưng cũng không tệ.",3,0.5590751845033435,NEU,NEU,['không tệ'],[],YES
+333,"Ổn, giá hơi cao so với những gì nhận được.",3,0.05513217071721144,NEU,NEU,[],[],YES
+331,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+332,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+326,"Được, nhưng kỳ vọng cao hơn một chút.",3,-0.9693408901656572,NEU,NEU,[],[],YES
+322,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+323,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+325,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+328,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+329,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+330,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+327,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+324,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+321,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+320,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+319,Hoàn hảo! Đáng đồng tiền bát gạo. 5 sao xứng đáng!,5,1.0,POS,POS,"['hoàn hảo', 'xứng đáng']",[],NO
+318,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+317,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+316,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+314,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+315,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+313,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+307,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+311,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+312,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+310,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+309,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+308,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+306,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+305,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+304,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+303,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+300,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+302,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+301,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+299,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+298,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+297,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+296,"Được, nhưng kỳ vọng cao hơn một chút.",3,-0.9693408901656572,NEU,NEU,[],[],YES
+295,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+293,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+294,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+279,"Bình thường, có thể đi thử một lần.",3,0.7852795154948566,NEU,NEU,[],[],YES
+291,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+287,"Được, nhưng kỳ vọng cao hơn một chút.",3,-0.9693408901656572,NEU,NEU,[],[],YES
+288,"Bình thường, có thể đi thử một lần.",3,0.7852795154948566,NEU,NEU,[],[],YES
+285,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+283,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+282,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+284,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+286,Hoàn hảo! Đáng đồng tiền bát gạo. 5 sao xứng đáng!,5,1.0,POS,POS,"['hoàn hảo', 'xứng đáng']",[],NO
+289,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+292,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+290,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+278,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+280,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+281,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+277,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+276,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+275,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+274,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+273,"Được, nhưng kỳ vọng cao hơn một chút.",3,-0.9693408901656572,NEU,NEU,[],[],YES
+268,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+272,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+267,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+270,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+269,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+271,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+266,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+264,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+265,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+256,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+263,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+260,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+257,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+259,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+261,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+262,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+258,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+255,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+254,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+253,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+250,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+252,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+249,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+246,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+242,"Tạm ổn, không quá đặc biệt nhưng cũng không tệ.",3,0.5590751845033435,NEU,NEU,['không tệ'],[],YES
+240,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+251,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+248,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+247,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+245,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+244,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+243,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+241,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+238,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+239,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+237,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+236,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+234,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+235,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+233,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+231,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+232,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+230,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+229,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+227,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+228,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+226,Hoàn hảo! Đáng đồng tiền bát gạo. 5 sao xứng đáng!,5,1.0,POS,POS,"['hoàn hảo', 'xứng đáng']",[],NO
+213,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+214,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+215,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+216,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+218,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+217,Hoàn hảo! Đáng đồng tiền bát gạo. 5 sao xứng đáng!,5,1.0,POS,POS,"['hoàn hảo', 'xứng đáng']",[],NO
+224,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+219,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+220,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+221,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+223,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+225,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+222,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+212,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+210,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+211,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+209,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+208,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+203,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+205,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+206,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+202,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+207,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+204,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+201,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+200,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+199,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+198,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+197,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+196,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+195,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+193,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+194,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+192,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+191,Hoàn hảo! Đáng đồng tiền bát gạo. 5 sao xứng đáng!,5,1.0,POS,POS,"['hoàn hảo', 'xứng đáng']",[],NO
+190,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+189,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+188,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+187,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+175,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+177,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+180,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+181,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+182,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+185,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+178,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+176,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+183,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+184,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+186,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+179,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+174,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+173,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+172,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+171,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+170,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+169,"Tạm ổn, không quá đặc biệt nhưng cũng không tệ.",3,0.5590751845033435,NEU,NEU,['không tệ'],[],YES
+168,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+167,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+166,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+157,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+158,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+159,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+161,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+163,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+164,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+165,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+156,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+155,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+162,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+160,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+154,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+153,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+148,"Tạm ổn, không quá đặc biệt nhưng cũng không tệ.",3,0.5590751845033435,NEU,NEU,['không tệ'],[],YES
+149,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+150,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+152,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+151,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+147,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+146,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+145,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+144,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+143,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+142,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+141,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+138,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+139,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+140,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+137,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+136,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+129,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+130,Hoàn hảo! Đáng đồng tiền bát gạo. 5 sao xứng đáng!,5,1.0,POS,POS,"['hoàn hảo', 'xứng đáng']",[],NO
+134,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+135,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+132,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+131,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+128,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+133,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+127,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+126,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+125,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+124,"Tạm ổn, không quá đặc biệt nhưng cũng không tệ.",3,0.5590751845033435,NEU,NEU,['không tệ'],[],YES
+123,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+122,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+121,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+118,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+120,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+119,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+117,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+110,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+108,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+112,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+114,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+116,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+115,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+113,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+111,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+109,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+107,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+106,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+105,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+104,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+100,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+103,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+99,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+101,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+102,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+98,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+97,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+96,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+95,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+94,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+92,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+93,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+91,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+90,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+86,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+89,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+87,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+88,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+85,Hoàn hảo! Đáng đồng tiền bát gạo. 5 sao xứng đáng!,5,1.0,POS,POS,"['hoàn hảo', 'xứng đáng']",[],NO
+84,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+83,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+82,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+81,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+80,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+79,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+78,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+77,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+76,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+71,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+73,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+68,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+70,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+69,"Tuyệt vời quá! Mọi thứ đều tốt, rất hài lòng.",5,1.0,POS,POS,"['rất hài lòng', 'tuyệt vời']",[],NO
+72,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+75,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+74,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+67,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+66,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+65,Hoàn hảo! Đáng đồng tiền bát gạo. 5 sao xứng đáng!,5,1.0,POS,POS,"['hoàn hảo', 'xứng đáng']",[],NO
+64,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+63,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+61,"Tạm ổn, không quá đặc biệt nhưng cũng không tệ.",3,0.5590751845033435,NEU,NEU,['không tệ'],[],YES
+62,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+59,"Ổn, giá hơi cao so với những gì nhận được.",3,0.05513217071721144,NEU,NEU,[],[],YES
+60,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+58,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+57,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+56,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+55,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+54,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+51,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+52,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+53,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+50,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+49,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+48,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+47,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+46,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+45,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+44,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+43,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+42,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+39,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+37,"Tạm ổn, không quá đặc biệt nhưng cũng không tệ.",3,0.5590751845033435,NEU,NEU,['không tệ'],[],YES
+38,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+40,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+41,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+36,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+35,Hoàn hảo! Đáng đồng tiền bát gạo. 5 sao xứng đáng!,5,1.0,POS,POS,"['hoàn hảo', 'xứng đáng']",[],NO
+34,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+33,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+32,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+31,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+30,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+28,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+29,"Tạm ổn, không quá đặc biệt nhưng cũng không tệ.",3,0.5590751845033435,NEU,NEU,['không tệ'],[],YES
+27,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+26,Hoàn hảo! Đáng đồng tiền bát gạo. 5 sao xứng đáng!,5,1.0,POS,POS,"['hoàn hảo', 'xứng đáng']",[],NO
+25,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+24,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+23,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+22,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+18,Tuyệt vời! Trải nghiệm không thể quên. Rất recommend!,5,1.0,POS,POS,"['recommend', 'tuyệt vời']",[],NO
+19,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+20,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+21,"Tạm ổn, không quá đặc biệt nhưng cũng không tệ.",3,0.5590751845033435,NEU,NEU,['không tệ'],[],YES
+15,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+16,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+13,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+14,Hoàn hảo! Đáng đồng tiền bát gạo. 5 sao xứng đáng!,5,1.0,POS,POS,"['hoàn hảo', 'xứng đáng']",[],NO
+12,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+11,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+17,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+10,"Khá ổn, cảnh đẹp, dịch vụ tốt. Đáng để đi.",4,1.0,POS,POS,"['cảnh đẹp', 'dịch vụ tốt', 'đáng để đi']",[],NO
+9,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+8,"Xuất sắc! Dịch vụ tốt, cảnh đẹp. Sẽ quay lại!",5,1.0,POS,POS,"['cảnh đẹp', 'sẽ quay lại', 'xuất sắc', 'dịch vụ tốt']",[],NO
+7,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+6,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+5,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO
+4,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+2,Rất tốt! Có vài điểm nhỏ cần cải thiện nhưng nhìn chung ok.,4,0.005375925758798361,POS,POS,[],[],NO
+3,"Tốt! Giá cả hợp lý, trải nghiệm đáng nhớ.",4,0.8,POS,POS,['đáng nhớ'],[],NO
+1,Hài lòng với chuyến đi. Sẽ giới thiệu cho bạn bè.,4,0.32591119221074966,POS,POS,['hài lòng'],[],NO

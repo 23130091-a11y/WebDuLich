@@ -222,10 +222,12 @@ class Review(models.Model):
     STATUS_PENDING = 'pending'
     STATUS_APPROVED = 'approved'
     STATUS_REJECTED = 'rejected'
+    STATUS_SHADOW = 'shadow'  # Shadow-ban: user sees but others don't
     STATUS_CHOICES = [
         (STATUS_PENDING, 'Chờ duyệt'),
         (STATUS_APPROVED, 'Đã duyệt'),
         (STATUS_REJECTED, 'Từ chối'),
+        (STATUS_SHADOW, 'Shadow-ban'),
     ]
     
     # Core fields
@@ -269,10 +271,20 @@ class Review(models.Model):
     positive_keywords = models.JSONField(default=list, blank=True, verbose_name="Từ khóa tích cực")
     negative_keywords = models.JSONField(default=list, blank=True, verbose_name="Từ khóa tiêu cực")
     
+    # Enhanced sentiment analysis metadata
+    sentiment_metadata = models.JSONField(default=dict, blank=True, verbose_name="Metadata phân tích")
+    aspect_scores = models.JSONField(default=dict, blank=True, verbose_name="Điểm theo khía cạnh")
+    sarcasm_risk = models.BooleanField(default=False, verbose_name="Nguy cơ mỉa mai")
+    
     # Engagement metrics
     helpful_count = models.IntegerField(default=0, verbose_name="Số lượt hữu ích")
     not_helpful_count = models.IntegerField(default=0, verbose_name="Số lượt không hữu ích")
     report_count = models.IntegerField(default=0, verbose_name="Số lượt báo cáo")
+    
+    # Spam detection (v2.2)
+    spam_score = models.FloatField(default=0.0, verbose_name="Điểm spam (0-1)")
+    spam_flags = models.JSONField(default=list, blank=True, verbose_name="Cờ spam")
+    is_low_quality = models.BooleanField(default=False, verbose_name="Chất lượng thấp")
 
     class Meta:
         verbose_name = "Đánh giá"

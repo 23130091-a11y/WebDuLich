@@ -91,3 +91,7 @@ DATA_SOURCE_AND_AI_TRAINING.md
 # - CACHING_README.md (cache guide)
 # - AI_SENTIMENT_README.md (AI guide)
 # - CRON_JOBS.md (maintenance tasks)
+
+# Large model files
+*.safetensors
+travel/models/*/model.safetensors
