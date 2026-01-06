@@ -1,0 +1,268 @@
+// Database Schema for WebDuLich Travel Application
+// Use DBML syntax - can be visualized at https://dbdiagram.io/
+
+Project WebDuLich {
+  database_type: 'PostgreSQL'
+  Note: 'Travel booking and review platform with AI-powered sentiment analysis'
+}
+
+// ============================================
+// USER MANAGEMENT
+// ============================================
+
+Table users_user {
+  id int [pk, increment]
+  username varchar [unique, not null]
+  email varchar [unique, not null]
+  password varchar [not null]
+  first_name varchar
+  last_name varchar
+  avatar varchar
+  is_staff boolean [not null, default: false]
+  is_active boolean [not null, default: true]
+  is_superuser boolean [not null, default: false]
+  date_joined datetime [not null, default: `now()`]
+  last_login datetime
+  
+  Note: 'User accounts with authentication'
+}
+
+Table users_travelpreference {
+  id int [pk, increment]
+  user_id int [ref: > users_user.id, not null]
+  travel_type varchar
+  location varchar
+  
+  Note: 'User travel preferences for personalized recommendations'
+}
+
+// ============================================
+// DESTINATION & CATEGORY
+// ============================================
+
+Table travel_category {
+  id int [pk, increment]
+  name varchar [not null]
+  slug varchar [unique, not null]
+  description text
+  icon varchar
+  image varchar
+  created_at datetime [not null, default: `now()`]
+  updated_at datetime [not null, default: `now()`]
+  
+  Note: 'Categories for destinations (Beach, Mountain, Cultural, etc.)'
+}
+
+Table travel_destination {
+  id int [pk, increment]
+  category_id int [ref: > travel_category.id]
+  name varchar [not null]
+  slug varchar [unique]
+  travel_type varchar
+  location varchar [not null]
+  address varchar
+  description text
+  image varchar
+  latitude float
+  longitude float
+  avg_price decimal
+  rating float [default: 0]
+  is_popular boolean [default: false]
+  metadata jsonb
+  tags jsonb
+  created_at datetime [not null, default: `now()`]
+  updated_at datetime [not null, default: `now()`]
+  
+  Indexes {
+    location
+    rating
+    is_popular
+    (latitude, longitude)
+  }
+  
+  Note: 'Tourist destinations with location and pricing info'
+}
+
+Table travel_destinationimage {
+  id int [pk, increment]
+  destination_id int [ref: > travel_destination.id, not null]
+  image varchar [not null]
+  caption varchar
+  order int [default: 0]
+  created_at datetime [not null, default: `now()`]
+  
+  Note: 'Additional images for destinations (gallery)'
+}
+
+// ============================================
+// REVIEWS & SENTIMENT ANALYSIS
+// ============================================
+
+Table travel_review {
+  id int [pk, increment]
+  destination_id int [ref: > travel_destination.id, not null]
+  user_id int [ref: > users_user.id]
+  author_name varchar
+  rating int [not null]
+  comment text [not null]
+  travel_type varchar
+  travel_with varchar
+  visit_date date
+  
+  // AI Sentiment Analysis Fields
+  sentiment_score float [default: 0]
+  positive_keywords jsonb [default: '[]']
+  negative_keywords jsonb [default: '[]']
+  aspect_scores jsonb [default: '{}']
+  sarcasm_risk boolean [default: false]
+  sentiment_metadata jsonb [default: '{}']
+  
+  // Spam Detection Fields
+  spam_score float [default: 0]
+  spam_flags jsonb [default: '[]']
+  is_low_quality boolean [default: false]
+  
+  // Moderation Fields
+  status varchar [not null, default: 'pending']
+  is_verified boolean [default: false]
+  helpful_count int [default: 0]
+  not_helpful_count int [default: 0]
+  report_count int [default: 0]
+  
+  // Tracking Fields
+  user_ip inet
+  user_agent varchar
+  created_at datetime [not null, default: `now()`]
+  updated_at datetime [not null, default: `now()`]
+  
+  Indexes {
+    destination_id
+    user_id
+    status
+    sentiment_score
+    rating
+    created_at
+  }
+  
+  Note: 'User reviews with AI-powered sentiment analysis and spam detection'
+}
+
+Table travel_reviewvote {
+  id int [pk, increment]
+  review_id int [ref: > travel_review.id, not null]
+  user_id int [ref: > users_user.id]
+  user_ip inet
+  vote_type varchar [not null]
+  created_at datetime [not null, default: `now()`]
+  
+  Indexes {
+    (review_id, user_id) [unique]
+    (review_id, user_ip)
+  }
+  
+  Note: 'User votes on review helpfulness (helpful/not_helpful)'
+}
+
+Table travel_reviewreport {
+  id int [pk, increment]
+  review_id int [ref: > travel_review.id, not null]
+  reporter_user_id int [ref: > users_user.id]
+  reporter_ip inet
+  reason varchar [not null]
+  description text
+  is_resolved boolean [default: false]
+  created_at datetime [not null, default: `now()`]
+  
+  Note: 'User reports for inappropriate reviews'
+}
+
+// ============================================
+// TOUR PACKAGES
+// ============================================
+
+Table travel_tourpackage {
+  id int [pk, increment]
+  destination_id int [ref: > travel_destination.id]
+  name varchar [not null]
+  slug varchar [unique, not null]
+  details text [not null]
+  price decimal
+  duration int [not null]
+  address_detail varchar [not null]
+  image_main varchar
+  is_active boolean [not null, default: true]
+  is_available_today boolean [not null, default: true]
+  start_date date
+  end_date date
+  tags jsonb [not null, default: '[]']
+  created_at datetime [not null, default: `now()`]
+  updated_at datetime [not null, default: `now()`]
+  
+  Indexes {
+    destination_id
+    is_active
+    (start_date, end_date)
+  }
+  
+  Note: 'Tour packages with pricing and availability'
+}
+
+// ============================================
+// SEARCH & RECOMMENDATIONS
+// ============================================
+
+Table travel_searchhistory {
+  id int [pk, increment]
+  user_id int [ref: > users_user.id]
+  query varchar [not null]
+  user_ip inet
+  results_count int [default: 0]
+  created_at datetime [not null, default: `now()`]
+  
+  Indexes {
+    user_id
+    created_at
+  }
+  
+  Note: 'User search history for analytics and recommendations'
+}
+
+Table travel_recommendationscore {
+  id int [pk, increment]
+  destination_id int [ref: > travel_destination.id, not null, unique]
+  overall_score float [not null]
+  review_score float
+  sentiment_score float
+  popularity_score float
+  total_reviews int [default: 0]
+  avg_rating float [default: 0]
+  positive_review_ratio float [default: 0]
+  last_calculated datetime [not null]
+  
+  Indexes {
+    overall_score
+    destination_id
+  }
+  
+  Note: 'Pre-calculated recommendation scores for performance optimization'
+}
+
+// ============================================
+// RELATIONSHIPS SUMMARY
+// ============================================
+
+// User -> Reviews (1:N)
+// User -> SearchHistory (1:N)
+// User -> TravelPreference (1:N)
+// User -> ReviewVote (1:N)
+// User -> ReviewReport (1:N)
+
+// Category -> Destination (1:N)
+
+// Destination -> Review (1:N)
+// Destination -> DestinationImage (1:N)
+// Destination -> TourPackage (1:N)
+// Destination -> RecommendationScore (1:1)
+
+// Review -> ReviewVote (1:N)
+// Review -> ReviewReport (1:N)
