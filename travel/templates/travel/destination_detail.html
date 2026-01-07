@@ -68,7 +68,11 @@
                             - {{ destination.address }}
                             {% endif %}
                         </p>
-                        <span class="badge bg-info">{{ destination.travel_type }}</span>
+                        {% for tt in destination.travel_type.all %}
+                        <span class="badge bg-info me-1">{{ tt.name }}</span>
+                        {% empty %}
+                        <span class="badge bg-secondary">Chưa phân loại</span>
+                        {% endfor %}
                         
                         <div class="mt-3">
                             <div class="d-flex align-items-center">
@@ -309,10 +313,10 @@
                                                     <i class="fa-solid fa-times me-1"></i>Hủy
                                                 </button>
                                             </div>
-                                            <div class="mt-2">
+                                            <div class="mt-3">
                                                 <small class="text-muted">
-                                                    <i class="fa-solid fa-shield-halved me-1"></i>
-                                                    Đánh giá của bạn sẽ được hiển thị công khai.
+                                                    <i class="fa-solid fa-info-circle me-1"></i>
+                                                    Đánh giá của bạn sẽ được hiển thị công khai. Vui lòng không đăng nội dung spam hoặc không phù hợp.
                                                 </small>
                                             </div>
                                         </div>
@@ -727,6 +731,23 @@
 
 <!-- Script gửi đánh giá - Enhanced UGC -->
 <script>
+// Helper function to show error messages
+function showError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+    errorDiv.innerHTML = `
+        <i class="fa-solid fa-exclamation-circle me-2"></i>${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    const form = document.getElementById('reviewFormSubmit');
+    form.parentNode.insertBefore(errorDiv, form.nextSibling);
+    
+    // Auto dismiss after 5 seconds
+    setTimeout(() => {
+        errorDiv.remove();
+    }, 5000);
+}
+
 // Character counter for comment
     const commentInput = document.getElementById('comment');
     const charCount = document.getElementById('charCount');
@@ -854,8 +875,7 @@
                 }
 
                 // 2. CHÈN NHẬN XÉT MỚI VÀO DANH SÁCH PHÍA DƯỚI (Không cần F5)
-                // Giả sử Container chứa các review của bạn có id là "reviewList"
-                const reviewContainer = document.getElementById('reviewList');
+                const reviewContainer = document.getElementById('reviewsList');
                 if (reviewContainer) {
                     const now = new Date();
                     const timeStr = "Vừa xong";
@@ -881,8 +901,27 @@
                 // 3. THÔNG BÁO THÀNH CÔNG VÀ ẨN FORM
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
-                document.getElementById('reviewSuccessMsg').classList.remove('d-none');
-                form.classList.add('d-none');
+                
+                // Hiển thị thông báo thành công
+                const successMsg = document.getElementById('reviewSuccessMsg');
+                const successText = document.getElementById('successMsgText');
+                if (successMsg && successText) {
+                    successText.textContent = data.message || 'Cảm ơn bạn đã đánh giá!';
+                    successMsg.classList.remove('d-none');
+                }
+                
+                // Reset form
+                document.getElementById('comment').value = '';
+                document.getElementById('charCount').textContent = '0';
+                
+                // Collapse form sau 2 giây
+                setTimeout(() => {
+                    const reviewFormCollapse = document.getElementById('reviewForm');
+                    if (reviewFormCollapse) {
+                        const bsCollapse = bootstrap.Collapse.getInstance(reviewFormCollapse);
+                        if (bsCollapse) bsCollapse.hide();
+                    }
+                }, 2000);
             }
         } catch (err) {
             showError('Lỗi kết nối: ' + err.message);
