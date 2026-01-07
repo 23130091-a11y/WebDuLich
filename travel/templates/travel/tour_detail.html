@@ -634,7 +634,8 @@ const ratingValue = selectedRating ? selectedRating.value : 5;
             comment: document.getElementById('comment').value
         };
 
-        fetch('/api/review/', { // Hãy đảm bảo URL này trỏ đúng đến api_submit_tour_review trong urls.py
+        const tourId = document.getElementById('destinationId').value;
+        fetch(`/api/tour/${tourId}/review/`, { // URL đúng cho Tour review
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -654,13 +655,13 @@ const ratingValue = selectedRating ? selectedRating.value : 5;
                     starsHtml += `<i class="${i <= review.rating ? 'fa-solid' : 'fa-regular'} fa-star"></i> `;
                 }
 
-                // 2. Tạo giao diện Review mới (giống hệt cấu trúc Jinja2 của bạn)
+                // 2. Tạo giao diện Review mới
                 const newReviewHtml = `
-                    <div class="review-item border-bottom pb-4 mb-4 animate-fade-in" style="background: #f8f9ff; padding: 15px; border-radius: 15px;">
+                    <div class="review-item border-bottom pb-4 mb-4 animate-fade-in" style="background: #e8f5e9; padding: 15px; border-radius: 15px; border-left: 4px solid #4caf50;">
                         <div class="d-flex justify-content-between">
                             <div class="d-flex align-items-start">
                                 <div class="avatar-sm me-3">
-                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 48px; height: 48px;">
+                                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 48px; height: 48px;">
                                         ${review.author_name.charAt(0).toUpperCase()}
                                     </div>
                                 </div>
@@ -675,15 +676,14 @@ const ratingValue = selectedRating ? selectedRating.value : 5;
                         </div>
                         <div class="ps-5 mt-2">
                             <p class="text-secondary small mb-3">${review.comment}</p>
-                            <span class="badge bg-info-subtle text-info fw-normal x-small">
-                                <i class="fa-solid fa-clock-rotate-left me-1"></i>Đang chờ duyệt
+                            <span class="badge bg-success fw-normal small">
+                                <i class="fa-solid fa-check-circle me-1"></i>Đã gửi thành công
                             </span>
                         </div>
                     </div>
                 `;
 
                 // 3. Chèn vào đầu danh sách
-                // Nếu trước đó chưa có review nào (đang hiện box "Chưa có đánh giá")
                 if (reviewsList.querySelector('.text-center.py-5')) {
                     reviewsList.innerHTML = newReviewHtml;
                 } else {
@@ -695,13 +695,54 @@ const ratingValue = selectedRating ? selectedRating.value : 5;
                 if (bootstrapCollapse) bootstrapCollapse.hide();
                 document.getElementById('reviewFormSubmit').reset();
                 
-                alert('Cảm ơn bạn! Đánh giá đã được gửi thành công.');
+                // 5. Hiển thị thông báo đẹp
+                showSuccessToast('Cảm ơn bạn! Đánh giá đã được gửi thành công.');
             } else {
-                alert('Lỗi: ' + data.error);
+                showErrorToast(data.error || 'Có lỗi xảy ra khi gửi đánh giá');
             }
         })
+        .catch(error => {
+            console.error('Error:', error);
+            showErrorToast('Lỗi kết nối. Vui lòng thử lại sau.');
+        });
     });
 
+    // Helper functions for toast notifications
+    function showSuccessToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'position-fixed bottom-0 end-0 p-3';
+        toast.style.zIndex = '9999';
+        toast.innerHTML = `
+            <div class="toast show align-items-center text-white bg-success border-0" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fa-solid fa-check-circle me-2"></i>${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" onclick="this.closest('.position-fixed').remove()"></button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+    }
+
+    function showErrorToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'position-fixed bottom-0 end-0 p-3';
+        toast.style.zIndex = '9999';
+        toast.innerHTML = `
+            <div class="toast show align-items-center text-white bg-danger border-0" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fa-solid fa-exclamation-circle me-2"></i>${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" onclick="this.closest('.position-fixed').remove()"></button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+    }
 
 
     // --- VOTE HỮU ÍCH ---
