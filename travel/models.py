@@ -7,8 +7,8 @@ from taggit.managers import TaggableManager
 from django.utils.text import slugify
 from django.conf import settings
 
-from WebDuLich.travel.services.nearby_service import get_nearby_hotels
-from WebDuLich.travel.services.nearby_service import get_nearby_restaurants
+from travel.services.nearby_service import get_nearby_hotels
+from travel.services.nearby_service import get_nearby_restaurants
 User = settings.AUTH_USER_MODEL
 
 # ----------------------------------------------------------------------

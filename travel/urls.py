@@ -39,6 +39,7 @@ urlpatterns = [
     #profile account
     path('accountProfile/', views.account_profile, name='profile'),
     path("api/profile/", views.api_profile, name="api_profile"),
+    path('api/change-password/', views.change_password_api, name='api_change_password'),
 
     # Url danh sách yêu thích
     path('favorites/', views.favorite_list, name='favorite_list'),
