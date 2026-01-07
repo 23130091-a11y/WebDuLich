@@ -1,0 +1,45 @@
+{
+  "version": "1.0",
+  "aspects": {
+    "scenery_view": {
+      "name": "Cảnh quan & View",
+      "keywords": ["đẹp", "rất đẹp", "đẹp xuất sắc", "tuyệt đẹp", "view đẹp", "view xịn", "view chill", "view đỉnh", "phong cảnh đẹp", "cảnh đẹp", "thiên nhiên đẹp", "hùng vĩ", "thơ mộng", "lãng mạn", "hoang sơ", "nhiều góc chụp", "góc chụp đẹp", "chụp hình đẹp", "lên hình đẹp", "sống ảo", "check-in đẹp"]
+    },
+    "service_staff": {
+      "name": "Dịch vụ & Nhân viên",
+      "keywords": ["phục vụ tốt", "phục vụ nhiệt tình", "phục vụ chuyên nghiệp", "nhân viên thân thiện", "nhân viên dễ thương", "nhân viên vui vẻ", "nhân viên nhiệt tình", "hỗ trợ nhanh", "hỗ trợ tốt", "tư vấn tốt", "hướng dẫn tận tình", "dịch vụ tốt", "service tốt", "thái độ tệ", "thái độ kém", "phục vụ kém", "phục vụ chậm", "không nhiệt tình", "không hỗ trợ", "hạch sách", "cộc lốc"]
+    },
+    "cleanliness_hygiene": {
+      "name": "Vệ sinh",
+      "keywords": ["sạch", "sạch sẽ", "rất sạch", "siêu sạch", "gọn gàng", "ngăn nắp", "thơm", "thơm tho", "bẩn", "rất bẩn", "dơ", "hôi", "hôi hám", "mùi khó chịu", "rác nhiều", "đầy rác", "wc bẩn", "toilet bẩn", "nhà vệ sinh bẩn", "nhà vệ sinh dơ", "nhà vệ sinh hôi"]
+    },
+    "facility_room": {
+      "name": "Cơ sở vật chất & Phòng",
+      "keywords": ["tiện nghi", "đầy đủ tiện nghi", "mới", "mới tinh", "decor đẹp", "trang trí đẹp", "phòng đẹp", "phòng xịn", "phòng sạch", "giường êm", "chăn sạch", "ga sạch", "wifi mạnh", "mạng mạnh", "máy lạnh mát", "nước nóng ổn", "cũ", "xuống cấp", "hỏng", "hư", "cơ sở vật chất kém", "phòng bẩn", "phòng hôi", "phòng nhỏ", "chăn bẩn", "ga bẩn", "khăn bẩn", "cách âm kém", "wifi yếu", "mạng yếu", "nước nóng không có", "máy lạnh hỏng"]
+    },
+    "price_value": {
+      "name": "Giá cả & Đáng tiền",
+      "keywords": ["giá hợp lý", "giá tốt", "giá ok", "rẻ", "deal ngon", "ưu đãi tốt", "đáng tiền", "xứng đáng", "đắt", "rất đắt", "đắt quá", "mắc", "mắc quá", "giá cao", "giá trên trời", "hét giá", "phí cao", "phí phát sinh", "phụ thu", "thu thêm", "không đáng tiền", "không xứng đáng", "chặt chém", "chém giá"]
+    },
+    "crowd_wait_noise": {
+      "name": "Đông đúc & Chờ đợi",
+      "keywords": ["đông", "quá đông", "đông nghẹt", "đông kinh khủng", "chen chúc", "xếp hàng", "xếp hàng dài", "chờ lâu", "tốn thời gian", "ồn", "ồn ào", "rất ồn", "mất riêng tư", "xô bồ"]
+    },
+    "access_transport": {
+      "name": "Di chuyển & Đường đi",
+      "keywords": ["xa", "khó đi", "đường khó đi", "đường xấu", "lạc đường", "không có biển chỉ dẫn", "kẹt xe", "tắc đường", "bãi xe ít", "gửi xe khó", "phí gửi xe cao"]
+    },
+    "food": {
+      "name": "Ăn uống",
+      "keywords": ["đồ ăn ngon", "ăn ngon", "món ngon", "hợp khẩu vị", "đặc sản ngon"]
+    },
+    "safety_scam": {
+      "name": "An toàn & Lừa đảo",
+      "keywords": ["an toàn", "yên tâm", "nguy hiểm", "không an toàn", "lừa", "bị lừa", "lừa đảo", "scam", "ép mua", "chèo kéo", "làm phiền", "không như quảng cáo", "quảng cáo sai"]
+    },
+    "weather_conditions": {
+      "name": "Thời tiết & Điều kiện",
+      "keywords": ["mưa nhiều", "nóng quá", "lạnh quá", "sương mù", "không thấy gì", "view bị che"]
+    }
+  }
+}
