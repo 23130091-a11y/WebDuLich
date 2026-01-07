@@ -153,9 +153,10 @@
 <!--                </div>-->
 
                 <div class="mt-4">
-                    <a href="#" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3"
+                            data-bs-toggle="modal" data-bs-target="#changePasswordModal">
                         <i class="fa-solid fa-key me-1"></i> Đổi mật khẩu
-                    </a>
+                    </button>
                 </div>
             </div>
 
@@ -503,5 +504,116 @@ form.addEventListener("submit", async (e) => {
 });
 </script>
 
+<!--ĐỔI MÂT KHẨU-->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title ">Đổi mật khẩu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="changePasswordForm">
+                    <div class="mb-3">
+                        <label class="form-label ">Mật khẩu hiện tại</label>
+                        <input type="password" name="old_password" class="form-control" placeholder="Nhập mật khẩu cũ" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Mật khẩu mới</label>
+                        <input type="password" name="new_password" class="form-control" placeholder="Nhập mật khẩu mới" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Xác nhận mật khẩu mới</label>
+                        <input type="password" name="confirm_password" class="form-control" placeholder="Nhập lại mật khẩu mới" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="btnSavePassword">Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById("btnSavePassword").addEventListener("click", async function(){
+        const formPwd = document.getElementById("changePasswordForm");
+        const oldPassword = formPwd.old_password.value;
+        const newPassword = formPwd.new_password.value;
+        const confirmPassword = formPwd.confirm_password.value;
+        const btn = this;
+
+        if (!oldPassword || !newPassword || !confirmPassword) {
+            Swal.fire('Lỗi', 'Vui lòng điền đầy đủ thông tin', 'warning');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            Swal.fire('Lỗi', 'Mật khẩu mới không giống mật khẩu cũ', 'error');
+            return;
+        }
+
+        // if (newPassword.length < 6) {
+        //     Swal.fire('Lỗi', 'Mật khẩu mới quá ngắn (tối thiểu 6 ký tự)', 'warning');
+        //     return;
+        // }
+
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
+        btn.disabled = true;
+
+        const  token = localStorage.getItem("access");
+        const  csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        try{
+            const res = await fetch("/api/change-password/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                    "X-CSRFToken": csrfToken
+                },
+                body: JSON.stringify({
+                    old_password: oldPassword,
+                    new_password: newPassword
+                })
+            });
+
+            const data = await res.json();
+
+            if(res.ok){
+                const modalEl = document.getElementById('changePasswordModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                modal.hide();
+
+                formPwd.reset();
+
+                Swal.fire({
+                    title: 'Thành công!',
+                    text: 'Đổi mật khẩu thành công.',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#0d6efd'
+                });
+            }else{
+                let msg = data.message || "Đổi mật khẩu thất bại";
+                if(data.old_password) msg = data.old_password[0];
+                if(data.new_password) msg = data.new_password[0];
+
+                Swal.fire('Thất bại', msg, 'error');
+            }
+        }catch (err) {
+            console.error(err);
+            Swal.fire('Lỗi', 'Không thể kết nối đến server', 'error');
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    });
+
+</script>
 
 {% endblock %}

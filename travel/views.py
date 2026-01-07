@@ -23,6 +23,7 @@ from django.contrib.auth.decorators import login_required
 #--Tram--#
 #accountProfile
 from django.shortcuts import render
+from django.contrib.auth import update_session_auth_hash
 
 def account_profile(request):
     return render(request, 'travel/accountProfile.html')
@@ -64,6 +65,28 @@ def api_profile(request):
 
     return Response({"success": True})
 
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def change_password_api(request):
+    user = request.user
+    old_password = request.data.get("old_password", "")
+    new_password = request.data.get("new_password", "")
+
+    if not user.check_password(old_password):
+        return Response(
+            {'message': 'Mật khẩu bạn nhập không chính xác.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    user.set_password(new_password)
+    user.save()
+
+    update_session_auth_hash(request,user)
+
+    return Response(
+        {'message': 'Đổi mật khẩu thành công.'},
+        status=status.HTTP_200_OK
+    )
 
 
 # ----------------------------

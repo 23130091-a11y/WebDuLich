@@ -39,5 +39,5 @@ urlpatterns = [
     path('favorites/', views.favorite_list, name='favorite_list'),
     # Url yêu thích destination (id)
     path('favorites/toggle/<int:destination_id>/', views.toggle_favorite, name='toggle_favorite'),
-
+    path('api/change-password/', views.change_password_api, name='api_change_password'),
 ]
