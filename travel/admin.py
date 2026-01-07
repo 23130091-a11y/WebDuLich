@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Category, Destination, TourPackage, DestinationImage, TourImage, Review, ReviewReport, ReviewVote, \
-    RecommendationScore, SearchHistory
+    RecommendationScore, SearchHistory, TravelType
 from django.utils.html import format_html
 
 
@@ -23,6 +23,7 @@ class TourPackageInline(admin.TabularInline):
 class DestinationAdmin(admin.ModelAdmin):
     list_display = [
         'name',
+        'category',
         'location',
         'display_travel_types',
         'avg_price',
@@ -31,16 +32,23 @@ class DestinationAdmin(admin.ModelAdmin):
         'created_at'
     ]
 
-    list_filter = ['is_popular', 'location', 'created_at']
+    list_filter = ['category', 'travel_type', 'location', 'is_popular']
     search_fields = ['name', 'location', 'description']
-    list_editable = ['is_popular']
+    list_editable = ['is_popular', 'category']
     readonly_fields = ['created_at', 'updated_at']
     filter_horizontal = ['travel_type']
+    prepopulated_fields = {'slug': ('name',)}
+
+    inlines = [DestinationImageInline, TourPackageInline]
 
     def display_travel_types(self, obj):
         return ", ".join(t.name for t in obj.travel_type.all())
-    display_travel_types.short_description = "Loại du lịch"
+    display_travel_types.short_description = "Loại du lịch" 
 
+@admin.register(TravelType)
+class TravelTypeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug')
+    prepopulated_fields = {'slug': ('name',)}
 # ----------------------------------------------------
 # 3. Category Admin (hiển thị TourPackage)
 # ----------------------------------------------------
@@ -64,7 +72,7 @@ class TourImageInline(admin.TabularInline):
 @admin.register(TourPackage)
 class TourPackageAdmin(admin.ModelAdmin):
     # Hiển thị danh sách cột thông minh (List Display)
-    list_display = ('name', 'destination', 'category', 'price', 'duration', 'rating', 'is_active', 'is_available_today')
+    list_display = ('name', 'destination', 'total_reviews', 'duration', 'average_rating', 'is_available_today', 'is_active')
 
     # Thanh tìm kiếm đa năng (Search Fields)
     # Cho phép tìm theo tên tour, tên địa danh, chi tiết hoặc địa chỉ
@@ -82,19 +90,24 @@ class TourPackageAdmin(admin.ModelAdmin):
     # Sắp xếp lại giao diện nhập liệu cho chuyên nghiệp (Fieldsets)
     fieldsets = (
         ('Thông tin cơ bản', {
-            'fields': ('name', 'slug', 'category', 'destination', 'rating')
+            'fields': ('name', 'slug', 'category', 'destination')
         }),
         ('Giá và Thời lượng', {
-            'fields': ('price', 'duration', 'start_date', 'end_date')
+            'fields': ('price', 'duration', 'start_date', 'end_date', 'is_available_today')
         }),
         ('Nội dung chi tiết', {
-            'fields': ('image_main', 'details', 'address_detail', 'tags'),
+            'fields': ('is_active', 'image_main', 'details', 'address_detail', 'tags'),
             'description': 'Tải lên ảnh đại diện chính và mô tả chi tiết lịch trình tại đây.'
         }),
-        ('Cấu hình hiển thị', {
-            'fields': ('is_active', 'is_available_today'),
-            'classes': ('collapse',), # Cấu hình hiển thị (collapse): Thu gọn mục này lại, bấm vào mới hiện ra
+        ('AI & Đánh giá (Tự động cập nhật)', {
+            'fields': ('average_rating', 'total_reviews', 'total_views'),
+            'classes': ('collapse',), 
         }),
+        ('Vị trí', {
+            'fields': ('meeting_point', 'start_latitude', 'start_longitude'),
+            'description': 'Nhập tọa độ để hiển thị điểm bắt đầu trên bản đồ.'
+        }),
+        
     )
 
     # Sửa nhanh ngay tại danh sách
@@ -182,17 +195,48 @@ class ReviewAdmin(admin.ModelAdmin):
     def mark_verified(self, request, queryset):
         queryset.update(is_verified=True)
 
+from django.contrib import admin
+from django.utils.html import format_html
+from django.urls import reverse
+from .models import ReviewReport
+
 @admin.register(ReviewReport)
 class ReviewReportAdmin(admin.ModelAdmin):
-    list_display = ['review', 'reason', 'reporter_ip', 'is_resolved', 'created_at']
-    list_filter = ['reason', 'is_resolved', 'created_at']
-    list_editable = ['is_resolved']
+    # Thay 'review' bằng 'review_content' (một function) hoặc 'review_object'
+    list_display = ('review_content', 'reason', 'reporter_user', 'created_at', 'is_resolved')
+    list_filter = ('is_resolved', 'reason', 'created_at')
+    
+    # readonly_fields phải chứa các field thực sự tồn tại trong model hoặc các method
+    readonly_fields = ('created_at', 'reporter_ip', 'reporter_user', 'review_content')
+    
+    # Ẩn các trường kỹ thuật của GenericForeignKey để tránh nhầm lẫn
+    exclude = ('content_type', 'object_id')
 
-    readonly_fields = [
-        'review', 'reporter_ip', 'reporter_user',
-        'reason', 'description', 'created_at'
-    ]
+    def review_content(self, obj):
+        """Hiển thị link dẫn đến Review bị báo cáo (TourReview hoặc Review)"""
+        if obj.review_object:
+            # Lấy thông tin model (tourreview hoặc review)
+            app_label = obj.content_type.app_label
+            model_name = obj.content_type.model
+            
+            try:
+                # Tạo URL dẫn đến trang edit của Review đó
+                url = reverse(f'admin:{app_label}_{model_name}_change', args=[obj.object_id])
+                content = obj.review_object.comment[:50] # Lấy 50 ký tự đầu của comment
+                return format_html('<a href="{}">[{}] {}...</a>', url, model_name.upper(), content)
+            except:
+                return f"[{model_name.upper()}] {obj.review_object}"
+        return "Nội dung đã bị xóa"
 
+    review_content.short_description = "Nội dung bị báo cáo"
+
+    # Action để xử lý nhanh nhiều báo cáo
+    actions = ['mark_as_resolved']
+
+    @admin.action(description="Đánh dấu các báo cáo đã chọn là đã xử lý")
+    def mark_as_resolved(self, request, queryset):
+        queryset.update(is_resolved=True)
+    
 @admin.register(ReviewVote)
 class ReviewVoteAdmin(admin.ModelAdmin):
     list_display = ['review', 'vote_type', 'user', 'user_ip', 'created_at']
@@ -201,16 +245,28 @@ class ReviewVoteAdmin(admin.ModelAdmin):
 
 @admin.register(RecommendationScore)
 class RecommendationScoreAdmin(admin.ModelAdmin):
+    # Sử dụng phương thức để hiển thị tên đối tượng (Destsination hoặc Tour)
+    def get_target_name(self, obj):
+        if obj.destination:
+            return f"📍 {obj.destination.name}"
+        if obj.tour:
+            return f"🎫 {obj.tour.name}"
+        return "N/A"
+    get_target_name.short_description = 'Đối tượng'
+
     list_display = [
-        'destination',
-        'overall_score',
-        'review_score',
-        'sentiment_score',
-        'total_reviews',
-        'positive_review_ratio',
+        'get_target_name',       # Hiển thị tên linh hoạt
+        'overall_score', 
+        'popularity_score',      # Khớp với model bạn gửi
+        'sentiment_score', 
+        'positive_review_ratio', 
+        'total_reviews', 
         'last_calculated'
     ]
 
+    # Thêm bộ lọc để dễ quản lý
+    list_filter = ['last_calculated', 'overall_score']
+    search_fields = ['destination__name', 'tour__name']
     ordering = ['-overall_score']
     readonly_fields = ['last_calculated']
 

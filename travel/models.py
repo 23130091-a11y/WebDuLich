@@ -1,9 +1,14 @@
 # D:\LT_Python\PyWeb\DoAnWeb\WebDuLich\travel\models.py
+from linecache import cache
 from django.conf import settings
 from django.db import models
+import requests
 from taggit.managers import TaggableManager
 from django.utils.text import slugify
 from django.conf import settings
+
+from WebDuLich.travel.services.nearby_service import get_nearby_hotels
+from WebDuLich.travel.services.nearby_service import get_nearby_restaurants
 User = settings.AUTH_USER_MODEL
 
 # ----------------------------------------------------------------------
@@ -15,6 +20,7 @@ class Category(models.Model):
     slug = models.SlugField(unique=True, max_length=100)
     icon = models.CharField(max_length=50, blank=True, null=True)
     image = models.ImageField(upload_to='categories/images/', blank=True, null=True)
+    order = models.IntegerField(default=0)
 
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
@@ -24,6 +30,7 @@ class Category(models.Model):
         verbose_name = "Categories"
         verbose_name_plural = "Categories"
         ordering = ['name']
+        ordering = ['order', 'name']
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -57,7 +64,7 @@ class Destination(models.Model):
     is_popular = models.BooleanField(default=False)
 
     slug = models.SlugField(unique=True, max_length=200)
-    tags = TaggableManager()  # dùng name để filter
+    tags = models.JSONField(default=list, blank=True, verbose_name="Tags")
 
     avg_price = models.DecimalField(
         max_digits=10, decimal_places=0, null=True, blank=True,
@@ -93,10 +100,50 @@ class Destination(models.Model):
             models.Index(fields=['created_at']),
         ]
 
+    @property
+    def get_main_image(self):
+        # Lấy tấm ảnh đầu tiên của destination này
+        img = self.images.first() # self.images là related_name từ DestinationImage
+        if img and img.image:
+            return img.image.url
+        return None
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+
+    def get_weather_data(self, lat, lon):
+        if not lat or not lon:
+            return {'error': 'Thiếu tọa độ'}
+
+        # Sử dụng API Open-Meteo (Miễn phí, không cần API Key)
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m&timezone=auto"
+        
+        try:
+            response = requests.get(url, timeout=5)
+            data = response.json()
+            
+            if "current" in data:
+                current = data['current']
+                return {
+                    'is_current': True,
+                    'temperature': current['temperature_2m'],
+                    'windspeed': current['wind_speed_10m'],
+                    'precipitation': current['precipitation'],
+                    'weather_desc': 'Dữ liệu thực tế',
+                    'icon': '🌡️',
+                    'error': None
+                }
+            return {'error': 'Không có dữ liệu từ API'}
+        except Exception as e:
+            return {'error': f"Lỗi kết nối API: {str(e)}"}
+        
+    def get_hotels(self, lat, lon):
+        return []
+
+    def get_restaurants(self, lat, lon):
+        return []
 
     def __str__(self):
         return self.name
@@ -144,7 +191,8 @@ class TourPackage(models.Model):
     )
     name = models.CharField(max_length=255)
     duration = models.IntegerField(help_text="Duration in days")
-    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
+    average_rating = models.FloatField(default=5.0) 
+    total_reviews = models.IntegerField(default=0)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     address_detail = models.CharField(
         max_length=255,
@@ -161,7 +209,7 @@ class TourPackage(models.Model):
         blank=True,
         null=True
     )
-    tags = TaggableManager(blank=True)
+    tags = models.JSONField(default=list, blank=True, verbose_name="Tags")
     slug = models.SlugField(max_length=255, unique=True, null=True, blank=True)
     # slug:
     # /destination/da-nang/
@@ -172,6 +220,15 @@ class TourPackage(models.Model):
     )
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
+
+    #vi tri 
+    start_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    start_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    meeting_point = models.CharField(max_length=255, blank=True, help_text="Địa điểm tập trung cụ thể")
+
+    # Trạng thái nổi bật
+    total_views = models.PositiveIntegerField(default=0)
+    is_featured = models.BooleanField(default=False)
 
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
@@ -185,6 +242,16 @@ class TourPackage(models.Model):
             models.Index(fields=['start_date', 'end_date']),
         ]
 
+    def update_rating(self):
+        reviews = self.reviews.all()
+        if reviews.exists():
+            self.total_reviews = reviews.count()
+            self.average_rating = sum([r.rating for r in reviews]) / self.total_reviews
+        else:
+            self.total_reviews = 0
+            self.average_rating = 5.0
+        self.save()
+
     def save(self, *args, **kwargs):
         # Nếu chưa gán category, tự động lấy từ destination
         if not self.category and self.destination and self.destination.category:
@@ -196,9 +263,20 @@ class TourPackage(models.Model):
 
         super().save(*args, **kwargs)
 
+    def get_nearby_data(self):
+        lat = float(self.start_latitude) if self.start_latitude else self.destination.latitude
+        lon = float(self.start_longitude) if self.start_longitude else self.destination.longitude
+
+        return {
+            'weather': self.destination.get_weather_data(lat, lon),
+            'hotels': self.destination.get_hotels(lat, lon), # Sẽ không còn lỗi nữa
+            'restaurants': self.destination.get_restaurants(lat, lon) # Sẽ không còn lỗi nữa
+        }
+
     def __str__(self):
         return f"{self.name} at {self.destination.name}"
-
+    
+    
 class TourImage(models.Model):
     tour = models.ForeignKey(TourPackage, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='packages/gallery/')
@@ -207,6 +285,36 @@ class TourImage(models.Model):
     def __str__(self):
         return f"Image for {self.tour.name}"
 
+from django.contrib.contenttypes.fields import GenericRelation
+class TourReview(models.Model):
+    tour = models.ForeignKey(TourPackage, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True) # Cho phép khách ẩn danh hoặc đã đăng nhập
+    author_name = models.CharField(max_length=100, verbose_name="Tên người đánh giá")
+    rating = models.IntegerField(default=5)
+    comment = models.TextField(verbose_name="Nội dung đánh giá")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    # Thêm cái này để làm tính năng Like/Hữu ích mà bạn muốn
+    helpful_count = models.PositiveIntegerField(default=0)
+
+    reports = GenericRelation('ReviewReport', related_query_name='tour_review')
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def update_rating(self):
+        reviews = self.reviews.all()
+        if reviews.exists():
+            self.total_reviews = reviews.count()
+            self.average_rating = sum([r.rating for r in reviews]) / self.total_reviews
+        else:
+            self.total_reviews = 0
+            self.average_rating = 5.0
+        self.save()
+
+    def __str__(self):
+        return f"{self.author_name} - {self.tour.name} ({self.rating}*)"
+    
 # Thanh
 # ======================================================================
 # 7. SearchHistory Model (tu Project B - giu nguyen)
@@ -263,6 +371,7 @@ class Review(models.Model):
         null=True,
         blank=True
     )
+   
     author_name = models.CharField(
         max_length=100,
         default="Anonymous"
@@ -325,6 +434,8 @@ class Review(models.Model):
     not_helpful_count = models.IntegerField(default=0, verbose_name="Số lượt không hữu ích")
     report_count = models.IntegerField(default=0, verbose_name="Số lượt báo cáo")
 
+    reports = GenericRelation('ReviewReport', related_query_name='normal_review')
+
     class Meta:
         verbose_name = "Đánh giá"
         verbose_name_plural = "Đánh giá"
@@ -369,6 +480,8 @@ class ReviewVote(models.Model):
     ]
 
     review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='votes')
+    tour_review = models.ForeignKey(TourReview, on_delete=models.CASCADE, related_name='votes', null=True, blank=True)
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -381,27 +494,33 @@ class ReviewVote(models.Model):
 
     class Meta:
         constraints = [
+            # Ràng buộc cho Destination Review
             models.UniqueConstraint(
                 fields=['review', 'user'],
-                condition=~models.Q(user=None),
+                condition=~models.Q(user=None) & ~models.Q(review=None),
                 name='unique_user_vote'
             ),
+            # Ràng buộc cho Tour Review
             models.UniqueConstraint(
-                fields=['review', 'user_ip'],
-                condition=~models.Q(user_ip=None),
-                name='unique_ip_vote'
+                fields=['tour_review', 'user'],
+                condition=~models.Q(user=None) & ~models.Q(tour_review=None),
+                name='unique_user_tour_vote'
             ),
         ]
 
     def __str__(self):
-        return f"{self.vote_type} - Review #{self.review.id}"
+        target = f"Review #{self.review.id}" if self.review else f"TourReview #{self.tour_review.id}"
+        return f"{self.vote_type} - {target}"
 
 
 # ======================================================================
 # 5.2 ReviewReport Model - Report inappropriate reviews
 # ======================================================================
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 class ReviewReport(models.Model):
     """Report inappropriate reviews"""
+
     REASON_SPAM = 'spam'
     REASON_INAPPROPRIATE = 'inappropriate'
     REASON_FAKE = 'fake'
@@ -413,7 +532,10 @@ class ReviewReport(models.Model):
         (REASON_OTHER, 'Lý do khác'),
     ]
 
-    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='reports')
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    review_object = GenericForeignKey('content_type', 'object_id')
+
     reporter_ip = models.GenericIPAddressField()
     reporter_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -429,45 +551,49 @@ class ReviewReport(models.Model):
     class Meta:
         verbose_name = "Báo cáo đánh giá"
         verbose_name_plural = "Báo cáo đánh giá"
+        # Index để tìm kiếm nhanh hơn
+        indexes = [
+            models.Index(fields=["content_type", "object_id"]),
+        ]
 
     def __str__(self):
-        return f"Report: {self.reason} - Review #{self.review.id}"
+        return f"Report: {self.reason} - {self.review_object}"
 
 
 # ======================================================================
 # Bảng RecommendationScore phục vụ AI tính điểm và gợi ý
 # ======================================================================
 class RecommendationScore(models.Model):
-    """Diem goi y (Pre-calculated)"""
-    destination = models.OneToOneField(Destination, on_delete=models.CASCADE, related_name='recommendation')
+    destination = models.OneToOneField(
+        'Destination', on_delete=models.CASCADE, 
+        related_name='recommendation', null=True, blank=True
+    )
+    tour = models.OneToOneField(
+        'TourPackage', on_delete=models.CASCADE, 
+        related_name='recommendation', null=True, blank=True
+    )
 
-    # Cac chi so danh gia (AI score)
-    overall_score = models.FloatField(default=0.0, verbose_name="Diem tong the (0-100)")
-    review_score = models.FloatField(default=0.0, verbose_name="Diem tu danh gia")
-    sentiment_score = models.FloatField(default=0.0, verbose_name="Diem cam xuc")
-    popularity_score = models.FloatField(default=0.0, verbose_name="Diem pho bien")
+    overall_score = models.FloatField(default=0.0, verbose_name="Điểm tổng thể (0-100)")
+    popularity_score = models.FloatField(default=0.0, verbose_name="Điểm phổ biến")
+    sentiment_score = models.FloatField(default=0.0, verbose_name="Điểm cảm xúc")
+    positive_review_ratio = models.FloatField(default=0.0, verbose_name="Tỷ lệ đánh giá tích cực")
 
-    # Thong ke
+    avg_rating = models.FloatField(default=0.0)
     total_reviews = models.IntegerField(default=0)
-    positive_review_ratio = models.FloatField(default=0.0, verbose_name="Ty le danh gia tich cuc")
-
-    last_calculated = models.DateTimeField(auto_now=True, verbose_name="Lan tinh cuoi")
-
-    # ===== HÀNH VI NGƯỜI DÙNG =====
-    total_views = models.PositiveIntegerField(default=0)
-    total_favorites = models.PositiveIntegerField(default=0)
+    last_calculated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Diem goi y"
-        verbose_name_plural = "Diem goi y"
+        verbose_name = "Điểm gợi ý"
+        verbose_name_plural = "Điểm gợi ý"
         ordering = ['-overall_score']
         indexes = [
             models.Index(fields=['-overall_score']),
-            models.Index(fields=['-total_reviews']),
         ]
 
     def __str__(self):
-        return f"{self.destination.name} - Score: {self.overall_score:.2f}"
+        obj = self.destination or self.tour
+        return f"{obj.name if obj else 'Chưa xác định'} - {self.overall_score}"
+
 
 
 # 7.Account Profile
@@ -495,10 +621,13 @@ class Favorite(models.Model):
         on_delete=models.CASCADE,
         related_name='favorited_by'
     )
+
+    tour = models.ForeignKey(TourPackage, on_delete=models.CASCADE, related_name='favorited_by', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'destination')  # Không cho thích trùng
+        unique_together = ('user', 'destination', 'tour')  # Không cho thích trùng
 
     def __str__(self):
-        return f"{self.user} + like + {self.destination}"
+        obj = self.destination or self.tour
+        return f"{self.user} thích {obj.name if obj else 'N/A'}"
