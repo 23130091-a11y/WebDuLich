@@ -33,6 +33,72 @@
                 </form>
             </div>
 
+            <!-- CSS cho Autocomplete -->
+            <style>
+            .autocomplete-box {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: white;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+                max-height: 350px;
+                overflow-y: auto;
+                z-index: 1050;
+                display: none;
+                margin-top: 5px;
+            }
+            .autocomplete-box.show {
+                display: block;
+            }
+            .autocomplete-item {
+                padding: 12px 16px;
+                cursor: pointer;
+                border-bottom: 1px solid #f0f0f0;
+                transition: background 0.2s;
+            }
+            .autocomplete-item:last-child {
+                border-bottom: none;
+            }
+            .autocomplete-item:hover {
+                background: #f8f9fa;
+            }
+            .autocomplete-item .dest-name {
+                font-weight: 600;
+                color: #333;
+                margin-bottom: 2px;
+            }
+            .autocomplete-item .dest-location {
+                font-size: 0.85rem;
+                color: #666;
+            }
+            .autocomplete-item .dest-score {
+                font-size: 0.75rem;
+                color: #28a745;
+            }
+            .autocomplete-item .highlight {
+                background: #fff3cd;
+                padding: 0 2px;
+                border-radius: 2px;
+            }
+            .autocomplete-loading {
+                padding: 15px;
+                text-align: center;
+                color: #666;
+            }
+            .autocomplete-empty {
+                padding: 15px;
+                text-align: center;
+                color: #999;
+            }
+            .autocomplete-item.active,
+            .autocomplete-item:focus {
+                background: #e3f2fd !important;
+            }
+            </style>
+
             <!-- Tìm kiếm chi tiết -->
             <form class="row align-items-center gx-3 justify-content-center" method="GET" action="{% url 'travel:search' %}" id="detailSearchForm">
                 <div class="col-md-3 position-relative" style="overflow: visible;">
@@ -103,28 +169,45 @@
         </div>
     </section>
 
-    <section id="categorySection" class="categories bg-light">
-        <div class="container-fluid text-center py-5">
-            <h3 class="fw-bold mb-5">Khám phá theo danh mục</h3>
+    <section id="categorySection" class="categories" style="background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);">
+        <div class="container text-center py-5">
+            <!-- Header hiện đại -->
+            <div class="mb-5">
+                <h3 class="fw-bold display-6 mb-2">Khám phá theo danh mục</h3>
+                <p class="text-muted">Chọn loại hình du lịch phù hợp với bạn</p>
+            </div>
             
-            <div class="row g-4 justify-content-center flex-md-wrap flex-nowrap overflow-auto pb-3">
-                
+            <div class="row g-4 justify-content-center">
                 {% for cat in categories %}
-                    <div class="col-6 col-sm-4 col-md-2">
-                        <div class="card h-100 border-0 shadow-sm p-3 category-card d-flex flex-column align-items-center justify-content-center">
-                            <a href="{% url 'travel:category_detail' slug=cat.slug %}" class="text-decoration-none text-center">
-                                <div class="icon-wrapper mb-3">
-                                    <i class="fa-solid {{ cat.icon|default:'fa-map-marker-alt' }} fa-3x text-info"></i>
-                                </div>
-                                <p class="mt-2 fw-semibold mb-0" style="font-size: 0.9rem; line-height: 1.2;">{{ cat.name }}</p>
-                            </a>
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                    <a href="{% url 'travel:category_detail' slug=cat.slug %}" class="text-decoration-none">
+                        <div class="card h-100 border-0 shadow-hover category-card-modern p-4" style="border-radius: 16px; transition: all 0.3s ease; background: #fff;">
+                            <div class="icon-wrapper mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); transition: all 0.3s ease;">
+                                <i class="fa-solid {{ cat.icon|default:'fa-map-marker-alt' }} fa-2x" style="color: #1976d2;"></i>
+                            </div>
+                            <p class="fw-semibold mb-0 text-dark" style="font-size: 0.9rem; line-height: 1.3;">{{ cat.name }}</p>
                         </div>
-                    </div>
-                    {% endfor %}
-
+                    </a>
+                </div>
+                {% endfor %}
             </div>
         </div>
     </section>
+    
+    <!-- CSS cho category cards -->
+    <style>
+    .category-card-modern:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+    }
+    .category-card-modern:hover .icon-wrapper {
+        background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%) !important;
+        transform: scale(1.1);
+    }
+    .category-card-modern:hover .icon-wrapper i {
+        color: #fff !important;
+    }
+    </style>
 
 
     <!-- Thêm phần đề xuất tour của Hạnh -->
@@ -296,40 +379,71 @@
     <hr class="container m-0">
 
     {% if top_destinations %}
-    <section class="recommend py-5 bg-light" id="recommend-section">
+    <section class="recommend py-5" id="recommend-section" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
         <div class="container">
-            <h2 class="fw-bold mb-3 text-center">
-                <i class="fa-solid fa-star text-warning me-2"></i>Địa điểm nổi bật
-            </h2>
-            <p class="text-muted mb-4 text-center">Xếp hạng dựa trên trải nghiệm cộng đồng và phân tích AI</p>
+            <!-- Header hiện đại -->
+            <div class="text-center mb-5">
+                <h2 class="fw-bold display-6 mb-2">Địa điểm nổi bật</h2>
+                <p class="text-muted lead">Xếp hạng dựa trên trải nghiệm cộng đồng và phân tích AI</p>
+            </div>
             
             <div class="row g-4">
                 {% for dest in top_destinations %}
-                <div class="col-md-4">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="position-relative">
+                <div class="col-lg-4 col-md-6">
+                    <div class="card h-100 border-0 shadow-hover destination-card" style="border-radius: 16px; overflow: hidden; transition: all 0.3s ease;">
+                        <div class="position-relative overflow-hidden">
                             {% if dest.image %}
-                                <img src="{{ dest.image.url }}" class="card-img-top" alt="{{ dest.name }}" style="height: 220px; object-fit: cover;">
+                                <img src="{{ dest.image.url }}" class="card-img-top dest-img" alt="{{ dest.name }}" style="height: 240px; object-fit: cover; transition: transform 0.4s ease;">
                             {% elif dest.images.all.first %}
-                                <img src="{{ dest.images.all.first.image.url }}" class="card-img-top" alt="{{ dest.name }}" style="height: 220px; object-fit: cover;">
+                                <img src="{{ dest.images.all.first.image.url }}" class="card-img-top dest-img" alt="{{ dest.name }}" style="height: 240px; object-fit: cover; transition: transform 0.4s ease;">
                             {% else %}
-                                <img src="https://via.placeholder.com/400x250?text=No+Image+Found" class="card-img-top" style="height: 220px; object-fit: cover;">
+                                <img src="https://via.placeholder.com/400x250?text=No+Image+Found" class="card-img-top dest-img" style="height: 240px; object-fit: cover; transition: transform 0.4s ease;">
                             {% endif %}
                             
-                            <span class="badge bg-success position-absolute top-0 end-0 m-2">
-                                AI Score: {{ dest.recommendation.overall_score|floatformat:0|default:"90" }}
+                            <!-- Overlay gradient -->
+                            <div class="position-absolute bottom-0 start-0 end-0" style="height: 80px; background: linear-gradient(transparent, rgba(0,0,0,0.6));"></div>
+                            
+                            <!-- AI Score badge - Click để xem chi tiết -->
+                            <span class="badge position-absolute top-0 end-0 m-3 shadow ai-score-badge" 
+                                  style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); font-size: 0.8rem; padding: 8px 12px; cursor: pointer;"
+                                  data-bs-toggle="modal" 
+                                  data-bs-target="#aiScoreModal"
+                                  data-dest-name="{{ dest.name }}"
+                                  data-dest-id="{{ dest.id }}"
+                                  data-overall-score="{{ dest.recommendation.overall_score|floatformat:0|default:'0' }}"
+                                  data-avg-rating="{{ dest.avg_rating|floatformat:1|default:'0' }}"
+                                  data-total-reviews="{{ dest.recommendation.total_reviews|default:'0' }}"
+                                  data-positive-ratio="{{ dest.recommendation.positive_review_ratio|floatformat:0|default:'0' }}"
+                                  data-sentiment-score="{{ dest.recommendation.sentiment_score|floatformat:0|default:'0' }}"
+                                  title="Click để xem chi tiết phân tích AI">
+                                <i class="fa-solid fa-robot me-1"></i>AI Score: {{ dest.recommendation.overall_score|floatformat:0|default:"90" }}
                             </span>
+                            
+                            <!-- Location overlay -->
+                            <div class="position-absolute bottom-0 start-0 m-3 text-white">
+                                <small><i class="fa-solid fa-location-dot me-1"></i>{{ dest.location }}</small>
+                            </div>
                         </div>
                         
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold">{{ dest.name }}</h5>
-                            <p class="text-muted small"><i class="fa-solid fa-location-dot text-danger"></i> {{ dest.location }}</p>
-                            <p class="card-text small text-secondary mb-3">{{ dest.description|truncatechars:80 }}</p>
-                            <div class="d-flex justify-content-between align-items-center pt-2 border-top">
-                                <span class="text-info small fw-bold">
-                                    <i class="fa-solid fa-route"></i> {{ dest.num_tours|default:"0" }} Tours
-                                </span>
-                                <a href="{% url 'travel:destination_detail' dest.id %}" class="btn btn-primary btn-sm px-3">Chi tiết</a>
+                        <div class="card-body p-4">
+                            <h5 class="card-title fw-bold mb-2 dest-title" style="color: #2d3748;">{{ dest.name }}</h5>
+                            <p class="card-text small text-secondary mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                {{ dest.description|truncatechars:100 }}
+                            </p>
+                            
+                            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-info-subtle text-info me-2">
+                                        <i class="fa-solid fa-route me-1"></i>{{ dest.num_tours|default:"0" }} Tours
+                                    </span>
+                                    <div class="text-warning">
+                                        <i class="fa-solid fa-star" style="font-size: 0.8rem;"></i>
+                                        <small class="text-dark fw-bold ms-1">{{ dest.avg_rating|floatformat:1|default:"4.5" }}</small>
+                                    </div>
+                                </div>
+                                <a href="{% url 'travel:destination_detail' dest.id %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                                    Khám phá <i class="fa-solid fa-arrow-right ms-1"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -338,62 +452,174 @@
             </div>
         </div>
     </section>
+    
+    <!-- CSS cho destination cards -->
+    <style>
+    .destination-card {
+        background: #fff;
+    }
+    .destination-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.12) !important;
+    }
+    .destination-card:hover .dest-img {
+        transform: scale(1.08);
+    }
+    .dest-title {
+        transition: color 0.3s ease;
+    }
+    .destination-card:hover .dest-title {
+        color: #0d6efd !important;
+    }
+    </style>
     {% endif %}
 
     <section class="featured-tours py-5 bg-white">
         <div class="container">
-            <h2 class="fw-bold mb-4 text-center">
-                <i class="fa-solid fa-fire text-danger me-2"></i>{{ category_name|default:"Hành trình hấp dẫn" }}
-            </h2>
+            <!-- Header section với thiết kế hiện đại -->
+            <div class="text-center mb-5">
+                <h2 class="fw-bold display-6 mb-2">{{ category_name|default:"Hành trình hấp dẫn" }}</h2>
+                <p class="text-muted lead">Khám phá những tour du lịch được yêu thích nhất</p>
+            </div>
             
+            <!-- Grid tour cards với thiết kế hiện đại -->
             <div class="row g-4">
                 {% for tour in featured_tours %}
-                <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm tour-card-hover" style="border-radius: 12px; overflow: hidden;">
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    <div class="card h-100 border-0 shadow-hover tour-card" style="border-radius: 16px; overflow: hidden; transition: all 0.3s ease;">
+                        <!-- Image container -->
                         <div class="position-relative overflow-hidden">
                             {% if tour.image_main %}
-                                <img src="{{ tour.image_main.url }}" class="card-img-top" style="height: 250px; object-fit: cover; transition: 0.3s;">
+                                <img src="{{ tour.image_main.url }}" class="card-img-top tour-img" alt="{{ tour.name }}" style="height: 200px; object-fit: cover; transition: transform 0.4s ease;">
+                            {% else %}
+                                <img src="{% static 'images/default-tour.jpg' %}" class="card-img-top tour-img" alt="{{ tour.name }}" style="height: 200px; object-fit: cover; transition: transform 0.4s ease;">
                             {% endif %}
                             
+                            <!-- Overlay gradient -->
+                            <div class="position-absolute bottom-0 start-0 end-0" style="height: 60px; background: linear-gradient(transparent, rgba(0,0,0,0.5));"></div>
+                            
+                            <!-- Category badge -->
                             <div class="position-absolute top-0 start-0 m-3">
-                                <span class="badge bg-primary shadow-sm">{{ tour.category.name }}</span>
+                                <span class="badge text-white shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-size: 0.75rem;">
+                                    {{ tour.category.name }}
+                                </span>
                             </div>
                             
+                            <!-- Favorite button -->
                             <div class="position-absolute top-0 end-0 m-3">
-                                <button class="btn btn-sm btn-light rounded-circle shadow-sm favorite-btn" data-url="{% url 'travel:toggle_tour_favorite' tour.id %}">
+                                <button class="btn btn-sm btn-light rounded-circle shadow-sm favorite-btn p-2" data-url="{% url 'travel:toggle_tour_favorite' tour.id %}" style="width: 36px; height: 36px;">
                                     <i class="{% if request.user in tour.favorites.all %}fa-solid{% else %}fa-regular{% endif %} fa-heart text-danger"></i>
                                 </button>
                             </div>
-                        </div>
-                        
-                        <div class="card-body p-4">
-                            <div class="mb-2">
-                                <span class="badge bg-info-subtle text-info small">
-                                    <i class="fa-solid fa-location-dot"></i> {{ tour.destination.name }}
+                            
+                            <!-- Duration badge -->
+                            <div class="position-absolute bottom-0 end-0 m-3">
+                                <span class="badge bg-dark bg-opacity-75 text-white">
+                                    <i class="fa-regular fa-clock me-1"></i>{{ tour.duration }} ngày
                                 </span>
                             </div>
-                            <h5 class="card-title fw-bold text-truncate-2">{{ tour.name }}</h5>
-                            <p class="text-muted small mb-0"><i class="fa-solid fa-clock me-1"></i> {{ tour.duration }}</p>
+                        </div>
+                        
+                        <!-- Card body -->
+                        <div class="card-body p-3">
+                            <!-- Location -->
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fa-solid fa-location-dot text-primary me-2" style="font-size: 0.8rem;"></i>
+                                <small class="text-muted">{{ tour.destination.name }}</small>
+                            </div>
                             
-                            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-                                <div>
-                                    <span class="text-muted small d-block">Giá từ</span>
-                                    <span class="text-danger fw-bold fs-5">{{ tour.price|floatformat:0 }} VND</span>
+                            <!-- Title -->
+                            <h6 class="card-title fw-bold mb-2 tour-title" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.8rem; line-height: 1.4;">
+                                {{ tour.name }}
+                            </h6>
+                            
+                            <!-- Rating -->
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="text-warning me-2">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= tour.average_rating %}
+                                            <i class="fa-solid fa-star" style="font-size: 0.75rem;"></i>
+                                        {% else %}
+                                            <i class="fa-regular fa-star" style="font-size: 0.75rem;"></i>
+                                        {% endif %}
+                                    {% endfor %}
                                 </div>
-                                <a href="{% url 'travel:tour_detail' tour.slug %}" class="btn btn-primary rounded-pill px-4">Đặt ngay</a>
+                                <small class="text-muted">({{ tour.total_reviews }} đánh giá)</small>
+                            </div>
+                            
+                            <!-- Price and CTA -->
+                            <div class="d-flex justify-content-between align-items-end pt-2 border-top">
+                                <div>
+                                    <small class="text-muted d-block">Giá từ</small>
+                                    <span class="text-danger fw-bold" style="font-size: 1.1rem;">
+                                        {% if tour.price %}
+                                            {{ tour.price|floatformat:0|intcomma }}đ
+                                        {% else %}
+                                            Liên hệ
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <a href="{% url 'travel:tour_detail' tour.slug %}" class="btn btn-primary btn-sm rounded-pill px-3">
+                                    <i class="fa-solid fa-arrow-right me-1"></i>Chi tiết
+                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
                 {% empty %}
                 <div class="col-12 text-center py-5">
-                    <img src="/static/images/empty-box.png" alt="Empty" style="width: 100px; opacity: 0.5;">
-                    <p class="text-muted mt-3">Hiện chưa có tour nào trong mục này.</p>
+                    <div class="py-5">
+                        <i class="fa-solid fa-suitcase-rolling fa-4x text-muted mb-3 opacity-50"></i>
+                        <p class="text-muted fs-5">Hiện chưa có tour nào trong mục này.</p>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
+            
+            <!-- Nút xem tất cả ở dưới với màu xanh -->
+            <div class="text-center mt-5">
+                <a href="{% url 'travel:all_tours' %}" class="btn btn-primary btn-lg px-5 py-3 rounded-pill shadow-sm" style="background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%); border: none; font-weight: 600;">
+                    <i class="fa-solid fa-th-large me-2"></i>Xem tất cả tour
+                    <i class="fa-solid fa-arrow-right ms-2"></i>
+                </a>
+            </div>
         </div>
     </section>
+
+    <!-- CSS cho phần tour -->
+    <style>
+    .tour-card {
+        background: #fff;
+    }
+    .tour-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.12) !important;
+    }
+    .tour-card:hover .tour-img {
+        transform: scale(1.08);
+    }
+    .tour-title {
+        color: #2d3748;
+        transition: color 0.3s ease;
+    }
+    .tour-card:hover .tour-title {
+        color: #0d6efd;
+    }
+    .shadow-hover {
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    .favorite-btn {
+        transition: all 0.3s ease;
+        opacity: 0.9;
+    }
+    .favorite-btn:hover {
+        transform: scale(1.15);
+        opacity: 1;
+    }
+    .badge {
+        font-weight: 500;
+    }
+    </style>
 
 
     <section class="recommend py-5">
@@ -578,70 +804,294 @@
 </div>
 
 <script>
-    const destinations = [
-        "Đà Lạt",
-        "Đà Nẵng",
-        "Phú Quốc",
-        "Hội An",
-        "Nha Trang",
-        "Hà Nội",
-        "Sapa",
-        "Huế",
-        "Vũng Tàu",
-        "Cần Thơ"
-    ];
-
-    const searchInput = document.getElementById("searchInput");
-    const suggestionsBox = document.getElementById("suggestions");
-
-    searchInput.addEventListener("input", function() {
-        const query = this.value.toLowerCase();
-        suggestionsBox.innerHTML = "";
-
-        if (query.length === 0) {
-            suggestionsBox.style.display = "none";
-            return;
+// ==================== AUTOCOMPLETE CHO THANH TÌM KIẾM ====================
+class DestinationAutocomplete {
+    constructor(inputId, suggestionsId, options = {}) {
+        this.input = document.getElementById(inputId);
+        this.suggestionsBox = document.getElementById(suggestionsId);
+        this.debounceTimer = null;
+        this.minChars = options.minChars || 1;
+        this.debounceDelay = options.debounceDelay || 300;
+        this.apiUrl = options.apiUrl || '/api/search/';
+        
+        if (this.input && this.suggestionsBox) {
+            this.init();
         }
-
-        const filtered = destinations.filter(d => d.toLowerCase().includes(query));
-        if (filtered.length === 0) {
-            suggestionsBox.style.display = "none";
-            return;
-        }
-
-        filtered.forEach(item => {
-            const div = document.createElement("div");
-            div.classList.add("suggestion-item");
-
-            // Làm nổi bật chữ trùng
-            const regex = new RegExp(`(${query})`, "gi");
-            div.innerHTML = item.replace(regex, "<span class='highlight'>$1</span>");
-
-            div.addEventListener("click", () => {
-                searchInput.value = item;
-                suggestionsBox.style.display = "none";
-            });
-            suggestionsBox.appendChild(div);
+    }
+    
+    init() {
+        // Xử lý input
+        this.input.addEventListener('input', (e) => this.handleInput(e));
+        
+        // Xử lý focus
+        this.input.addEventListener('focus', () => {
+            if (this.input.value.length >= this.minChars) {
+                this.search(this.input.value);
+            }
         });
-
-        suggestionsBox.style.display = "block";
-    });
-
-    document.addEventListener("click", (e) => {
-        if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
-            suggestionsBox.style.display = "none";
+        
+        // Đóng suggestions khi click ra ngoài
+        document.addEventListener('click', (e) => {
+            if (!this.input.contains(e.target) && !this.suggestionsBox.contains(e.target)) {
+                this.hideSuggestions();
+            }
+        });
+        
+        // Xử lý keyboard navigation
+        this.input.addEventListener('keydown', (e) => this.handleKeydown(e));
+    }
+    
+    handleInput(e) {
+        const query = e.target.value.trim();
+        
+        // Clear timer cũ
+        if (this.debounceTimer) {
+            clearTimeout(this.debounceTimer);
         }
+        
+        if (query.length < this.minChars) {
+            this.hideSuggestions();
+            return;
+        }
+        
+        // Debounce để tránh gọi API quá nhiều
+        this.debounceTimer = setTimeout(() => {
+            this.search(query);
+        }, this.debounceDelay);
+    }
+    
+    async search(query) {
+        this.showLoading();
+        
+        try {
+            const response = await fetch(`${this.apiUrl}?q=${encodeURIComponent(query)}`);
+            const data = await response.json();
+            
+            if (data.results && data.results.length > 0) {
+                this.renderSuggestions(data.results, query);
+            } else {
+                this.showEmpty(query);
+            }
+        } catch (error) {
+            console.error('Search error:', error);
+            this.showEmpty(query);
+        }
+    }
+    
+    renderSuggestions(results, query) {
+        this.suggestionsBox.innerHTML = '';
+        
+        results.forEach((dest, index) => {
+            const item = document.createElement('div');
+            item.className = 'autocomplete-item';
+            item.dataset.index = index;
+            
+            // Highlight text khớp
+            const highlightedName = this.highlightMatch(dest.name, query);
+            const highlightedLocation = this.highlightMatch(dest.location, query);
+            
+            item.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="dest-name">${highlightedName}</div>
+                        <div class="dest-location">
+                            <i class="fa-solid fa-location-dot me-1"></i>${highlightedLocation}
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        ${dest.score ? `<span class="dest-score"><i class="fa-solid fa-robot me-1"></i>${dest.score}</span>` : ''}
+                        ${dest.avg_rating ? `<div class="text-warning small"><i class="fa-solid fa-star"></i> ${dest.avg_rating}</div>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            // Click để chọn
+            item.addEventListener('click', () => {
+                this.selectDestination(dest);
+            });
+            
+            this.suggestionsBox.appendChild(item);
+        });
+        
+        this.showSuggestions();
+    }
+    
+    highlightMatch(text, query) {
+        if (!text || !query) return text || '';
+        const regex = new RegExp(`(${this.escapeRegex(query)})`, 'gi');
+        return text.replace(regex, '<span class="highlight">$1</span>');
+    }
+    
+    escapeRegex(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+    
+    selectDestination(dest) {
+        this.input.value = dest.name;
+        this.hideSuggestions();
+        
+        // Tự động submit form hoặc chuyển đến trang chi tiết
+        const form = this.input.closest('form');
+        if (form) {
+            form.submit();
+        }
+    }
+    
+    handleKeydown(e) {
+        const items = this.suggestionsBox.querySelectorAll('.autocomplete-item');
+        const activeItem = this.suggestionsBox.querySelector('.autocomplete-item.active');
+        let currentIndex = activeItem ? parseInt(activeItem.dataset.index) : -1;
+        
+        switch(e.key) {
+            case 'ArrowDown':
+                e.preventDefault();
+                currentIndex = Math.min(currentIndex + 1, items.length - 1);
+                this.setActiveItem(items, currentIndex);
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                currentIndex = Math.max(currentIndex - 1, 0);
+                this.setActiveItem(items, currentIndex);
+                break;
+            case 'Enter':
+                if (activeItem) {
+                    e.preventDefault();
+                    activeItem.click();
+                }
+                break;
+            case 'Escape':
+                this.hideSuggestions();
+                break;
+        }
+    }
+    
+    setActiveItem(items, index) {
+        items.forEach((item, i) => {
+            item.classList.toggle('active', i === index);
+            if (i === index) {
+                item.style.background = '#e9ecef';
+            } else {
+                item.style.background = '';
+            }
+        });
+    }
+    
+    showLoading() {
+        this.suggestionsBox.innerHTML = `
+            <div class="autocomplete-loading">
+                <i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tìm kiếm...
+            </div>
+        `;
+        this.showSuggestions();
+    }
+    
+    showEmpty(query) {
+        this.suggestionsBox.innerHTML = `
+            <div class="autocomplete-empty">
+                <i class="fa-solid fa-search me-2"></i>Không tìm thấy "${query}"
+            </div>
+        `;
+        this.showSuggestions();
+    }
+    
+    showSuggestions() {
+        this.suggestionsBox.classList.add('show');
+    }
+    
+    hideSuggestions() {
+        this.suggestionsBox.classList.remove('show');
+    }
+}
+
+// Khởi tạo autocomplete cho các input
+document.addEventListener('DOMContentLoaded', function() {
+    // Autocomplete cho thanh tìm kiếm nhanh
+    new DestinationAutocomplete('quickSearchInput', 'quickSuggestions', {
+        minChars: 1,
+        debounceDelay: 250
     });
+    
+    // Autocomplete cho input "Nơi muốn đến"
+    new DestinationAutocomplete('toLocationInput', 'toLocationSuggestions', {
+        minChars: 1,
+        debounceDelay: 250
+    });
+    
+    // Autocomplete cho input "Vị trí của bạn" (dùng API provinces)
+    const fromLocationInput = document.getElementById('fromLocationInput');
+    const fromLocationSuggestions = document.getElementById('fromLocationSuggestions');
+    
+    if (fromLocationInput && fromLocationSuggestions) {
+        let debounceTimer = null;
+        
+        fromLocationInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            
+            if (debounceTimer) clearTimeout(debounceTimer);
+            
+            if (query.length < 1) {
+                fromLocationSuggestions.classList.remove('show');
+                return;
+            }
+            
+            debounceTimer = setTimeout(async () => {
+                try {
+                    const response = await fetch(`/api/provinces/?q=${encodeURIComponent(query)}`);
+                    const data = await response.json();
+                    
+                    if (data.provinces && data.provinces.length > 0) {
+                        fromLocationSuggestions.innerHTML = data.provinces.map(p => `
+                            <div class="autocomplete-item" data-value="${p}">
+                                <i class="fa-solid fa-location-dot me-2 text-primary"></i>${p}
+                            </div>
+                        `).join('');
+                        
+                        fromLocationSuggestions.querySelectorAll('.autocomplete-item').forEach(item => {
+                            item.addEventListener('click', function() {
+                                fromLocationInput.value = this.dataset.value;
+                                fromLocationSuggestions.classList.remove('show');
+                            });
+                        });
+                        
+                        fromLocationSuggestions.classList.add('show');
+                    } else {
+                        fromLocationSuggestions.innerHTML = `
+                            <div class="autocomplete-empty">Không tìm thấy địa điểm</div>
+                        `;
+                        fromLocationSuggestions.classList.add('show');
+                    }
+                } catch (error) {
+                    console.error('Province search error:', error);
+                }
+            }, 250);
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (!fromLocationInput.contains(e.target) && !fromLocationSuggestions.contains(e.target)) {
+                fromLocationSuggestions.classList.remove('show');
+            }
+        });
+    }
+});
 </script>
 
-<!-- // Xử lý nút "Khám phá ngay" -->
+<!-- // Xử lý nút "Khám phá ngay" - CHỈ cho các card trong section "Dải Đất Hình Chữ S" -->
 <script>
-    document.querySelectorAll(".btn-outline-primary").forEach((btn) => {
+    document.querySelectorAll(".recommend .card:not(.destination-card) .btn-outline-primary").forEach((btn) => {
+        // Chỉ áp dụng cho các card KHÔNG phải destination-card (tức là card ảnh static)
         btn.addEventListener("click", (e) => {
+            // Bỏ qua nếu nút có href thực sự (link đến trang khác)
+            if (btn.tagName === 'A' && btn.getAttribute('href') && btn.getAttribute('href') !== '#') {
+                return; // Cho phép link hoạt động bình thường
+            }
+            
+            e.preventDefault();
             const card = e.target.closest(".card");
-            const title = card.querySelector(".card-title").textContent;
-            const desc = card.querySelector(".card-text").textContent;
-            const imgSrc = card.querySelector("img").src;
+            if (!card) return;
+            
+            const title = card.querySelector(".card-title")?.textContent || '';
+            const desc = card.querySelector(".card-text")?.textContent || '';
+            const imgSrc = card.querySelector("img")?.src || '';
 
             // Tạo modal tạm thời
             const modal = document.createElement("div");
@@ -742,6 +1192,156 @@
     });
 </script>
 
+<!-- Modal AI Score Chi tiết -->
+<div class="modal fade" id="aiScoreModal" tabindex="-1" aria-labelledby="aiScoreModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px 16px 0 0;">
+                <h5 class="modal-title text-white" id="aiScoreModalLabel">
+                    <i class="fa-solid fa-robot me-2"></i>Phân tích AI
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <h5 class="fw-bold mb-4" id="modalDestName">Tên địa điểm</h5>
+                
+                <!-- Overall Score -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-semibold"><i class="fa-solid fa-chart-line text-primary me-2"></i>Điểm tổng hợp</span>
+                        <span class="badge bg-success fs-5" id="modalOverallScore">0</span>
+                    </div>
+                    <div class="progress" style="height: 10px; border-radius: 5px;">
+                        <div class="progress-bar bg-success" id="modalOverallProgress" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <!-- Sentiment Score -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-semibold"><i class="fa-solid fa-face-smile text-warning me-2"></i>Điểm cảm xúc</span>
+                        <span class="badge bg-warning text-dark" id="modalSentimentScore">0</span>
+                    </div>
+                    <div class="progress" style="height: 8px; border-radius: 4px;">
+                        <div class="progress-bar bg-warning" id="modalSentimentProgress" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <small class="text-muted">Phân tích từ nội dung đánh giá</small>
+                </div>
+                
+                <!-- Rating -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-semibold"><i class="fa-solid fa-star text-warning me-2"></i>Đánh giá trung bình</span>
+                        <span id="modalAvgRating">0</span>/5.0
+                    </div>
+                    <div class="text-warning" id="modalStars">
+                        <i class="fa-regular fa-star"></i>
+                        <i class="fa-regular fa-star"></i>
+                        <i class="fa-regular fa-star"></i>
+                        <i class="fa-regular fa-star"></i>
+                        <i class="fa-regular fa-star"></i>
+                    </div>
+                </div>
+                
+                <!-- Stats -->
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="bg-light rounded-3 p-3 text-center">
+                            <i class="fa-solid fa-comments text-info fs-4 mb-2"></i>
+                            <div class="fw-bold" id="modalTotalReviews">0</div>
+                            <small class="text-muted">Đánh giá</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="bg-light rounded-3 p-3 text-center">
+                            <i class="fa-solid fa-heart text-danger fs-4 mb-2"></i>
+                            <div class="fw-bold"><span id="modalPositiveRatio">0</span>%</div>
+                            <small class="text-muted">Yêu thích</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Explanation -->
+                <div class="alert alert-info mt-4 mb-0" style="border-radius: 12px;">
+                    <i class="fa-solid fa-lightbulb me-2"></i>
+                    <strong>AI Score</strong> được tính dựa trên: đánh giá sao, phân tích cảm xúc từ nội dung review, độ phổ biến, và mức độ tương tác của người dùng.
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <a href="#" id="modalViewDetail" class="btn btn-primary rounded-pill px-4">
+                    <i class="fa-solid fa-arrow-right me-1"></i>Xem chi tiết địa điểm
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Xử lý click vào AI Score badge - Đợi DOM load xong
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.ai-score-badge').forEach(badge => {
+        badge.addEventListener('click', function(e) {
+            e.stopPropagation(); // Ngăn event bubble lên card
+            
+            const destName = this.dataset.destName || 'Không xác định';
+            const destId = this.dataset.destId || '';
+            const overallScore = parseFloat(this.dataset.overallScore) || 0;
+            const avgRating = parseFloat(this.dataset.avgRating) || 0;
+            const totalReviews = this.dataset.totalReviews || '0';
+            const positiveRatio = this.dataset.positiveRatio || '0';
+            const sentimentScore = parseFloat(this.dataset.sentimentScore) || 0;
+            
+            console.log('AI Score clicked:', {destName, destId, overallScore, avgRating, totalReviews, positiveRatio, sentimentScore});
+            
+            // Cập nhật modal
+            const modalDestName = document.getElementById('modalDestName');
+            const modalOverallScore = document.getElementById('modalOverallScore');
+            const modalOverallProgress = document.getElementById('modalOverallProgress');
+            const modalSentimentScore = document.getElementById('modalSentimentScore');
+            const modalSentimentProgress = document.getElementById('modalSentimentProgress');
+            const modalAvgRating = document.getElementById('modalAvgRating');
+            const modalTotalReviews = document.getElementById('modalTotalReviews');
+            const modalPositiveRatio = document.getElementById('modalPositiveRatio');
+            const modalStars = document.getElementById('modalStars');
+            const modalViewDetail = document.getElementById('modalViewDetail');
+            
+            if (modalDestName) modalDestName.textContent = destName;
+            if (modalOverallScore) modalOverallScore.textContent = overallScore + '/100';
+            if (modalOverallProgress) modalOverallProgress.style.width = overallScore + '%';
+            if (modalSentimentScore) modalSentimentScore.textContent = sentimentScore + '/100';
+            if (modalSentimentProgress) modalSentimentProgress.style.width = sentimentScore + '%';
+            if (modalAvgRating) modalAvgRating.textContent = avgRating.toFixed(1);
+            if (modalTotalReviews) modalTotalReviews.textContent = totalReviews;
+            if (modalPositiveRatio) modalPositiveRatio.textContent = positiveRatio;
+            
+            // Cập nhật stars
+            if (modalStars) {
+                let starsHtml = '';
+                for (let i = 1; i <= 5; i++) {
+                    if (i <= Math.round(avgRating)) {
+                        starsHtml += '<i class="fa-solid fa-star"></i> ';
+                    } else {
+                        starsHtml += '<i class="fa-regular fa-star"></i> ';
+                    }
+                }
+                modalStars.innerHTML = starsHtml;
+            }
+            
+            // Cập nhật link xem chi tiết
+            if (modalViewDetail && destId) {
+                modalViewDetail.href = '/destination/' + destId + '/';
+            }
+        });
+    });
+});
+</script>
+
 <!-- JS custom -->
 <script src="{% static 'js/index.js' %}"></script>
+
+<!-- JS custom -->
+<script src="{% static 'js/index.js' %}"></script>
+
+<!-- Autocomplete Script -->
+<script src="{% static 'js/autocomplete.js' %}"></script>
 {% endblock %}
