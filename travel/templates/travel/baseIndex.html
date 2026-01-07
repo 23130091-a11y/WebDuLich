@@ -10,67 +10,75 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-
+    
     {% block extra_css %}{% endblock %}
 </head>
 
 <body>
     <header class="header sticky-top bg-white shadow-sm">
-    <div class="container">
-        <nav class="navbar navbar-expand-lg px-4 py-2">
-            <a class="navbar-brand fw-bold text-primary" href="{% url 'travel:home' %}">
-                <i class="fa-solid fa-plane-departure me-2"></i>Du Lịch Việt
-            </a>
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link active fw-bold" href="{% url 'travel:home' %}">
-                        <i class="fa-solid fa-home me-1"></i>Trang chủ
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'travel:search' %}">
-                        <i class="fa-solid fa-search me-1"></i>Tìm kiếm
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#recommend-section">
-                        <i class="fa-solid fa-star me-1"></i>Gợi ý
-                    </a>
-                </li>
-            </ul>
-
-            <!-- Khi chưa đăng nhập -->
-            <div id="authButtons" class="ms-auto d-flex align-items-center gap-2">
-                <button class="btn btn-outline-primary btn-sm" id="showLoginBtn">
-                    <i class="fa-solid fa-right-to-bracket me-1"></i>Đăng nhập
+        <div class="container">
+            <nav class="navbar navbar-expand-lg px-4 py-2">
+                <a class="navbar-brand fw-bold text-primary" href="{% url 'travel:home' %}">
+                    <i class="fa-solid fa-plane-departure me-2"></i>Du Lịch Việt
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
                 </button>
-                <button class="btn btn-primary btn-sm" id="showRegisterBtn">
-                    <i class="fa-solid fa-user-plus me-1"></i>Đăng ký
-                </button>
-            </div>
-
-            <!-- Khi đã đăng nhập -->
-            <div id="userInfo" class="ms-auto d-flex align-items-center d-none">
-                <div class="dropdown">
-                    <button class="btn btn-light dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-person-circle fs-4 me-2 text-primary"></i>
-                        <span id="userDisplayName" class="fw-semibold"></span>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><span class="dropdown-item-text text-muted small" id="userEmail"></span></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="/accountProfile/"><i class="fa-solid fa-user me-2"></i>Tài khoản</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="fa-solid fa-heart me-2"></i>Yêu thích</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="#" id="logoutBtn"><i class="fa-solid fa-sign-out me-2"></i>Đăng xuất</a></li>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link active fw-bold" href="{% url 'travel:home' %}">
+                                <i class="fa-solid fa-home me-1"></i>Trang chủ
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'travel:search' %}">
+                                <i class="fa-solid fa-search me-1"></i>Tìm kiếm
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#recommend-section">
+                                <i class="fa-solid fa-star me-1"></i>Gợi ý
+                            </a>
+                        </li>
                     </ul>
+
+                    <div id="authButtons" class="ms-auto d-flex align-items-center gap-2">
+                        <button class="btn btn-outline-primary btn-sm" id="showLoginBtn">
+                            <i class="fa-solid fa-right-to-bracket me-1"></i>Đăng nhập
+                        </button>
+                        <button class="btn btn-primary btn-sm" id="showRegisterBtn">
+                            <i class="fa-solid fa-user-plus me-1"></i>Đăng ký
+                        </button>
+                    </div>
+
+                    <div id="userInfo" class="ms-auto d-flex align-items-center d-none">
+                        <div class="dropdown">
+                            <button class="btn btn-light dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown">
+                                <div id="headerAvatar" class="rounded-circle me-2 d-flex align-items-center justify-content-center text-white fw-bold shadow-sm" 
+                                     style="width: 35px; height: 35px; text-transform: uppercase; font-size: 14px; min-width: 35px;">
+                                </div>
+                                <span id="userDisplayName" class="fw-semibold"></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><span class="dropdown-item-text text-muted small" id="userEmailHeader"></span></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/accountProfile/"><i class="fa-solid fa-user me-2"></i>Tài khoản</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fa-solid fa-heart me-2"></i>Yêu thích</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" id="logoutBtn"><i class="fa-solid fa-sign-out me-2"></i>Đăng xuất</a></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </nav>
-    </div>
-</header>
+            </nav>
+        </div>
+    </header>
 
     {% if messages %}
     <div class="container mt-3">
@@ -88,52 +96,49 @@
         {% endblock %}
     </main>
 
-    <button id="btnTop" title="Lên đầu trang"><i class="fa-solid fa-arrow-up"></i></button>
-
     <footer class="footer pt-5 pb-3">
         <div class="container">
             <div class="row footer-container">
                 <div class="col-lg-4 col-md-6 mb-4 footer-col">
                     <h3 class="fw-bold text-white">Du Lịch Việt</h3>
-                    <p class="mt-3 pe-4">Đồng hành cùng bạn trên mọi nẻo đường. Khám phá vẻ đẹp Việt Nam và thế giới cùng những trải nghiệm tuyệt vời nhất.</p>
+                    <p class="mt-3 pe-4 text-white-50">Đồng hành cùng bạn trên mọi nẻo đường. Khám phá vẻ đẹp Việt Nam và thế giới cùng những trải nghiệm tuyệt vời nhất.</p>
                     <div class="contact-info mt-3">
-                        <p class="mb-2"><i class="fa-solid fa-location-dot me-2"></i> 123 Nguyễn Văn Cừ, Q.5, TP.HCM</p>
-                        <p class="mb-2"><i class="fa-solid fa-phone me-2"></i> 1900 1000 (8:00 - 22:00)</p>
-                        <p class="mb-2"><i class="fa-solid fa-envelope me-2"></i> support@dulichviet.com</p>
+                        <p class="mb-2 text-white-50"><i class="fa-solid fa-location-dot me-2 text-white"></i> 123 Nguyễn Văn Cừ, Q.5, TP.HCM</p>
+                        <p class="mb-2 text-white-50"><i class="fa-solid fa-phone me-2 text-white"></i> 1900 1000 (8:00 - 22:00)</p>
+                        <p class="mb-2 text-white-50"><i class="fa-solid fa-envelope me-2 text-white"></i> support@dulichviet.com</p>
                         <div class="footer-icons mt-4">
-                            <a href="#" class="text-white me-2"><i class="fa-brands fa-facebook-f"></i></a>
-                            <a href="#" class="text-white me-2"><i class="fa-brands fa-instagram"></i></a>
-                            <a href="#" class="text-white me-2"><i class="fa-brands fa-tiktok"></i></a>
-                            <a href="#" class="text-white"><i class="fa-brands fa-youtube"></i></a>
+                            <a href="#" class="text-white me-3 fs-5"><i class="fa-brands fa-facebook-f"></i></a>
+                            <a href="#" class="text-white me-3 fs-5"><i class="fa-brands fa-instagram"></i></a>
+                            <a href="#" class="text-white me-3 fs-5"><i class="fa-brands fa-tiktok"></i></a>
+                            <a href="#" class="text-white fs-5"><i class="fa-brands fa-youtube"></i></a>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-lg-2 col-md-6 mb-4 footer-col">
-                    <h4 class="fw-bold mb-3">HỖ TRỢ</h4>
+                    <h4 class="fw-bold mb-3 text-white">HỖ TRỢ</h4>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><a href="#">Hướng dẫn đặt tour</a></li>
-                        <li class="mb-2"><a href="#">Chính sách hoàn hủy</a></li>
-                        <li class="mb-2"><a href="#">Câu hỏi thường gặp</a></li>
-                        <li class="mb-2"><a href="#">Chính sách bảo mật</a></li>
-                        <li class="mb-2"><a href="#">Liên hệ hỗ trợ</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-white-50">Hướng dẫn đặt tour</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-white-50">Chính sách hoàn hủy</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-white-50">Câu hỏi thường gặp</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-white-50">Chính sách bảo mật</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-white-50">Liên hệ hỗ trợ</a></li>
                     </ul>
                 </div>
 
                 <div class="col-lg-2 col-md-6 mb-4 footer-col">
-                    <h4 class="fw-bold mb-3">CÔNG TY</h4>
+                    <h4 class="fw-bold mb-3 text-white">CÔNG TY</h4>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><a href="#">Giới thiệu</a></li>
-                        <li class="mb-2"><a href="#">Tuyển dụng</a></li>
-                        <li class="mb-2"><a href="#">Tin tức du lịch</a></li>
-                        <li class="mb-2"><a href="#">Đối tác liên kết</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-white-50">Giới thiệu</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-white-50">Tuyển dụng</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-white-50">Tin tức du lịch</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-white-50">Đối tác liên kết</a></li>
                     </ul>
                 </div>
 
-                <div class="col-lg-4 col-md-6 mb-4 footer-col">
+                <div class="col-lg-4 col-md-6 mb-4 footer-col text-white">
                     <h4 class="fw-bold mb-3">ĐĂNG KÝ NHẬN TIN</h4>
-                    <p>Nhận thông tin về các tour giảm giá và ưu đãi mới nhất từ chúng tôi.</p>
-
+                    <p class="text-white-50">Nhận thông tin về các tour giảm giá và ưu đãi mới nhất từ chúng tôi.</p>
                     <form class="newsletter-form input-group mt-3">
                         <input type="email" class="form-control" placeholder="Email của bạn..." aria-label="Email">
                         <button class="btn btn-light text-primary fw-bold" type="button">
@@ -143,39 +148,93 @@
                 </div>
             </div>
         </div>
-
         <div class="copyright text-center mt-4 pt-3 border-top border-white-50">
             <p class="mb-0 text-white-50">© 2025 Du Lịch Việt. All rights reserved.</p>
         </div>
     </footer>
-    <!-- Nút trở lên đầu trang -->
-    <button id="btnTop" class="btn-top">
-        <i class="bi bi-arrow-up"></i>
+
+    <button id="btnTop" class="btn-top" title="Lên đầu trang">
+        <i class="fa-solid fa-arrow-up"></i>
     </button>
 
     <script>
-        const btnTop = document.getElementById("btnTop");
-
-        window.addEventListener("scroll", () => {
-            if (window.scrollY > 50) {
-                btnTop.classList.add("show");
-            } else {
-                btnTop.classList.remove("show");
+        // Hàm tạo màu sắc ngẫu nhiên dựa trên chuỗi tên (để đồng bộ avatar khắp web)
+        function stringToColor(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash);
             }
-        });
+            const hue = hash % 360;
+            return `hsl(${hue}, 65%, 50%)`;
+        }
 
-        btnTop.addEventListener("click", () => {
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth"
+        // Hàm cập nhật giao diện Header dựa trên trạng thái đăng nhập
+        function updateHeaderUI() {
+            const access = localStorage.getItem("access");
+            const userRaw = localStorage.getItem("user");
+            
+            const authButtons = document.getElementById("authButtons");
+            const userInfo = document.getElementById("userInfo");
+            const userDisplayName = document.getElementById("userDisplayName");
+            const userEmailHeader = document.getElementById("userEmailHeader");
+            const headerAvatar = document.getElementById("headerAvatar");
+
+            if (access && userRaw) {
+                try {
+                    const user = JSON.parse(userRaw);
+                    authButtons.classList.add("d-none");
+                    userInfo.classList.remove("d-none");
+
+                    const nameToDisplay = user.username || "User";
+                    userDisplayName.textContent = nameToDisplay;
+                    if (userEmailHeader) userEmailHeader.textContent = user.email || "";
+                    
+                    if (headerAvatar) {
+                        headerAvatar.textContent = nameToDisplay.charAt(0).toUpperCase();
+                        headerAvatar.style.backgroundColor = stringToColor(nameToDisplay);
+                    }
+                } catch (e) {
+                    console.error("Lỗi dữ liệu User:", e);
+                }
+            } else {
+                authButtons.classList.remove("d-none");
+                userInfo.classList.add("d-none");
+            }
+        }
+
+        // Chạy khi trang tải xong
+        document.addEventListener("DOMContentLoaded", () => {
+            updateHeaderUI();
+
+            // Xử lý nút Lên đầu trang
+            const btnTop = document.getElementById("btnTop");
+            window.addEventListener("scroll", () => {
+                if (window.scrollY > 200) {
+                    btnTop.classList.add("show");
+                    btnTop.style.display = "block";
+                } else {
+                    btnTop.classList.remove("show");
+                    btnTop.style.display = "none";
+                }
             });
+
+            btnTop.addEventListener("click", () => {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            });
+
+            // Xử lý nút Đăng xuất
+            const logoutBtn = document.getElementById("logoutBtn");
+            if (logoutBtn) {
+                logoutBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    localStorage.clear();
+                    window.location.href = "/";
+                });
+            }
         });
     </script>
 
-    <!-- JS custom -->
     <script src="{% static 'js/index.js' %}"></script>
-
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     {% block extra_js %}

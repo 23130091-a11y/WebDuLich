@@ -8,11 +8,16 @@ app_name = 'travel'
 urlpatterns = [
     path('', views.home, name='home'),
     path('category-detail/', views.category_detail, name='category_filter'), # <--- Đổi tên URL
-    path('danh-muc/<slug:category_slug>/', views.category_detail, name='category_detail'),
     path('api/goi-y-theo-the-loai/', views.goi_y_theo_the_loai, name='goi_y_theo_the_loai'),
     path('tour/<slug:tour_slug>/', views.tour_detail, name='tour_detail'),
+    path('category/<slug:slug>/', views.category_detail, name='category_detail'),
+    path('accounts/', include('django.contrib.auth.urls')),
 
     path('search/', views.search, name='search'),
+
+    path('api/tour/<int:tour_id>/review/', views.api_submit_review, name='api_submit_review'),
+    
+    path('api/review/', views.api_submit_tour_review, name='api_submit_tour_review'),
 
     # Thêm route cho destination detail
     # Sửa lại chỗ này
@@ -38,6 +43,8 @@ urlpatterns = [
     # Url danh sách yêu thích
     path('favorites/', views.favorite_list, name='favorite_list'),
     # Url yêu thích destination (id)
-    path('favorites/toggle/<int:destination_id>/', views.toggle_favorite, name='toggle_favorite'),
+    path('favorite/toggle-dest/<int:dest_id>/', views.toggle_destination_favorite, name='toggle_destination_favorite'),
+    
+    path('favorite/toggle-tour/<int:tour_id>/', views.toggle_tour_favorite, name='toggle_tour_favorite'),
 
 ]
