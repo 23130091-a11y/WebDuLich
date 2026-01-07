@@ -16,6 +16,7 @@ import logging
 import hashlib
 from decimal import Decimal
 from typing import Tuple, List, Dict, Any
+from typing import List
 
 from django.db.models import Q, Avg, Count
 from django.core.cache import cache
@@ -536,12 +537,15 @@ def get_similar_destinations(destination, limit: int = 4) -> List:
     from django.db.models.functions import Abs
     
     # Tìm các địa điểm khác (không phải địa điểm hiện tại)
+    # Lấy danh sách ID các loại hình du lịch của địa điểm hiện tại
+    # Giả sử travel_type là ManyToManyField
+    current_type_ids = destination.travel_type.values_list('id', flat=True)
+
     queryset = Destination.objects.select_related('recommendation').exclude(id=destination.id)
-    
-    similar = []
-    
-    # 1. Cùng loại hình du lịch (ưu tiên cao nhất)
-    same_type = queryset.filter(travel_type=destination.travel_type)
+
+    # 1. Cùng loại hình du lịch (Sửa ở đây)
+    # Dùng __in để lọc các địa điểm có chứa ít nhất một loại hình tương tự
+    same_type = queryset.filter(travel_type__id__in=current_type_ids).distinct()
     
     # 2. Cùng khu vực
     same_location = queryset.filter(location=destination.location)

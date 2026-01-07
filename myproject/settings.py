@@ -139,3 +139,14 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=3),
 
 }
+
+# Cache timeouts (in seconds)
+CACHE_TTL = {
+    'homepage': 300,  # 5 minutes
+    'search': 600,  # 10 minutes
+    'destination_detail': 300,  # 5 minutes
+    'sentiment': 86400,  # 24 hours (AI results don't change)
+    'recommendation': 3600,  # 1 hour
+}
+
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'travel/static')]
