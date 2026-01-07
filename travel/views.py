@@ -11,7 +11,7 @@ from .ai_engine import analyze_sentiment
 from django.views.decorators.cache import never_cache
 
 from datetime import datetime, date, timedelta
-from ratelimit.decorators import ratelimit
+from django_ratelimit.decorators import ratelimit
 
 from users.models import TravelPreference
 from .services import get_weather_forecast, get_route, get_location_coordinates, get_nearby_hotels, get_nearby_restaurants, get_current_weather
@@ -27,6 +27,73 @@ import logging
 
 # Khởi tạo logger cho file hiện tại
 logger = logging.getLogger(__name__)
+
+# View hiển thị tất cả tour với phân trang
+def all_tours(request):
+    """Hiển thị tất cả tour với phân trang và sentiment analysis"""
+    tours_list = TourPackage.objects.filter(is_active=True).select_related(
+        'destination', 'category', 'destination__recommendation'
+    ).prefetch_related('reviews').order_by('-created_at')
+    
+    # Tính sentiment cho mỗi tour
+    tours_with_sentiment = []
+    for tour in tours_list:
+        tour_data = {
+            'tour': tour,
+            'sentiment_info': None,
+            'aspect_summary': {}
+        }
+        
+        # Lấy reviews của tour
+        reviews = tour.reviews.all()
+        if reviews.exists():
+            total_sentiment = 0
+            all_pos_keywords = []
+            all_neg_keywords = []
+            aspect_scores = {}
+            
+            for review in reviews:
+                # Phân tích sentiment cho mỗi review
+                score, pos_kw, neg_kw, metadata = analyze_sentiment(review.comment or '', review.rating)
+                total_sentiment += score
+                all_pos_keywords.extend(pos_kw)
+                all_neg_keywords.extend(neg_kw)
+                
+                # Thu thập aspect scores
+                if 'aspects' in metadata:
+                    for aspect, aspect_score in metadata['aspects'].items():
+                        if aspect not in aspect_scores:
+                            aspect_scores[aspect] = []
+                        aspect_scores[aspect].append(aspect_score)
+            
+            avg_sentiment = total_sentiment / len(reviews) if reviews else 0
+            
+            # Tính điểm trung bình cho mỗi aspect
+            aspect_summary = {}
+            for aspect, scores in aspect_scores.items():
+                aspect_summary[aspect] = sum(scores) / len(scores) if scores else 0
+            
+            tour_data['sentiment_info'] = {
+                'score': round(avg_sentiment, 2),
+                'label': 'Tích cực' if avg_sentiment > 0.2 else ('Tiêu cực' if avg_sentiment < -0.2 else 'Trung lập'),
+                'color': 'success' if avg_sentiment > 0.2 else ('danger' if avg_sentiment < -0.2 else 'warning'),
+                'top_positive': list(set(all_pos_keywords))[:5],
+                'top_negative': list(set(all_neg_keywords))[:3],
+            }
+            tour_data['aspect_summary'] = aspect_summary
+        
+        tours_with_sentiment.append(tour_data)
+    
+    # Phân trang
+    paginator = Paginator(tours_with_sentiment, 12)
+    page_number = request.GET.get('page')
+    tours = paginator.get_page(page_number)
+    
+    context = {
+        'tours': tours,
+        'total_tours': paginator.count,
+    }
+    return render(request, 'travel/all_tours.html', context)
 
 #--Tram--#
 #accountProfile
@@ -280,7 +347,7 @@ def home(request):
     def get_featured_tours(cat_slug=None):
         qs = TourPackage.objects.select_related('destination', 'category', 'recommendation').filter(is_active=True)
         if cat_slug: qs = qs.filter(category__slug=cat_slug)
-        return list(qs[:12])
+        return list(qs[:12])  # Hiển thị 12 tour trên trang chủ
 
     if category_slug:
         featured_tours = get_featured_tours(category_slug)
@@ -427,12 +494,20 @@ def tour_detail(request, tour_slug):
     tour = get_object_or_404(TourPackage, slug=tour_slug)
     
     # Lấy dữ liệu từ hàm trong Model
-    nearby_data = tour.get_nearby_data() 
+    nearby_data = tour.get_nearby_data()
+    
+    # Lấy reviews với pagination
+    reviews_list = tour.reviews.all().order_by('-created_at')
+    reviews_paginator = Paginator(reviews_list, 10)  # 10 reviews per page
+    reviews_page = request.GET.get('reviews_page', 1)
+    reviews = reviews_paginator.get_page(reviews_page)
     
     context = {
         'tour': tour,
         'weather_info': nearby_data.get('weather'), 
         'related_tours': TourPackage.objects.filter(category=tour.category).exclude(id=tour.id)[:4],
+        'reviews': reviews,
+        'total_reviews': reviews_paginator.count,
     }
     return render(request, 'travel/tour_detail.html', context)
 
@@ -440,10 +515,9 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 import json
 @require_POST
-def api_submit_tour_review(request):
+def api_submit_tour_review(request, tour_id):
     try:
         data = json.loads(request.body)
-        tour_id = data.get('tour_id')
         tour = get_object_or_404(TourPackage, id=tour_id)
 
         # 1. LƯU REVIEW MỚI
@@ -725,7 +799,7 @@ def api_search(request):
                 matching_destinations.append(dest)
 
         matching_destinations.sort(
-            key=lambda x: x.recommendation.overall_score if x.recommendation else 0,
+            key=lambda x: getattr(x.recommendation, 'overall_score', 0) if hasattr(x, 'recommendation') and x.recommendation else 0,
             reverse=True
         )
         matching_destinations = matching_destinations[:10]
@@ -879,7 +953,7 @@ def api_submit_review(request):
         neg_keywords = []
         if comment:
             try:
-                sentiment_score, pos_keywords, neg_keywords = analyze_sentiment(comment)
+                sentiment_score, pos_keywords, neg_keywords, _ = analyze_sentiment(comment)
             except Exception as e:
                 logger.warning(f"Sentiment analysis failed: {e}")
                 # Continue without sentiment if analysis fails

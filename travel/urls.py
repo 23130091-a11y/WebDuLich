@@ -15,12 +15,10 @@ urlpatterns = [
 
     path('search/', views.search, name='search'),
 
-    path('api/tour/<int:tour_id>/review/', views.api_submit_review, name='api_submit_review'),
-    
-    path('api/review/', views.api_submit_tour_review, name='api_submit_tour_review'),
+    # Tour review API (specific path)
+    path('api/tour/<int:tour_id>/review/', views.api_submit_tour_review, name='api_submit_tour_review'),
 
     # Thêm route cho destination detail
-    # Sửa lại chỗ này
     path('destination/<int:destination_id>/', views.destination_detail, name='destination_detail'),
     path('destinations/', views.destination_list, name='destination_list'), # chưa sd
 
@@ -31,7 +29,7 @@ urlpatterns = [
     path('api/search-history/', views.api_search_history, name='api_search_history'),
     path('api/search-history/delete/', views.api_delete_search_history, name='api_delete_search_history'),
 
-    # Review APIs (User-Generated Content)
+    # Review APIs (User-Generated Content) - Destination reviews
     path('api/review/', views.api_submit_review, name='api_submit_review'),
     path('api/review/vote/', views.api_vote_review, name='api_vote_review'),
     path('api/review/report/', views.api_report_review, name='api_report_review'),
@@ -46,5 +44,8 @@ urlpatterns = [
     path('favorite/toggle-dest/<int:dest_id>/', views.toggle_destination_favorite, name='toggle_destination_favorite'),
     
     path('favorite/toggle-tour/<int:tour_id>/', views.toggle_tour_favorite, name='toggle_tour_favorite'),
+
+    # URL hiển thị tất cả tour
+    path('tours/', views.all_tours, name='all_tours'),
 
 ]
