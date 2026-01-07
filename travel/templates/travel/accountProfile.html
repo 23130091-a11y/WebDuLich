@@ -197,14 +197,14 @@
                     <h6 class="text-uppercase text-muted small fw-bold mb-3">Thông tin cá nhân</h6>
 
                     <div class="form-group-row">
-                        <div class="form-label-col">Họ (Last Name)</div>
+                        <div class="form-label-col">Họ</div>
                         <div class="form-input-col">
                             <input type="text" name="last_name" class="travel-input" value="{{ u_form.last_name.value|default:'' }}">
                         </div>
                     </div>
 
                     <div class="form-group-row">
-                        <div class="form-label-col">Tên (First Name)</div>
+                        <div class="form-label-col">Tên</div>
                         <div class="form-input-col">
                             <input type="text" name="first_name" class="travel-input" value="{{ u_form.first_name.value|default:'' }}">
                         </div>
@@ -243,13 +243,15 @@
     </form>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const access = localStorage.getItem("access");
     const userRaw = localStorage.getItem("user");
 
     if (!access || !userRaw) {
-        alert("Bạn chưa đăng nhập");
+        // alert("Bạn chưa đăng nhập");
         window.location.href = "/";
         return;
     }
@@ -259,7 +261,7 @@ document.addEventListener("DOMContentLoaded", function () {
         user = JSON.parse(userRaw);
     } catch (e) {
         localStorage.clear();
-        alert("Dữ liệu đăng nhập lỗi, vui lòng đăng nhập lại");
+        // alert("Dữ liệu đăng nhập lỗi, vui lòng đăng nhập lại");
         window.location.href = "/";
         return;
     }
@@ -290,7 +292,7 @@ function stringToColor(str){
 async function loadProfile() {
     const token = localStorage.getItem("access");
     if (!token) {
-        alert("Bạn chưa đăng nhập");
+        // alert("Bạn chưa đăng nhập");
         window.location.href = "/";
         return;
     }
@@ -302,7 +304,7 @@ async function loadProfile() {
     });
 
     if (!res.ok) {
-        alert("Token hết hạn");
+        // alert("Token hết hạn");
         return;
     }
 
@@ -311,11 +313,26 @@ async function loadProfile() {
     document.getElementById("profileUsername").value = data.username;
     document.getElementById("profileEmail").value = data.email;
 
-    document.querySelector("input[name='first_name']").value = data.first_name || "";
-    document.querySelector("input[name='last_name']").value = data.last_name || "";
-    document.querySelector("input[name='phone']").value = data.phone || "";
-    document.querySelector("input[name='birthday']").value = data.birthday || "";
-    document.querySelector("input[name='profession']").value = data.profession || "";
+    const setInput = (name, val) =>{
+        const input = document.querySelector(`input[name='${name}']`);
+        if(input){
+            input.value = val || "";
+            input.defaultValue= val || "";
+        }
+    };
+
+    setInput('first_name', data.first_name);
+    setInput('last_name', data.last_name);
+    setInput('phone', data.phone);
+    setInput('birthday', data.birthday);
+    setInput('profession', data.profession);
+
+
+    // document.querySelector("input[name='first_name']").value = data.first_name || "";
+    // document.querySelector("input[name='last_name']").value = data.last_name || "";
+    // document.querySelector("input[name='phone']").value = data.phone || "";
+    // document.querySelector("input[name='birthday']").value = data.birthday || "";
+    // document.querySelector("input[name='profession']").value = data.profession || "";
 }
 
 document.addEventListener("DOMContentLoaded", loadProfile);
@@ -326,19 +343,95 @@ document.addEventListener("DOMContentLoaded", loadProfile);
 <script>
 const form = document.querySelector("form");
 
+const submitBtn = form.querySelector('button[type="submit"]');
+
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    const firstName = form.first_name.value.trim();
+    const lastName = form.last_name.value.trim();
+    const phone = form.phone.value.trim();
+    const birthday = form.birthday.value;
+    const profession = form.profession.value.trim();
+
+    const isAllEmpty = !firstName && !lastName && !phone && !birthday && !profession;
+    if(isAllEmpty){
+        Swal.fire({
+            title: 'Hồ sơ trống!',
+            text: 'Bạn cần nhập ít nhất một thông tin để lưu.',
+            icon: 'warning',
+            confirmButtonText:'Đã hiểu',
+            confirmButtonColor: '#0d6efd'
+        });
+        return;
+    }
+
+    const isChanged=
+        firstName !== form.first_name.defaultValue ||
+        lastName !== form.last_name.defaultValue ||
+        phone !== form.phone.defaultValue ||
+        birthday !== form.birthday.defaultValue ||
+        profession !== form.profession.defaultValue;
+
+    if (!isChanged) {
+        Swal.fire({
+            title: 'Chưa có thay đổi',
+            text: 'Bạn chưa chỉnh sửa gì cả.',
+            icon: 'info',
+            confirmButtonText: 'Kiểm tra lại',
+            confirmButtonColor: '#0d6efd'
+        });
+        return;
+    }
+
+    if(form.first_name.defaultValue && !firstName){
+        Swal.fire({
+            title: 'Thiếu thông tin!',
+            text: 'Vui lòng nhập họ của bạn.',
+            icon: 'warning',
+            confirmButtonText:'Đã hiểu',
+            confirmButtonColor: '#0d6efd'
+        });
+        return;
+    }
+
+    if(form.last_name.defaultValue && !lastName){
+        Swal.fire({
+            title: 'Thiếu thông tin!',
+            text: 'Vui lòng nhập tên của bạn.',
+            icon: 'warning',
+            confirmButtonText:'Đã hiểu',
+            confirmButtonColor: '#0d6efd'
+        });
+        return;
+    }
+
+    if(form.phone.defaultValue && !phone){
+        Swal.fire({
+            title: 'Thiếu thông tin!',
+            text: 'Vui lòng nhập số điện thoại của bạn.',
+            icon: 'warning',
+            confirmButtonText:'Đã hiểu',
+            confirmButtonColor: '#0d6efd'
+        });
+        return;
+    }
+
+    // 1. Hiệu ứng Loading
+    const originalBtnText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang lưu...';
+    submitBtn.disabled = true;
 
     const token = localStorage.getItem("access");
 
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
     const payload = {
-        first_name: form.first_name.value,
-        last_name: form.last_name.value,
-        phone: form.phone.value,
-        birthday: form.birthday.value||null,
-        profession: form.profession.value,
+        first_name: firstName,
+        last_name: lastName,
+        phone: phone,
+        birthday: birthday || null,
+        profession: profession,
     };
 
     try {
@@ -353,18 +446,59 @@ form.addEventListener("submit", async (e) => {
         });
 
         if (res.ok) {
-            alert("Lưu thông tin thành công!");
+            Swal.fire({
+                title: 'Thành công!',
+                text: 'Thông tin hồ sơ đã được cập nhật.',
+                icon: 'success',
+                confirmButtonText: 'Tuyệt vời',
+                confirmButtonColor: '#0d6efd', // Màu xanh giống theme web
+            }).then((result) => {
+                // Sau khi user bấm OK thì mới reload
+                if (result.isConfirmed) {
+                    window.location.reload();
+                }
+            });
 
-            window.location.reload();
         } else {
 
-            const errorText = await res.text();
-            console.error("Lỗi server:", errorText);
-            alert("Lỗi: " + errorText);
+            let errorMessage = "";
+
+            try {
+
+                const errorData = await res.json();
+
+
+
+                for (const [key, value] of Object.entries(errorData)) {
+
+                    const fieldName = key.charAt(0).toUpperCase() + key.slice(1);
+                    errorMessage += `<b>${fieldName}:</b> ${value}<br/>`;
+                }
+            } catch (e) {
+                // Nếu server không trả về JSON mà trả về text lỗi (HTML lỗi)
+                errorMessage = "Có lỗi xảy ra, vui lòng thử lại.";
+            }
+
+            Swal.fire({
+                title: 'Cập nhật thất bại!',
+                html: errorMessage,
+                icon: 'error',
+                confirmButtonText: 'Đóng'
+            });
         }
     } catch (err) {
-        console.error("Lỗi mạng:", err);
-        alert("Có lỗi xảy ra khi kết nối tới server.");
+        // --- LỖI MẠNG / CODE JS ---
+        console.error("Lỗi:", err);
+        Swal.fire({
+            title: 'Lỗi hệ thống',
+            text: 'Không thể kết nối đến server. Vui lòng kiểm tra đường truyền.',
+            icon: 'warning',
+            confirmButtonText: 'OK'
+        });
+    } finally {
+        // 2. Tắt hiệu ứng Loading: Trả lại nút như cũ dù thành công hay thất bại
+        submitBtn.innerHTML = originalBtnText;
+        submitBtn.disabled = false;
     }
 });
 </script>
