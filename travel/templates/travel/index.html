@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="vi">
+{% extends 'travel/baseIndex.html' %}
 
 {% load static %}
 
@@ -7,84 +6,7 @@
 
 {% load currency_filters %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Web Du Lịch</title>
-
-    <!-- CSS thư viện -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- CSS custom -->
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link rel="stylesheet" href="{% static 'css/tour.css' %}">
-
-</head>
-
-<body>
-<header class="header sticky-top bg-white shadow-sm">
-    <div class="container">
-        <nav class="navbar navbar-expand-lg px-4 py-2">
-            <a class="navbar-brand fw-bold text-primary" href="{% url 'travel:home' %}">
-                <i class="fa-solid fa-plane-departure me-2"></i>Du Lịch Việt
-            </a>
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link active fw-bold" href="{% url 'travel:home' %}">
-                        <i class="fa-solid fa-home me-1"></i>Trang chủ
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'travel:search' %}">
-                        <i class="fa-solid fa-search me-1"></i>Tìm kiếm
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#recommend-section">
-                        <i class="fa-solid fa-star me-1"></i>Gợi ý
-                    </a>
-                </li>
-            </ul>
-
-            <!-- Khi chưa đăng nhập -->
-            <div id="authButtons" class="ms-auto d-flex align-items-center gap-2">
-                <button class="btn btn-outline-primary btn-sm" id="showLoginBtn">
-                    <i class="fa-solid fa-right-to-bracket me-1"></i>Đăng nhập
-                </button>
-                <button class="btn btn-primary btn-sm" id="showRegisterBtn">
-                    <i class="fa-solid fa-user-plus me-1"></i>Đăng ký
-                </button>
-            </div>
-
-            <!-- Khi đã đăng nhập -->
-            <div id="userInfo" class="ms-auto d-flex align-items-center d-none">
-                <div class="dropdown">
-                    <button class="btn btn-light dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-person-circle fs-4 me-2 text-primary"></i>
-                        <span id="userDisplayName" class="fw-semibold"></span>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><span class="dropdown-item-text text-muted small" id="userEmail"></span></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{% url 'travel:profile' %}"><i class="fa-solid fa-user me-2"></i>Tài khoản</a></li>
-                        <li>
-                            <a class="dropdown-item" href="{% url 'travel:favorite_list' %}">
-                                <i class="fa-solid fa-heart me-2 text-danger"></i>Yêu thích
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="#" id="logoutBtn"><i class="fa-solid fa-sign-out me-2"></i>Đăng xuất</a></li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </div>
-</header>
-
+{% block content %}
 <main>
     <!-- Banner -->
     <section class="hero position-relative text-center">
@@ -181,71 +103,37 @@
         </div>
     </section>
 
-    <!-- Danh mục du lịch -->
     <section id="categorySection" class="categories bg-light">
         <div class="container-fluid text-center py-5">
-            <h3 class="fw-bold mb-5">Danh Mục Khám Phá</h3>
-            <div class="row g-4 justify-content-center">
+            <h3 class="fw-bold mb-5">Khám phá theo danh mục</h3>
+            
+            <div class="row g-4 justify-content-center flex-md-wrap flex-nowrap overflow-auto pb-3">
                 
-                <div class="col-6 col-sm-4 col-md-2">
-                    <a href="{% url 'travel:category_filter' %}?category={{ 'Du lịch và biển đảo'|urlencode }}" class="text-decoration-none text-dark d-block category-link">                        <i class="fa-solid fa-umbrella-beach fa-2x text-info"></i>
-                        <p class="mt-3 fw-semibold">Biển & Đảo</p>
-                    </a>
-                </div>
-                
-                <div class="col-6 col-sm-4 col-md-2">
-                    <a href="{% url 'travel:category_filter' %}?category={{ 'Núi & Cao nguyên'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
-                        <i class="fa-solid fa-mountain fa-2x text-info"></i>
-                        <p class="mt-3 fw-semibold">Núi &nbsp;& Cao nguyên</p>
-                    </a>
-                </div>
-                
-                <div class="col-6 col-sm-4 col-md-2">
-                    <a href="{% url 'travel:category_filter' %}?category={{ 'Văn hóa - Lịch sử'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
-                        <i class="fa-solid fa-landmark fa-2x text-info"></i>
-                        <p class="mt-3 fw-semibold">Văn hóa &nbsp;- Lịch sử</p>
-                    </a>
-                </div>
-                
-                <div class="col-6 col-sm-4 col-md-2">
-                    <a href="{% url 'travel:category_filter' %}?category={{ 'Du lịch - Sinh thái'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
-                        <i class="fa-solid fa-leaf fa-2x text-info"></i>
-                        <p class="mt-3 fw-semibold">Du lịch &nbsp;- Sinh thái</p>
-                    </a>
-                </div>
-                
-                <div class="col-6 col-sm-4 col-md-2">
-                    <a href="{% url 'travel:category_filter' %}?category={{ 'Ẩm thực - chợ đêm'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
-                        <i class="fa-solid fa-utensils fa-2x text-info"></i>
-                        <p class="mt-3 fw-semibold">Ẩm thực &nbsp;- Chợ đêm</p>
-                    </a>
-                </div>
-                
-                <div class="col-6 col-sm-4 col-md-2">
-                    <a href="{% url 'travel:category_filter' %}?category={{ 'Lễ hội - sự kiện'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
-                        <i class="fa-solid fa-gift fa-2x text-info"></i>
-                        <p class="mt-3 fw-semibold">Lễ hội &nbsp;- Sự kiện</p>
-                    </a>
-                </div>
-                
-                <div class="col-6 col-sm-4 col-md-2">
-                    <a href="{% url 'travel:category_filter' %}?category={{ 'Nghỉ dưỡng - thư giãn'|urlencode }}" class="text-decoration-none text-dark d-block category-link">
-                        <i class="fa-solid fa-hotel fa-2x text-info"></i>
-                        <p class="mt-3 fw-semibold">Nghỉ dưỡng</p>
-                    </a>
-                </div>
+                {% for cat in categories %}
+                    <div class="col-6 col-sm-4 col-md-2">
+                        <div class="card h-100 border-0 shadow-sm p-3 category-card d-flex flex-column align-items-center justify-content-center">
+                            <a href="{% url 'travel:category_detail' slug=cat.slug %}" class="text-decoration-none text-center">
+                                <div class="icon-wrapper mb-3">
+                                    <i class="fa-solid {{ cat.icon|default:'fa-map-marker-alt' }} fa-3x text-info"></i>
+                                </div>
+                                <p class="mt-2 fw-semibold mb-0" style="font-size: 0.9rem; line-height: 1.2;">{{ cat.name }}</p>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
 
             </div>
         </div>
     </section>
 
+
     <!-- Thêm phần đề xuất tour của Hạnh -->
-    {% if recommendations %}
-    <div id="recommendationsSection" class="recommendations-section mt-5">
+    {% comment %} {% if recommendation %}
+    <div id="recommendationsSection" class="recommendation-section mt-5">
         <h3 class="fw-bold mb-3">Đề xuất tour dành riêng cho bạn</h3>
 
         <div class="row g-4">
-            {% for tour in recommendations %}
+            {% for tour in recommendation %}
             <div class="col-lg-3 col-md-4 col-sm-6">
                 <a href="{% url 'travel:tour_detail' tour_slug=tour.slug %}"
                    class="card tour-card shadow-sm border-0 rounded-xl overflow-hidden d-flex flex-column h-100">
@@ -297,144 +185,216 @@
             </div>
             {% endfor %}
         </div>
-
+    
     </div>
-    {% endif %}
+    {% endif %} {% endcomment %}
 
     <!-- Code của Thanh -->
     <!-- Gợi ý cá nhân hóa -->
-    {% if personalized_destinations %}
-    <section class="recommend py-5 bg-white" id="personalized-section">
-        <div class="container">
-            <h2 class="fw-bold mb-3 text-center">
-                <i class="fa-solid fa-heart text-primary me-2"></i>Dành riêng cho bạn
-            </h2>
-            <p class="text-muted mb-4 text-center">Gợi ý dựa trên sở thích của bạn</p>
 
-            <div class="row g-4">
-                {% for dest in personalized_destinations %}
-                <div class="col-md-4">
-                    <div class="card h-100 shadow-sm border-primary">
-                        <div class="position-relative">
-                            {% if dest.images.first %}
-                            <img src="{{ dest.images.first.image.url }}"
-                                 class="card-img-top"
-                                 alt="{{ dest.name }}"
-                                 style="height:200px;object-fit:cover;">
-                            {% else %}
-                            <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height:200px;">
-                                <i class="fa-solid fa-image fa-3x"></i>
-                            </div>
-                            {% endif %}
+    {% if personalized_destinations or personalized_tours %}
+        <section class="recommend py-5 bg-white" id="personalized-section">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold mb-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-primary me-2"></i>Dành riêng cho {{ request.user.username|default:"bạn" }}
+                    </h2>
+                    <p class="text-muted">Hệ thống AI đã phân tích sở thích để đưa ra những gợi ý phù hợp nhất</p>
+                </div>
 
-                            <span class="badge bg-primary position-absolute top-0 end-0 m-2">
-                            <i class="fa-solid fa-heart"></i> Phù hợp với bạn
-                        </span>
-                        </div>
-
-                        <div class="card-body">
-                            <h5 class="card-title">{{ dest.name }}</h5>
-                            <p class="text-muted small">
-                                <i class="fa-solid fa-location-dot"></i> {{ dest.location }}
-                            </p>
-
-                            <div class="mb-2">
-                            <span class="text-warning">
-                                {% with rating=dest.avg_rating|floatformat:0 %}
-                                {% for i in "12345" %}
-                                    {% if forloop.counter <= rating %}★{% else %}☆{% endif %}
-                                {% endfor %}
+                {% if personalized_destinations %}
+                <div class="mb-5">
+                    <h4 class="fw-bold mb-4"><i class="fa-solid fa-map-location-dot text-primary me-2"></i>Địa điểm bạn sẽ thích</h4>
+                    <div class="row g-4">
+                        {% for dest in personalized_destinations %}
+                        <div class="col-md-4">
+                            <div class="card h-100 shadow-sm border-0 position-relative card-hover" style="border-radius: 15px; overflow: hidden;">
+                                <span class="badge bg-primary position-absolute top-0 end-0 m-3 shadow-sm">
+                                    <i class="fa-solid fa-heart"></i> Gợi ý AI
+                                </span>
+                                
+                                {% with db_img=dest.images.all.first %}
+                                    {% if db_img %}
+                                        <img src="{{ db_img.image.url }}" class="card-img-top" alt="{{ dest.name }}" style="height: 220px; object-fit: cover;">
+                                    {% elif dest.image %}
+                                        <img src="{{ dest.image.url }}" class="card-img-top" alt="{{ dest.name }}" style="height: 220px; object-fit: cover;">
+                                    {% else %}
+                                        <img src="{% static 'images/'|add:dest.slug|add:'/'|add:dest.slug|add:'.jpg' %}" 
+                                            class="card-img-top" style="height: 220px; object-fit: cover;"
+                                            onerror="this.src='{% static 'images/default-destination.jpg' %}';">
+                                    {% endif %}
                                 {% endwith %}
-                            </span>
-                                <small class="text-muted">
-                                    ({{ dest.recommendation.total_reviews|default:0 }} đánh giá)
-                                </small>
-                            </div>
 
-                            <a href="{% url 'travel:destination_detail' dest.id %}"
-                               class="btn btn-outline-primary btn-sm w-100">
-                                Xem chi tiết
-                            </a>
+                                <div class="card-body">
+                                    <h5 class="card-title fw-bold mb-1">{{ dest.name }}</h5>
+                                    <p class="text-muted small mb-3"><i class="fa-solid fa-location-dot"></i> {{ dest.location }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="text-warning small">
+                                            <i class="fa-solid fa-star"></i> {{ dest.avg_rating|default:"5.0" }}
+                                        </div>
+                                        <a href="{% url 'travel:destination_detail' dest.id %}" class="btn btn-primary btn-sm px-4 rounded-pill">Khám phá</a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+                        {% endfor %}
                     </div>
                 </div>
-                {% endfor %}
+                {% endif %}
+
+                <hr class="my-5 opacity-25">
+
+                {% if personalized_tours %}
+                <div>
+                    <h4 class="fw-bold mb-4"><i class="fa-solid fa-suitcase-rolling text-danger me-2"></i>Tour dành cho bạn</h4>
+                    <div class="row g-4">
+                        {% for tour in personalized_tours %}
+                        <div class="col-lg-6">
+                            <div class="card h-100 shadow-sm border-0 bg-light card-hover" style="border-radius: 12px; transition: transform 0.3s;">
+                                <div class="row g-0 h-100">
+                                    <div class="col-4 p-2">
+                                        {% if tour.image_main %}
+                                            <img src="{{ tour.image_main.url }}" class="img-fluid rounded h-100" style="object-fit: cover; min-height: 120px;">
+                                        {% else %}
+                                            {% with t_dest_img=tour.destination.images.all.first %}
+                                                {% if t_dest_img %}
+                                                    <img src="{{ t_dest_img.image.url }}" class="img-fluid rounded h-100" style="object-fit: cover; min-height: 120px;">
+                                                {% else %}
+                                                    <img src="{% static 'images/'|add:tour.destination.slug|add:'/'|add:tour.destination.slug|add:'.jpg' %}" 
+                                                        class="img-fluid rounded h-100" style="object-fit: cover; min-height: 120px;"
+                                                        onerror="this.src='{% static 'images/default-tour.jpg' %}';">
+                                                {% endif %}
+                                            {% endwith %}
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-8">
+                                        <div class="card-body d-flex flex-column h-100">
+                                            <h6 class="fw-bold mb-1 text-truncate-2">{{ tour.name }}</h6>
+                                            <div class="small text-muted mb-2">
+                                                <i class="fa-solid fa-calendar-day me-1"></i> Khởi hành hàng ngày
+                                            </div>
+                                            <div class="mt-auto d-flex justify-content-between align-items-end">
+                                                <div>
+                                                    <span class="text-danger fw-bold fs-5">{{ tour.price|floatformat:0 }}</span>
+                                                    <small class="text-muted">VND</small>
+                                                </div>
+                                                <a href="{% url 'travel:tour_detail' tour.slug %}" class="btn btn-outline-danger btn-sm rounded-pill px-3">Chi tiết</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
-        </div>
-    </section>
+        </section>
     {% endif %}
 
-    <!-- Địa điểm được gợi ý cao -->
+    <hr class="container m-0">
+
     {% if top_destinations %}
     <section class="recommend py-5 bg-light" id="recommend-section">
         <div class="container">
             <h2 class="fw-bold mb-3 text-center">
-                <i class="fa-solid fa-star text-warning me-2"></i>Địa điểm được gợi ý
+                <i class="fa-solid fa-star text-warning me-2"></i>Địa điểm nổi bật
             </h2>
-            <p class="text-muted mb-4 text-center">Dựa trên đánh giá và phân tích AI</p>
-
+            <p class="text-muted mb-4 text-center">Xếp hạng dựa trên trải nghiệm cộng đồng và phân tích AI</p>
+            
             <div class="row g-4">
                 {% for dest in top_destinations %}
                 <div class="col-md-4">
-                    <div class="card h-100 shadow-sm">
+                    <div class="card h-100 shadow-sm border-0">
                         <div class="position-relative">
-                            {% if dest.images.first %}
-                                <img src="{{ dest.images.first.image.url }}"
-                                     class="card-img-top"
-                                     alt="{{ dest.name }}"
-                                     style="height:200px;object-fit:cover;">
+                            {% if dest.image %}
+                                <img src="{{ dest.image.url }}" class="card-img-top" alt="{{ dest.name }}" style="height: 220px; object-fit: cover;">
+                            {% elif dest.images.all.first %}
+                                <img src="{{ dest.images.all.first.image.url }}" class="card-img-top" alt="{{ dest.name }}" style="height: 220px; object-fit: cover;">
+                            {% else %}
+                                <img src="https://via.placeholder.com/400x250?text=No+Image+Found" class="card-img-top" style="height: 220px; object-fit: cover;">
                             {% endif %}
-
+                            
                             <span class="badge bg-success position-absolute top-0 end-0 m-2">
-                                {% if dest.recommendation %}
-                                    {{ dest.recommendation.overall_score|floatformat:0 }} điểm
-                                {% else %}
-                                    Chưa có điểm
-                                {% endif %}
+                                AI Score: {{ dest.recommendation.overall_score|floatformat:0|default:"90" }}
                             </span>
                         </div>
-
+                        
                         <div class="card-body">
-                            <h5 class="card-title">{{ dest.name }}</h5>
-                            <p class="text-muted small">
-                                <i class="fa-solid fa-location-dot"></i> {{ dest.location }}
-                            </p>
-
-                            <div class="mb-2">
-                            <span class="text-warning">
-                                {% with rating=dest.avg_rating|floatformat:0 %}
-                                {% for i in "12345" %}
-                                    {% if forloop.counter <= rating %}★{% else %}☆{% endif %}
-                                {% endfor %}
-                                {% endwith %}
-                            </span>
-                                <small class="text-muted">
-                                    ({{ dest.recommendation.total_reviews|default:0 }} đánh giá)
-                                </small>
+                            <h5 class="card-title fw-bold">{{ dest.name }}</h5>
+                            <p class="text-muted small"><i class="fa-solid fa-location-dot text-danger"></i> {{ dest.location }}</p>
+                            <p class="card-text small text-secondary mb-3">{{ dest.description|truncatechars:80 }}</p>
+                            <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                                <span class="text-info small fw-bold">
+                                    <i class="fa-solid fa-route"></i> {{ dest.num_tours|default:"0" }} Tours
+                                </span>
+                                <a href="{% url 'travel:destination_detail' dest.id %}" class="btn btn-primary btn-sm px-3">Chi tiết</a>
                             </div>
-
-                            <p class="card-text small">
-                                {{ dest.description|truncatewords:15 }}
-                            </p>
-
-                            <a href="{% url 'travel:destination_detail' dest.id %}"
-                               class="btn btn-outline-primary btn-sm w-100">
-                                Xem chi tiết
-                            </a>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
             </div>
-
-            <div class="text-center mt-4">
-                <a href="{% url 'travel:search' %}" class="btn btn-primary">
-                    Xem tất cả địa điểm
-                </a>
-            </div>
         </div>
     </section>
     {% endif %}
+
+    <section class="featured-tours py-5 bg-white">
+        <div class="container">
+            <h2 class="fw-bold mb-4 text-center">
+                <i class="fa-solid fa-fire text-danger me-2"></i>{{ category_name|default:"Hành trình hấp dẫn" }}
+            </h2>
+            
+            <div class="row g-4">
+                {% for tour in featured_tours %}
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm tour-card-hover" style="border-radius: 12px; overflow: hidden;">
+                        <div class="position-relative overflow-hidden">
+                            {% if tour.image_main %}
+                                <img src="{{ tour.image_main.url }}" class="card-img-top" style="height: 250px; object-fit: cover; transition: 0.3s;">
+                            {% endif %}
+                            
+                            <div class="position-absolute top-0 start-0 m-3">
+                                <span class="badge bg-primary shadow-sm">{{ tour.category.name }}</span>
+                            </div>
+                            
+                            <div class="position-absolute top-0 end-0 m-3">
+                                <button class="btn btn-sm btn-light rounded-circle shadow-sm favorite-btn" data-url="{% url 'travel:toggle_tour_favorite' tour.id %}">
+                                    <i class="{% if request.user in tour.favorites.all %}fa-solid{% else %}fa-regular{% endif %} fa-heart text-danger"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body p-4">
+                            <div class="mb-2">
+                                <span class="badge bg-info-subtle text-info small">
+                                    <i class="fa-solid fa-location-dot"></i> {{ tour.destination.name }}
+                                </span>
+                            </div>
+                            <h5 class="card-title fw-bold text-truncate-2">{{ tour.name }}</h5>
+                            <p class="text-muted small mb-0"><i class="fa-solid fa-clock me-1"></i> {{ tour.duration }}</p>
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                                <div>
+                                    <span class="text-muted small d-block">Giá từ</span>
+                                    <span class="text-danger fw-bold fs-5">{{ tour.price|floatformat:0 }} VND</span>
+                                </div>
+                                <a href="{% url 'travel:tour_detail' tour.slug %}" class="btn btn-primary rounded-pill px-4">Đặt ngay</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5">
+                    <img src="/static/images/empty-box.png" alt="Empty" style="width: 100px; opacity: 0.5;">
+                    <p class="text-muted mt-3">Hiện chưa có tour nào trong mục này.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
 
     <section class="recommend py-5">
         <div class="container-fluid text-center">
@@ -472,64 +432,6 @@
     </section>
 </main>
 
-<footer class="footer pt-5 pb-3">
-        <div class="container">
-            <div class="row footer-container">
-                <div class="col-lg-4 col-md-6 mb-4 footer-col">
-                    <h3 class="fw-bold text-white">Du Lịch Việt</h3>
-                    <p class="mt-3 pe-4">Đồng hành cùng bạn trên mọi nẻo đường. Khám phá vẻ đẹp Việt Nam và thế giới cùng những trải nghiệm tuyệt vời nhất.</p>
-                    <div class="contact-info mt-3">
-                        <p class="mb-2"><i class="fa-solid fa-location-dot me-2"></i> 123 Nguyễn Văn Cừ, Q.5, TP.HCM</p>
-                        <p class="mb-2"><i class="fa-solid fa-phone me-2"></i> 1900 1000 (8:00 - 22:00)</p>
-                        <p class="mb-2"><i class="fa-solid fa-envelope me-2"></i> support@dulichviet.com</p>
-                        <div class="footer-icons mt-4">
-                            <a href="#" class="text-white me-2"><i class="fa-brands fa-facebook-f"></i></a>
-                            <a href="#" class="text-white me-2"><i class="fa-brands fa-instagram"></i></a>
-                            <a href="#" class="text-white me-2"><i class="fa-brands fa-tiktok"></i></a>
-                            <a href="#" class="text-white"><i class="fa-brands fa-youtube"></i></a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-2 col-md-6 mb-4 footer-col">
-                    <h4 class="fw-bold mb-3">HỖ TRỢ</h4>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="#">Hướng dẫn đặt tour</a></li>
-                        <li class="mb-2"><a href="#">Chính sách hoàn hủy</a></li>
-                        <li class="mb-2"><a href="#">Câu hỏi thường gặp</a></li>
-                        <li class="mb-2"><a href="#">Chính sách bảo mật</a></li>
-                        <li class="mb-2"><a href="#">Liên hệ hỗ trợ</a></li>
-                    </ul>
-                </div>
-
-                <div class="col-lg-2 col-md-6 mb-4 footer-col">
-                    <h4 class="fw-bold mb-3">CÔNG TY</h4>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="#">Giới thiệu</a></li>
-                        <li class="mb-2"><a href="#">Tuyển dụng</a></li>
-                        <li class="mb-2"><a href="#">Tin tức du lịch</a></li>
-                        <li class="mb-2"><a href="#">Đối tác liên kết</a></li>
-                    </ul>
-                </div>
-
-                <div class="col-lg-4 col-md-6 mb-4 footer-col">
-                    <h4 class="fw-bold mb-3">ĐĂNG KÝ NHẬN TIN</h4>
-                    <p>Nhận thông tin về các tour giảm giá và ưu đãi mới nhất từ chúng tôi.</p>
-
-                    <form class="newsletter-form input-group mt-3">
-                        <input type="email" class="form-control" placeholder="Email của bạn..." aria-label="Email">
-                        <button class="btn btn-light text-primary fw-bold" type="button">
-                            <i class="fa-solid fa-paper-plane"></i>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="copyright text-center mt-4 pt-3 border-top border-white-50">
-            <p class="mb-0 text-white-50">© 2025 Du Lịch Việt. All rights reserved.</p>
-        </div>
-    </footer>
 
 <!-- Thanh sửa lại tối ưu phần đăng ký và đăng nhập -->
 <!-- Modal đăng ký/đăng nhập -->
@@ -674,7 +576,6 @@
         </div>
     </div>
 </div>
-</body>
 
 <script>
     const destinations = [
@@ -843,5 +744,4 @@
 
 <!-- JS custom -->
 <script src="{% static 'js/index.js' %}"></script>
-
-</html>
+{% endblock %}
