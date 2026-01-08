@@ -7,8 +7,8 @@ from taggit.managers import TaggableManager
 from django.utils.text import slugify
 from django.conf import settings
 
-from WebDuLich.travel.services.nearby_service import get_nearby_hotels
-from WebDuLich.travel.services.nearby_service import get_nearby_restaurants
+from travel.services.nearby_service import get_nearby_hotels
+from travel.services.nearby_service import get_nearby_restaurants
 User = settings.AUTH_USER_MODEL
 
 # ----------------------------------------------------------------------
@@ -305,6 +305,8 @@ class TourReview(models.Model):
     
     # Thêm cái này để làm tính năng Like/Hữu ích mà bạn muốn
     helpful_count = models.PositiveIntegerField(default=0)
+    not_helpful_count = models.PositiveIntegerField(default=0)
+    is_verified = models.BooleanField(default=False)
 
     reports = GenericRelation('ReviewReport', related_query_name='tour_review')
     not_helpful_count = models.PositiveIntegerField(default=0, verbose_name="Không hữu ích")
