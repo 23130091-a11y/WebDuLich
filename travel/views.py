@@ -16,7 +16,7 @@ from django_ratelimit.decorators import ratelimit
 from users.models import TravelPreference
 from .services import get_weather_forecast, get_route, get_location_coordinates, get_nearby_hotels, get_nearby_restaurants, get_current_weather
 from django.core.paginator import Paginator
-from .models import TourPackage, Category, Destination, SearchHistory, Review, Favorite, TourReview
+from .models import TourPackage, Category, Destination, SearchHistory, Review, Favorite, TourReview, TourPackage
 import bleach
 
 from .cache_utils import get_cache_key, get_or_set_cache
@@ -490,24 +490,43 @@ def category_detail(request, slug):
 
 
 # --- 4. VIEW CHI TIẾT TOUR ---
+from django.core.paginator import Paginator 
+
 def tour_detail(request, tour_slug):
     tour = get_object_or_404(TourPackage, slug=tour_slug)
     
-    # Lấy dữ liệu từ hàm trong Model
-    nearby_data = tour.get_nearby_data()
+    # 1. Lấy danh sách review liên quan đến tour này
+    # 'reviews' là related_name bạn đặt trong ForeignKey của Model TourReview
+    all_reviews = tour.reviews.all().order_by('-created_at')
     
-    # Lấy reviews với pagination
-    reviews_list = tour.reviews.all().order_by('-created_at')
-    reviews_paginator = Paginator(reviews_list, 10)  # 10 reviews per page
-    reviews_page = request.GET.get('reviews_page', 1)
-    reviews = reviews_paginator.get_page(reviews_page)
+    # 2. Thêm phân trang (ví dụ: 5 nhận xét mỗi trang)
+    paginator = Paginator(all_reviews, 5)
+    page_number = request.GET.get('reviews_page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Lấy dữ liệu từ hàm trong Model
+    nearby_data = tour.get_nearby_data() 
+
+    reported_ids = []
+    if request.user.is_authenticated:
+        # Lấy ContentType của TourReview
+        ct = ContentType.objects.get_for_model(TourReview)
+        # Lấy danh sách ID các review mà user này đã report
+        reported_ids = ReviewReport.objects.filter(
+            reporter_user=request.user,
+            content_type=ct,
+            object_id__in=[r.id for r in page_obj]
+        ).values_list('object_id', flat=True)
     
     context = {
         'tour': tour,
         'weather_info': nearby_data.get('weather'), 
         'related_tours': TourPackage.objects.filter(category=tour.category).exclude(id=tour.id)[:4],
-        'reviews': reviews,
-        'total_reviews': reviews_paginator.count,
+        
+        # 3. Đưa dữ liệu review vào context để Template nhận được
+        'reviews': page_obj,
+        'total_reviews': all_reviews.count(),
+        'reported_ids': reported_ids,
     }
     return render(request, 'travel/tour_detail.html', context)
 
@@ -515,41 +534,76 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 import json
 @require_POST
-def api_submit_tour_review(request, tour_id):
+@require_POST
+def api_submit_tour_review(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'error': 'Vui lòng đăng nhập để đánh giá'}, status=403)
+
     try:
         data = json.loads(request.body)
         tour = get_object_or_404(TourPackage, id=tour_id)
+        
+        user = request.user if request.user.is_authenticated else None
+        
+        is_verified_user = False
+        author_name = data.get('author_name', 'Khách')
 
-        # 1. LƯU REVIEW MỚI
+        # --- LOGIC XÁC MINH (VERIFICATION) ---
+        is_verified_purchase = False
+        
+        if user:
+            # 1. Kiểm tra "Khách hàng thực tế" (Đã mua và hoàn thành tour)
+            # Giả sử bạn có app Booking và model Booking
+            is_verified_purchase = False
+            # Booking.objects.filter(
+            #     user=user, 
+            #     tour=tour, 
+            #     status='completed' # Chỉ tính đơn đã đi xong
+            # ).exists()
+            if not author_name or author_name == 'Khách':
+                author_name = user.get_full_name() or user.username
+            
+            # 2. Kiểm tra "Tài khoản chính chủ" (Ví dụ: đã verify email/SĐT)
+            # Tùy thuộc vào logic User Profile của bạn
+            if hasattr(user, 'profile') and user.profile.is_verified:
+                is_verified_user = True
+
+        # --- LƯU REVIEW VỚI CÁC TRƯỜNG MỚI ---
         review = TourReview.objects.create(
             tour=tour,
-            author_name=data.get('author_name', 'Khách'),
+            user=user, # Gán user nếu có
+            author_name=author_name,
             rating=int(data.get('rating', 5)),
-            comment=data.get('comment', '').strip()
+            comment=data.get('comment', '').strip(),
+            # Gán trạng thái xác minh tự động
+            is_verified_purchase=is_verified_purchase,
+            is_verified_user=is_verified_user,
+            status='published' # Mặc định hiển thị, hoặc 'pending' nếu muốn duyệt
         )
 
-        # 2. CẬP NHẬT ĐIỂM TOUR (Đảm bảo .save() vào Database)
-        # Gọi hàm update_rating() chúng ta vừa viết trong Model TourPackage
+        # Cập nhật điểm trung bình của Tour
         tour.update_rating() 
 
-        # 3. TRẢ VỀ JSON (Gửi kèm dữ liệu mới để JS cập nhật giao diện)
         return JsonResponse({
             'success': True,
             'review': {
                 'author_name': review.author_name,
                 'rating': review.rating,
                 'comment': review.comment,
+                'is_verified_purchase': review.is_verified_purchase,
+                'is_verified_user': review.is_verified_user,
                 'created_at': 'Vừa xong'
             },
             'new_stats': {
                 'average_rating': round(tour.average_rating, 1),
                 'total_reviews': tour.total_reviews
-            }
+            },
+            'message': 'Cảm ơn bạn đã đánh giá!'
         })
 
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
-
+    
 # List destination (chưa dùng tới)
 def destination_list(request):
     from django.db.models import F
@@ -733,6 +787,10 @@ def destination_detail(request, destination_id):
 
     # Lấy địa điểm tương tự
     similar_destinations = get_similar_destinations(destination, limit=4)
+    related_packages = TourPackage.objects.filter(destination=destination, is_active=True).order_by('-created_at')[:6]
+
+    nearby_hotels = destination.get_nearby_hotels_data()
+    nearby_restaurants = destination.get_nearby_restaurants_data()
 
     context = {
         'destination': destination,
@@ -747,6 +805,11 @@ def destination_detail(request, destination_id):
         'travel_date': travel_date,
         'from_location': from_location,
         'similar_destinations': similar_destinations,
+        'related_packages': related_packages,
+        'nearby_hotels': nearby_hotels,
+        'nearby_restaurants': nearby_restaurants,
+        'nearby_hotels_json': json.dumps(nearby_hotels),
+        'nearby_restaurants_json': json.dumps(nearby_restaurants),
     }
 
     return render(request, 'travel/destination_detail.html', context)
@@ -1027,91 +1090,98 @@ def api_vote_review(request):
     import json
     from django.db.models import Q
     from .models import Review, TourReview, ReviewVote
+    import traceback
 
-    # 1. Đọc dữ liệu
-    if request.content_type == 'application/json':
+    if request.method == 'POST':
+
+        # 1. Đọc dữ liệu
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body)
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'JSON không hợp lệ'}, status=400)
+        else:
+            data = request.POST
+
+        review_id = data.get('review_id')
+        vote_type = data.get('vote_type')
+
+        is_tour_raw = data.get('is_tour', False)
+        is_tour = is_tour_raw in [True, 'true', 'True', 1, '1'] # Flag phân biệt
+
+        if not review_id or vote_type not in ['helpful', 'not_helpful']:
+            return JsonResponse({'error': 'Tham số không hợp lệ'}, status=400)
         try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'JSON không hợp lệ'}, status=400)
-    else:
-        data = request.POST
-
-    review_id = data.get('review_id')
-    vote_type = data.get('vote_type')
-    is_tour = data.get('is_tour', False) # Flag phân biệt
-
-    if not review_id or vote_type not in ['helpful', 'not_helpful']:
-        return JsonResponse({'error': 'Tham số không hợp lệ'}, status=400)
-
-    try:
-        # 2. Xác định đối tượng Review mục tiêu
-        if is_tour:
-            review = TourReview.objects.get(id=int(review_id))
-            vote_filter = {'tour_review': review}
-        else:
-            review = Review.objects.get(id=int(review_id))
-            vote_filter = {'review': review}
-
-        client_ip = get_client_ip(request)
-        user = request.user if request.user.is_authenticated else None
-
-        # 3. Tìm vote cũ (Tối ưu query theo User hoặc IP)
-        vote_query = Q(user_ip=client_ip)
-        if user:
-            vote_query |= Q(user=user)
-        
-        existing_vote = ReviewVote.objects.filter(vote_query, **vote_filter).first()
-
-        # 4. Xử lý logic cập nhật hoặc tạo mới
-        if existing_vote:
-            old_type = existing_vote.vote_type
-            if old_type == vote_type:
-                return JsonResponse({
-                    'success': True,
-                    'message': 'Bạn đã đánh giá nội dung này rồi',
-                    'helpful_count': review.helpful_count,
-                    'not_helpful_count': review.not_helpful_count,
-                })
-
-            # Đổi loại vote (từ Helpful sang Not Helpful hoặc ngược lại)
-            existing_vote.vote_type = vote_type
-            existing_vote.save()
-
-            if old_type == 'helpful':
-                review.helpful_count = max(0, review.helpful_count - 1)
-                review.not_helpful_count += 1
+            # 2. Xác định đối tượng Review mục tiêu
+            if is_tour:
+                review = TourReview.objects.get(id=int(review_id))
+                vote_filter = {'tour_review': review, 'review': None}
             else:
-                review.not_helpful_count = max(0, review.not_helpful_count - 1)
-                review.helpful_count += 1
-        else:
-            # Tạo mới ReviewVote
-            create_params = {
-                'user': user,
-                'user_ip': client_ip,
-                'vote_type': vote_type,
-                **vote_filter # Tự động điền review=review hoặc tour_review=review
-            }
-            ReviewVote.objects.create(**create_params)
+                review = Review.objects.get(id=int(review_id))
+                vote_filter = {'review': review, 'tour_review': None}
 
-            if vote_type == 'helpful':
-                review.helpful_count += 1
+            client_ip = get_client_ip(request)
+            user = request.user if request.user.is_authenticated else None
+
+            # 3. Tìm vote cũ (Tối ưu query theo User hoặc IP)
+            vote_query = Q(user_ip=client_ip)
+            if user:
+                vote_query |= Q(user=user)
+            
+            existing_vote = ReviewVote.objects.filter(vote_query, **vote_filter).first()
+
+            # 4. Xử lý logic cập nhật hoặc tạo mới
+            if existing_vote:
+                old_type = existing_vote.vote_type
+                if old_type == vote_type:
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Bạn đã đánh giá nội dung này rồi',
+                        'helpful_count': review.helpful_count,
+                        'not_helpful_count': review.not_helpful_count,
+                    })
+
+                # Đổi loại vote (từ Helpful sang Not Helpful hoặc ngược lại)
+                existing_vote.vote_type = vote_type
+                existing_vote.save()
+
+                if old_type == 'helpful':
+                    review.helpful_count = max(0, review.helpful_count - 1)
+                    review.not_helpful_count += 1
+                else:
+                    review.not_helpful_count = max(0, review.not_helpful_count - 1)
+                    review.helpful_count += 1
             else:
-                review.not_helpful_count += 1
+                # Tạo mới ReviewVote
+                create_params = {
+                    'user': user,
+                    'user_ip': client_ip,
+                    'vote_type': vote_type,
+                    **vote_filter # Tự động điền review=review hoặc tour_review=review
+                }
+                ReviewVote.objects.create(**create_params)
 
-        review.save()
+                if vote_type == 'helpful':
+                    review.helpful_count += 1
+                else:
+                    review.not_helpful_count += 1
 
-        return JsonResponse({
-            'success': True,
-            'message': 'Cảm ơn phản hồi của bạn!',
-            'helpful_count': review.helpful_count,
-            'not_helpful_count': review.not_helpful_count,
-        })
+            review.save()
 
-    except (Review.DoesNotExist, TourReview.DoesNotExist):
-        return JsonResponse({'error': 'Nhận xét không tồn tại'}, status=404)
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+            return JsonResponse({
+                'success': True,
+                'message': 'Cảm ơn phản hồi của bạn!',
+                'helpful_count': review.helpful_count,
+                'not_helpful_count': review.not_helpful_count,
+            })
+
+        except (Review.DoesNotExist, TourReview.DoesNotExist):
+            return JsonResponse({'error': 'Nhận xét không tồn tại'}, status=404)
+        except Exception as e:
+            print("---------- LỖI CHI TIẾT ĐÂY RỒI ----------")
+            traceback.print_exc()
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'success': False, 'message': 'Yêu cầu không hợp lệ'}, status=400)
     
 from django.contrib.contenttypes.models import ContentType
 from .models import Review, TourReview, ReviewReport
@@ -1120,71 +1190,76 @@ from .models import Review, TourReview, ReviewReport
 def api_report_review(request):
     import json
     # Xử lý lấy data linh hoạt
-    if request.content_type == 'application/json':
-        try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON'}, status=400)
-    else:
-        data = request.POST
 
-    review_id = data.get('review_id')
-    # Xử lý ép kiểu is_tour vì từ POST data nó có thể là string "true"/"false"
-    is_tour_raw = data.get('is_tour', False)
-    is_tour = is_tour_raw in [True, 'true', '1', 'True']
-    
-    reason = data.get('reason')
-    description = data.get('description', '')
+    if request.method == 'POST':
 
-    # 1. Xác định Model đích
-    TargetModel = TourReview if is_tour else Review
-
-    try:
-        review_obj = TargetModel.objects.get(id=int(review_id))
-        content_type = ContentType.objects.get_for_model(review_obj)
-        client_ip = get_client_ip(request)
-        user = request.user if request.user.is_authenticated else None
-
-        # 2. Check trùng lặp (Cải tiến filter để chính xác hơn)
-        report_query = Q(content_type=content_type, object_id=review_obj.id)
-        if user:
-            # Nếu đã login, check theo User ID
-            user_check = Q(reporter_user=user)
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body)
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'Invalid JSON'}, status=400)
         else:
-            # Nếu khách, check theo IP và đảm bảo record đó cũng là của khách (user is null)
-            user_check = Q(reporter_ip=client_ip, reporter_user__isnull=True)
+            data = request.POST
+
+        review_id = data.get('review_id')
+        # Xử lý ép kiểu is_tour vì từ POST data nó có thể là string "true"/"false"
+        is_tour_raw = data.get('is_tour', False)
+        is_tour = is_tour_raw in [True, 'true', '1', 'True']
         
-        if ReviewReport.objects.filter(report_query & user_check).exists():
-            return JsonResponse({'success': True, 'message': 'Bạn đã báo cáo đánh giá này rồi'})
+        reason = data.get('reason')
+        description = data.get('description', '')
 
-        # 3. Tạo Report
-        ReviewReport.objects.create(
-            content_type=content_type,
-            object_id=review_obj.id,
-            reporter_ip=client_ip,
-            reporter_user=user,
-            reason=reason,
-            description=bleach.clean(description)[:500] if description else ""
-        )
+        # 1. Xác định Model đích
+        TargetModel = TourReview if is_tour else Review
 
-        # 4. Cập nhật đếm và ẩn (Sử dụng F expression để tránh race condition nếu cần)
-        if hasattr(review_obj, 'report_count'):
-            review_obj.report_count += 1
-            # Ngưỡng tự động ẩn
-            if review_obj.report_count >= 3:
-                # Kiểm tra xem Model có thuộc tính status không trước khi gán
-                if hasattr(TargetModel, 'STATUS_PENDING'):
-                    review_obj.status = TargetModel.STATUS_PENDING
-                else:
-                    review_obj.status = 'pending' # Hoặc 'hidden' tùy bạn đặt
-            review_obj.save()
+        try:
+            review_obj = TargetModel.objects.get(id=int(review_id))
+            content_type = ContentType.objects.get_for_model(review_obj)
+            client_ip = get_client_ip(request)
+            user = request.user if request.user.is_authenticated else None
 
-        return JsonResponse({'success': True, 'message': 'Cảm ơn bạn đã báo cáo!'})
+            # 2. Check trùng lặp (Cải tiến filter để chính xác hơn)
+            report_query = Q(content_type=content_type, object_id=review_obj.id)
+            if user:
+                # Nếu đã login, check theo User ID
+                user_check = Q(reporter_user=user)
+            else:
+                # Nếu khách, check theo IP và đảm bảo record đó cũng là của khách (user is null)
+                user_check = Q(reporter_ip=client_ip, reporter_user__isnull=True)
+            
+            if ReviewReport.objects.filter(report_query & user_check).exists():
+                return JsonResponse({'success': True, 'message': 'Bạn đã báo cáo đánh giá này rồi'})
 
-    except (TargetModel.DoesNotExist, ValueError, TypeError):
-        return JsonResponse({'error': 'Đánh giá không tồn tại hoặc ID không hợp lệ'}, status=404)
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+            # 3. Tạo Report
+            ReviewReport.objects.create(
+                content_type=content_type,
+                object_id=review_obj.id,
+                reporter_ip=client_ip,
+                reporter_user=user,
+                reason=reason,
+                description=bleach.clean(description)[:500] if description else ""
+            )
+
+            # 4. Cập nhật đếm và ẩn (Sử dụng F expression để tránh race condition nếu cần)
+            if hasattr(review_obj, 'report_count'):
+                review_obj.report_count += 1
+                # Ngưỡng tự động ẩn
+                if review_obj.report_count >= 3:
+                    # Kiểm tra xem Model có thuộc tính status không trước khi gán
+                    if hasattr(TargetModel, 'STATUS_PENDING'):
+                        review_obj.status = TargetModel.STATUS_PENDING
+                    else:
+                        review_obj.status = 'pending' # Hoặc 'hidden' tùy bạn đặt
+                review_obj.save()
+
+            return JsonResponse({'success': True, 'message': 'Cảm ơn bạn đã báo cáo!'})
+
+        except (TargetModel.DoesNotExist, ValueError, TypeError):
+            return JsonResponse({'error': 'Đánh giá không tồn tại hoặc ID không hợp lệ'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+        
+    return JsonResponse({'success': False, 'message': 'Yêu cầu không hợp lệ'}, status=400)
     
 # Sửa tính điểm
 def update_destination_scores(destination):

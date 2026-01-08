@@ -139,6 +139,55 @@
                                 font-weight: 700;
                                 letter-spacing: -0.02em;
                             }
+                            /* 1. Khung chứa chính: Cho phép cuộn ngang và ẩn thanh cuộn xấu */
+                            .tour-slider-container {
+                                width: 100%;
+                                overflow-x: auto; /* Kích hoạt cuộn ngang */
+                                padding: 15px 0;
+                                -webkit-overflow-scrolling: touch; /* Cuộn mượt trên mobile */
+                                scrollbar-width: none; /* Ẩn thanh cuộn trên Firefox */
+                            }
+
+                            .tour-slider-container::-webkit-scrollbar {
+                                display: none; /* Ẩn thanh cuộn trên Chrome/Safari */
+                            }
+
+                            /* 2. Wrapper: Ép các item nằm trên một hàng duy nhất */
+                            .tour-slider-wrapper {
+                                display: flex !important;
+                                flex-wrap: nowrap !important; /* Không cho phép xuống dòng */
+                                gap: 20px; /* Khoảng cách giữa các tour */
+                            }
+
+                            /* 3. Item: Định nghĩa độ rộng cố định cho mỗi Card */
+                            .tour-item {
+                                flex: 0 0 300px; /* Không co giãn, cố định 300px mỗi card */
+                                width: 300px;
+                                scroll-snap-align: start; /* Giúp card dừng đúng vị trí khi cuộn */
+                            }
+
+                            /* 4. Giới hạn tiêu đề để các card cao bằng nhau */
+                            .tour-title-limit {
+                                display: -webkit-box;
+                                -webkit-line-clamp: 2;
+                                -webkit-box-orient: vertical;
+                                overflow: hidden;
+                                height: 2.8em;
+                            }
+                            /* Chỉ áp dụng cho modal bản đồ để không làm hỏng các modal khác */
+                            #mapModal .modal-dialog {
+                                max-width: 90% !important; /* Độ rộng 90% màn hình */
+                            }
+
+                            #mapModal .modal-content {
+                                max-width: none !important; /* Ghi đè dòng 504 trong style.css */
+                                width: 100% !important;
+                                padding: 0 !important; /* Bỏ padding 25px để bản đồ tràn viền */
+                            }
+
+                            #mapIframe {
+                                height: 75vh !important; /* Chiều cao chiếm 75% màn hình */
+                            }
                         </style>
 
                         {% if destination.avg_price %}
@@ -196,9 +245,11 @@
                             <h3 class="fw-bold mb-0 text-primary">Tour du lịch tại {{ destination.name }}</h3>
                             <p class="text-muted mb-0 small">Khám phá các gói tour được thiết kế riêng</p>
                         </div>
+                        {% if related_packages %}
                         <span class="badge bg-primary-subtle text-primary p-2 px-3 rounded-pill shadow-sm">
                             <i class="fa-solid fa-route me-1"></i> {{ related_packages|length }} Tour sẵn có
                         </span>
+                        {% endif %}
                     </div>
 
                     <div class="tour-slider-container">
@@ -206,11 +257,12 @@
                             {% for tour in related_packages %}
                             <div class="tour-item">
                                 <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
-                                    <div class="position-relative">
-                                        <img src="{{ tour.image_main.url }}" class="card-img-top" alt="{{ tour.name }}" style="height: 180px; object-fit: cover;">
+                                    <div class="position-relative overflow-hidden">
+                                        <img src="{{ tour.image_main.url }}" class="card-img-top" alt="{{ tour.name }}" 
+                                            style="height: 180px; object-fit: cover; transition: 0.5s;">
                                         <div class="position-absolute top-0 start-0 m-2">
                                             <span class="badge bg-white text-dark shadow-sm">
-                                                <i class="fa-solid fa-star text-warning"></i> {{ tour.average_rating|default:"5.0" }}
+                                                <i class="fa-solid fa-star text-warning"></i> {{ tour.average_rating|default:"5.0"|floatformat:1 }}
                                             </span>
                                         </div>
                                     </div>
@@ -224,7 +276,9 @@
                                             <span class="text-secondary small">
                                                 <i class="fa-solid fa-clock me-1"></i>{{ tour.duration }}
                                             </span>
-                                            <span class="text-danger fw-bold fs-6">{{ tour.price|floatformat:0 }}đ</span>
+                                            <span class="text-danger fw-bold fs-6">
+                                                {{ tour.price|floatformat:0 }}đ
+                                            </span>
                                         </div>
 
                                         <a href="{% url 'travel:tour_detail' tour.slug %}" class="btn btn-sm btn-outline-primary w-100 rounded-pill mt-3">
@@ -234,9 +288,9 @@
                                 </div>
                             </div>
                             {% empty %}
-                            <div style="grid-column: 1 / -1;" class="text-center py-5 bg-light rounded-4">
+                            <div class="w-100 text-center py-5 bg-light rounded-4">
                                 <i class="fa-solid fa-calendar-xmark fa-2x text-muted mb-3"></i>
-                                <p class="text-muted">Hiện tại chưa có tour cho địa điểm này.</p>
+                                <p class="text-muted mb-0">Hiện tại chưa có tour cho địa điểm này.</p>
                             </div>
                             {% endfor %}
                         </div>
@@ -250,8 +304,13 @@
                             <h5 class="card-title mb-0">
                                 <i class="fa-solid fa-comments text-primary me-2"></i>Đánh giá từ du khách
                             </h5>
-                            <button class="btn btn-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#reviewForm">
-                                <i class="fa-solid fa-plus me-1"></i>Viết đánh giá
+                            <button class="btn btn-primary rounded-pill" 
+                                    {% if not user.is_authenticated %} 
+                                        data-bs-toggle="modal" data-bs-target="#authModal" 
+                                    {% else %} 
+                                        data-bs-toggle="collapse" data-bs-target="#reviewForm" 
+                                    {% endif %}>
+                                <i class="fa-solid fa-star me-2"></i>Viết đánh giá
                             </button>
                         </div>
 
@@ -259,10 +318,28 @@
                         <div class="collapse mb-4" id="reviewForm">
                             <div class="p-4 bg-light rounded border">
                                 <h6 class="mb-3">
-                                    <i class="fa-solid fa-pen-to-square me-2"></i>Chia sẻ trải nghiệm của bạn
-                                    {% if user.is_authenticated %}
-                                    <span class="badge bg-success ms-2"><i class="fa-solid fa-check-circle"></i> Đã xác minh</span>
-                                    {% endif %}
+                                    <div class="collapse mb-4" id="reviewForm">
+                                        <div class="p-4 bg-light rounded border shadow-sm">
+                                            {% if user.is_authenticated %}
+                                                <h6 class="mb-3 fw-bold">
+                                                    <i class="fa-solid fa-pen-to-square me-2"></i>Chia sẻ trải nghiệm của bạn
+                                                    <span class="badge bg-success ms-2"><i class="fa-solid fa-check-circle"></i> Đã xác minh</span>
+                                                </h6>
+                                                
+                                                <form id="reviewFormSubmit">
+                                                    </form>
+                                            {% else %}
+                                                <div class="text-center py-3">
+                                                    <i class="fa-solid fa-user-lock fa-3x text-muted mb-3"></i>
+                                                    <h5>Bạn chưa đăng nhập</h5>
+                                                    <p class="text-muted">Vui lòng đăng nhập để gửi đánh giá và đóng góp cho cộng đồng.</p>
+                                                    <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#authModal">
+                                                        Đăng nhập ngay
+                                                    </button>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                 </h6>
                                 
                                 <form id="reviewFormSubmit">
@@ -687,6 +764,22 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="mapModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 15px; overflow: hidden;">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fa-solid fa-map-location-dot me-2"></i>Bản đồ chi tiết</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <iframe id="mapIframe" width="100%" height="650px" 
+                            style="border:0; display: block;" 
+                            allowfullscreen="" loading="lazy"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>
 
 
@@ -729,25 +822,125 @@
 </script>
 {% endif %}
 
+<script>
+// Đưa hàm ra ngoài cùng để HTML button có thể truy cập được (Global scope)
+window.openMapModal = function(url) {
+    const iframe = document.getElementById('mapIframe');
+    if (iframe) {
+        // Đảm bảo URL luôn có output=embed để không bị Google chặn trong Iframe
+        let embedUrl = url;
+        if (!embedUrl.includes('output=embed')) {
+            embedUrl += (embedUrl.includes('?') ? '&' : '?') + 'output=embed';
+        }
+        
+        iframe.src = embedUrl;
+
+        // Kích hoạt Modal Bootstrap
+        const modalElement = document.getElementById('mapModal');
+        const myModal = bootstrap.Modal.getOrCreateInstance(modalElement);
+        myModal.show();
+    }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    function loadNearby(type, elementId, categoryName) {
+        const container = document.getElementById(elementId);
+        if (!container) return;
+
+        // Lấy dữ liệu từ Django context
+        let nearbyData;
+        try {
+            nearbyData = (type === 'hotel') ? 
+                JSON.parse('{{ nearby_hotels_json|safe }}') : 
+                JSON.parse('{{ nearby_restaurants_json|safe }}');
+        } catch (e) {
+            console.error("Lỗi parse JSON:", e);
+            return;
+        }
+
+        let htmlHeader = `
+            <button onclick="openMapModal('${nearbyData.google_maps_url}')" 
+                    class="btn btn-sm ${type === 'hotel' ? 'btn-outline-primary' : 'btn-outline-danger'} w-100 mb-3 shadow-sm">
+                <i class="fa-solid fa-map-location-dot me-2"></i> Xem ${categoryName} trên bản đồ
+            </button>
+            <div class="d-flex flex-wrap gap-2 mb-2">
+                ${nearbyData.suggestions.map(tip => `
+                    <a href="${tip.url}" target="_blank" class="btn btn-xs btn-light border" style="font-size: 0.75rem;">
+                        ${tip.text}
+                    </a>
+                `).join('')}
+            </div>
+            <hr class="my-2">
+        `;
+
+        const lat = "{{ destination.latitude }}";
+        const lon = "{{ destination.longitude }}";
+
+        fetch(`/api/nearby/?lat=${lat}&lon=${lon}&type=${type}`)
+            .then(res => res.json())
+            .then(data => {
+                container.innerHTML = htmlHeader;
+                
+                const items = data.results || [];
+                if (items.length === 0) {
+                    container.insertAdjacentHTML('beforeend', '<small class="text-muted">Không tìm thấy địa điểm nào gần đây.</small>');
+                    return;
+                }
+
+                let listHtml = '<div class="list-group list-group-flush">';
+                items.forEach(item => {
+                    // Sửa link Google Maps cho từng địa điểm cụ thể
+                    const itemUrl = `https://www.google.com/maps?q=${encodeURIComponent(item.name)}&ll=${item.lat},${item.lon}&z=16&output=embed`;
+                    
+                    listHtml += `
+                        <div class="list-group-item px-0 border-0 d-flex justify-content-between align-items-center">
+                            <div style="cursor:pointer" class="flex-grow-1" onclick="openMapModal('${itemUrl}')">
+                                <div class="fw-bold small" style="font-size: 0.85rem;">${item.name}</div>
+                                <div class="text-muted" style="font-size: 0.7rem;">${(item.distance / 1000).toFixed(1)} km</div>
+                            </div>
+                            <button onclick="openMapModal('${itemUrl}')" class="btn btn-link btn-sm p-0 text-danger">
+                                <i class="fa-solid fa-location-arrow"></i>
+                            </button>
+                        </div>
+                    `;
+                });
+                listHtml += '</div>';
+                container.insertAdjacentHTML('beforeend', listHtml);
+            })
+            .catch(err => {
+                console.error("Lỗi fetch:", err);
+                container.innerHTML = '<small class="text-danger">Lỗi tải dữ liệu.</small>';
+            });
+    }
+
+    loadNearby('hotel', 'nearbyHotels', 'Khách sạn');
+    loadNearby('restaurant', 'nearbyRestaurants', 'Quán ăn');
+});
+
+</script>
+
+
 <!-- Script gửi đánh giá - Enhanced UGC -->
 <script>
-// Helper function to show error messages
-function showError(message) {
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
-    errorDiv.innerHTML = `
-        <i class="fa-solid fa-exclamation-circle me-2"></i>${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    const form = document.getElementById('reviewFormSubmit');
-    form.parentNode.insertBefore(errorDiv, form.nextSibling);
-    
-    // Auto dismiss after 5 seconds
-    setTimeout(() => {
-        errorDiv.remove();
-    }, 5000);
-}
 
+ // Hàm kiểm tra cooldown dùng chung cho tất cả hành động
+    function isSpamming(actionName, seconds) {
+        const now = Date.now();
+        const lastTime = localStorage.getItem(`last_${actionName}_time`) || 0;
+        const cooldownMS = seconds * 1000;
+
+        if (now - lastTime < cooldownMS) {
+            const timeLeft = Math.ceil((cooldownMS - (now - lastTime)) / 1000);
+            alert(`Thao tác quá nhanh! Vui lòng đợi ${timeLeft} giây.`);
+            return true; // Đang spam
+        }
+        return false; // Không spam
+    }
+
+    // Hàm cập nhật mốc thời gian sau khi thành công
+    function updateActionTime(actionName) {
+        localStorage.setItem(`last_${actionName}_time`, Date.now());
+    }
 // Character counter for comment
     const commentInput = document.getElementById('comment');
     const charCount = document.getElementById('charCount');
@@ -815,6 +1008,8 @@ function showError(message) {
     // Submit review form
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        if (isSpamming('comment', 30)) return;
         
         const submitBtn = document.getElementById('submitReviewBtn');
         const originalText = submitBtn.innerHTML;
@@ -827,6 +1022,20 @@ function showError(message) {
             rating: parseInt(document.getElementById('rating').value),
             comment: document.getElementById('comment').value.trim()
         };
+
+        if (submitBtn) {
+            submitBtn.addEventListener('click', function(e) {
+                const token = localStorage.getItem('access');
+                
+                if (!token) {
+                    e.preventDefault();
+                    alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+                    // Mở Modal đăng nhập của bạn
+                    const authModal = new bootstrap.Modal(document.getElementById('authModal'));
+                    authModal.show();
+                }
+            });
+        }
         
         try {
             const response = await fetch('/api/review/', {
@@ -849,6 +1058,8 @@ function showError(message) {
 
             if (data.success) {
                 // 1. CẬP NHẬT CÁC CON SỐ HEADER (AI Analysis)
+                updateActionTime('comment');
+
                 if (data.new_stats) {
                     const s = data.new_stats;
                     const updateText = (id, value) => {
@@ -933,6 +1144,8 @@ function showError(message) {
     // Vote helpful/not helpful
     document.querySelectorAll('.vote-btn').forEach(btn => {
         btn.addEventListener('click', async function() {
+            if (isSpamming('vote', 3)) return;
+
             const reviewId = this.dataset.reviewId;
             const voteType = this.dataset.vote;
             
@@ -949,6 +1162,7 @@ function showError(message) {
                 const data = await response.json();
                 
                 if (data.success) {
+                    updateActionTime('vote');
                     // Update counts
                     const reviewItem = document.getElementById(`review-${reviewId}`);
                     reviewItem.querySelector('.helpful-count').textContent = data.helpful_count;
@@ -968,6 +1182,9 @@ function showError(message) {
     document.querySelectorAll('.report-btn').forEach(btn => {
         btn.addEventListener('click', async function(e) {
             e.preventDefault();
+
+            if (isSpamming('report', 10)) return;
+
             const reviewId = this.dataset.reviewId;
             
             const reason = prompt('Lý do báo cáo:\n1. Spam/Quảng cáo\n2. Nội dung không phù hợp\n3. Đánh giá giả\n4. Khác\n\nNhập số (1-4):');
@@ -988,7 +1205,13 @@ function showError(message) {
                 });
                 
                 const data = await response.json();
-                alert(data.message || 'Đã gửi báo cáo');
+                if (response.ok) {
+                    updateActionTime('report'); // Cập nhật mốc thời gian mới
+                    alert(data.message || 'Đã gửi báo cáo');
+                } else {
+                    alert(data.error || 'Không thể gửi báo cáo');
+                }
+                
             } catch (err) {
                 alert('Lỗi: ' + err.message);
             }
@@ -1052,4 +1275,6 @@ function showError(message) {
     })();
 {% endif %}
 </script>
+
+
 {% endblock %}
