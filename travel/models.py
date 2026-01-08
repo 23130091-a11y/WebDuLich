@@ -50,6 +50,7 @@ class TravelType(models.Model):
 # ----------------------------------------------------------------------
 # 2. Destination Model
 # ----------------------------------------------------------------------
+from .services.nearby_service import get_nearby_hotels, get_nearby_restaurants
 class Destination(models.Model):
     category = models.ForeignKey(
         'Category',
@@ -144,6 +145,14 @@ class Destination(models.Model):
 
     def get_restaurants(self, lat, lon):
         return []
+    
+    def get_nearby_hotels_data(self):
+        """Sử dụng logic từ service để trả về data cho template"""
+        return get_nearby_hotels(self.latitude, self.longitude, self.name)
+
+    def get_nearby_restaurants_data(self):
+        """Sử dụng logic từ service để trả về data cho template"""
+        return get_nearby_restaurants(self.latitude, self.longitude, self.name)
 
     def __str__(self):
         return self.name
@@ -300,6 +309,19 @@ class TourReview(models.Model):
     is_verified = models.BooleanField(default=False)
 
     reports = GenericRelation('ReviewReport', related_query_name='tour_review')
+    not_helpful_count = models.PositiveIntegerField(default=0, verbose_name="Không hữu ích")
+
+    # Trạng thái xác minh
+    is_verified_user = models.BooleanField(default=False, verbose_name="Tài khoản đã xác minh")
+    is_verified_purchase = models.BooleanField(default=False, verbose_name="Khách hàng thực tế")
+    
+    # Thêm trạng thái để Admin có thể ẩn/hiện nhận xét
+    STATUS_CHOICES = [
+        ('pending', 'Chờ duyệt'),
+        ('published', 'Đã hiển thị'),
+        ('hidden', 'Đã ẩn (Vi phạm)'),
+    ]
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='published')
 
     class Meta:
         ordering = ['-created_at']
@@ -481,7 +503,7 @@ class ReviewVote(models.Model):
         (VOTE_NOT_HELPFUL, 'Không hữu ích'),
     ]
 
-    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='votes')
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='votes', null=True, blank=True)
     tour_review = models.ForeignKey(TourReview, on_delete=models.CASCADE, related_name='votes', null=True, blank=True)
 
     user = models.ForeignKey(

@@ -195,6 +195,35 @@ class ReviewAdmin(admin.ModelAdmin):
     def mark_verified(self, request, queryset):
         queryset.update(is_verified=True)
 
+
+from django.contrib import admin
+from django.contrib.contenttypes.models import ContentType
+from .models import TourReview, ReviewReport
+
+@admin.register(TourReview)
+class TourReviewAdmin(admin.ModelAdmin):
+    # Hiển thị các cột bạn cần
+    list_display = (
+        'user', 'tour', 'rating', 
+        'helpful_count', 'not_helpful_count', 
+        'report_count_display', # Cột đếm số lượt báo cáo
+        'is_verified_user', 
+        'is_verified_purchase', 
+        'status'
+    )
+    list_filter = ('status', 'is_verified_purchase', 'is_verified_user', 'rating')
+    list_editable = ('status', 'is_verified_user', 'is_verified_purchase')
+
+    # Hàm tính số lượt báo cáo để hiện lên cột
+    def report_count_display(self, obj):
+        ct = ContentType.objects.get_for_model(obj)
+        count = ReviewReport.objects.filter(content_type=ct, object_id=obj.id).count()
+        if count >= 5: # Nếu trên 5 lượt báo cáo thì hiện màu đỏ
+            return format_html('<b style="color:red;">{} báo cáo (Cần xử lý!)</b>', count)
+        return f"{count} báo cáo"
+    
+    report_count_display.short_description = "Số lượt báo cáo"
+
 from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
