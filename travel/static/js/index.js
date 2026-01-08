@@ -489,6 +489,7 @@ if (loginBtn) {
 
                 checkAuthStatus();
                 loadSearchHistory();
+                window.location.reload();
             } else {
                 showAlert(data.detail || 'Email hoặc mật khẩu không đúng');
                 btn.disabled = false;
@@ -698,8 +699,14 @@ async function logout() {
         });
     }
 
-    localStorage.clear();
-    window.location.reload();
+    localStorage.removeItem('access');
+    localStorage.removeItem('refresh');
+    localStorage.removeItem('user_info'); 
+
+    window.location.href = '/';
+
+    // localStorage.clear();
+    // window.location.reload();
 }
 
 const logoutBtn = document.getElementById('logoutBtn');

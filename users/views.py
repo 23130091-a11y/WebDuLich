@@ -10,7 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth import authenticate, get_user_model # Import thêm
+from django.contrib.auth import authenticate, get_user_model, login, logout 
 
 # Create your views here.
 class RegisterView(APIView) :
@@ -18,6 +18,8 @@ class RegisterView(APIView) :
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+
+        login(request, user)
 
         # Tạo token
         refresh = RefreshToken.for_user(user)
@@ -61,6 +63,8 @@ class LoginView(APIView):
 
         if user is None:
             raise AuthenticationFailed("Email hoặc mật khẩu không đúng")
+        
+        login(request, user)
 
         refresh = RefreshToken.for_user(user)
 
@@ -131,6 +135,7 @@ def save_preferences(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout_view(request):
+    logout(request)
     refresh_token = request.data["refresh"]
     token = RefreshToken(refresh_token)
     token.blacklist()
