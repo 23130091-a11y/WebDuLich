@@ -2,12 +2,11 @@ from django.urls import path, include
 from . import views
 from django.contrib.auth import views as auth_views
 
-# travel/urls.py (GỢI Ý SỬA ĐỔI)
 app_name = 'travel'
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('category-detail/', views.category_detail, name='category_filter'), # <--- Đổi tên URL
+    path('category-detail/', views.category_detail, name='category_filter'), 
     path('api/goi-y-theo-the-loai/', views.goi_y_theo_the_loai, name='goi_y_theo_the_loai'),
     path('tour/<slug:tour_slug>/', views.tour_detail, name='tour_detail'),
     path('category/<slug:slug>/', views.category_detail, name='category_detail'),
@@ -17,10 +16,9 @@ urlpatterns = [
 
     path('api/tour/<int:tour_id>/review/', views.api_submit_review, name='api_submit_review'),
     
-    path('api/review/', views.api_submit_tour_review, name='api_submit_tour_review'),
+    path('api/tour_review/', views.api_submit_tour_review, name='api_submit_tour_review'),
 
     # Thêm route cho destination detail
-    # Sửa lại chỗ này
     path('destination/<int:destination_id>/', views.destination_detail, name='destination_detail'),
     path('destinations/', views.destination_list, name='destination_list'), # chưa sd
 

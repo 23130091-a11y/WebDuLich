@@ -148,47 +148,70 @@
 
                         <div class="collapse mb-4" id="reviewForm">
                             <div class="p-4 bg-light rounded-4 border">
-                                <h6 class="mb-3 fw-bold">
-                                    <i class="fa-solid fa-paper-plane me-2 text-primary"></i>Chia sẻ trải nghiệm của bạn
-                                    {% if user.is_authenticated %}
-                                        <span class="badge bg-success-subtle text-success ms-2 fw-normal"><i class="fa-solid fa-check-circle"></i> Đã xác minh</span>
-                                    {% endif %}
-                                </h6>
-                                <form id="reviewFormSubmit">
-                                    <input type="hidden" id="destinationId" value="{{ tour.id }}">
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label small fw-bold">Tên của bạn <span class="text-danger">*</span></label>
-                                            <input type="text" id="authorName" class="form-control" placeholder="Nhập tên của bạn..."
-                                                {% if user.is_authenticated %}value="{{ user.username|default:user.email }}" readonly{% endif %}
-                                                minlength="2" maxlength="100" required>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label small fw-bold">Đánh giá <span class="text-danger">*</span></label>
-                                            <div class="d-flex flex-row-reverse justify-content-end gap-1 star-rating-input" id="starRatingContainer">
-                                                {% for i in "54321" %}
-                                                <input type="radio" class="btn-check" name="rating" id="star{{ i }}" value="{{ i }}" {% if i == "5" %}checked{% endif %}>
-                                                <label for="star{{ i }}" class="text-muted cursor-pointer p-1">
-                                                    <i class="fa-solid fa-star fs-5"></i>
-                                                </label>
-                                                {% endfor %}
+                                {% if user.is_authenticated %}
+                                    <h6 class="mb-3 fw-bold">
+                                        <i class="fa-solid fa-paper-plane me-2 text-primary"></i>Chia sẻ trải nghiệm của bạn
+                                        <span class="badge bg-success-subtle text-success ms-2 fw-normal">
+                                            <i class="fa-solid fa-check-circle"></i> Tài khoản đã xác minh
+                                        </span>
+                                    </h6>
+                                    
+                                    <form id="reviewFormSubmit">
+                                        <input type="hidden" id="tourId" value="{{ tour.id }}"> 
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label small fw-bold">Tên của bạn</label>
+                                                <input type="text" id="authorName" class="form-control bg-white" 
+                                                    value="{{ user.get_full_name|default:user.username }}" readonly>
+                                                <small class="text-muted x-small">Tên hiển thị theo tài khoản của bạn</small>
                                             </div>
-                                            <input type="hidden" id="ratingValue" value="5">
-                                        </div>
-                                        <div class="col-12">
-                                            <label class="form-label small fw-bold">Nhận xét của bạn</label>
-                                            <textarea id="comment" class="form-control" rows="4" placeholder="Tour này thế nào? Bạn có hài lòng không..." maxlength="2000"></textarea>
-                                            <div class="d-flex justify-content-between mt-1">
-                                                <small class="text-muted x-small"><i class="fa-solid fa-robot me-1"></i>Hệ thống sẽ phân tích cảm xúc đánh giá</small>
-                                                <small class="text-muted x-small"><span id="charCount">0</span>/2000</small>
+                                            
+                                            <div class="col-md-6">
+                                                <label class="form-label small fw-bold">Đánh giá <span class="text-danger">*</span></label>
+                                                <div class="d-flex flex-row-reverse justify-content-end gap-1 star-rating-input" id="starRatingContainer">
+                                                    {% for i in "54321" %}
+                                                    <input type="radio" class="btn-check" name="rating" id="star{{ i }}" value="{{ i }}" {% if i == "5" %}checked{% endif %}>
+                                                    <label for="star{{ i }}" class="text-muted cursor-pointer p-1">
+                                                        <i class="fa-solid fa-star fs-5"></i>
+                                                    </label>
+                                                    {% endfor %}
+                                                </div>
+                                                <input type="hidden" id="ratingValue" value="5">
+                                            </div>
+
+                                            <div class="col-12">
+                                                <label class="form-label small fw-bold">Nhận xét của bạn</label>
+                                                <textarea id="comment" class="form-control" rows="4" placeholder="Tour này thế nào? Bạn có hài lòng không..." maxlength="2000"></textarea>
+                                                <div class="d-flex justify-content-between mt-1">
+                                                    <small class="text-muted x-small"><i class="fa-solid fa-robot me-1"></i>Hệ thống sẽ phân tích cảm xúc đánh giá</small>
+                                                    <small class="text-muted x-small"><span id="charCount">0</span>/2000</small>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12 text-end">
+                                                <button type="button" class="btn btn-outline-secondary btn-sm me-2" data-bs-toggle="collapse" data-bs-target="#reviewForm">Hủy</button>
+                                                <button type="submit" class="btn btn-primary btn-sm px-4" id="submitReviewBtn">Gửi đánh giá</button>
                                             </div>
                                         </div>
-                                        <div class="col-12 text-end">
-                                            <button type="button" class="btn btn-outline-secondary btn-sm me-2" data-bs-toggle="collapse" data-bs-target="#reviewForm">Hủy</button>
-                                            <button type="submit" class="btn btn-primary btn-sm px-4" id="submitReviewBtn">Gửi đánh giá</button>
+                                    </form>
+
+                                {% else %}
+                                    <div class="text-center py-3">
+                                        <div class="mb-3">
+                                            <i class="fa-solid fa-user-shield fa-3x text-muted opacity-50"></i>
+                                        </div>
+                                        <h6 class="fw-bold">Bạn cần đăng nhập để đánh giá</h6>
+                                        <p class="text-muted small mb-4">Để đảm bảo tính khách quan, chỉ thành viên mới có thể chia sẻ trải nghiệm.</p>
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <button type="button" 
+                                                class="btn btn-primary btn-sm rounded-pill px-4" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#authModal"> Đăng nhập ngay
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-4" data-bs-toggle="collapse" data-bs-target="#reviewForm">Đóng</button>
                                         </div>
                                     </div>
-                                </form>
+                                {% endif %}
                             </div>
                         </div>
 
@@ -208,12 +231,25 @@
                                                     {{ review.author_name|slice:":1"|upper }}
                                                 </div>
                                             </div>
+                                            
                                             <div>
-                                                <h6 class="mb-0 fw-bold text-dark">{{ review.author_name }}
-                                                    {% if review.is_verified %}
-                                                        <i class="fa-solid fa-circle-check text-success small ms-1" title="Đã mua tour"></i>
+                                                <h6 class="mb-0 fw-bold text-dark">
+                                                    {{ review.author_name }}
+                                                    
+                                                    {% if review.user %}
+                                                        <i class="fa-solid fa-circle-check text-primary small ms-1" title="Thành viên đã xác minh"></i>
+                                                    {% else %}
+                                                        <span class="badge bg-light text-muted fw-normal ms-1" style="font-size: 0.6rem;">Khách vãng lai</span>
+                                                    {% endif %}
+                                                
+                                                    
+                                                    {% if review.is_verified_purchase %}
+                                                        <span class="badge bg-success-subtle text-success fw-normal ms-2" style="font-size: 0.65rem;">
+                                                            <i class="fa-solid fa-bag-shopping me-1"></i>Khách hàng thực tế
+                                                        </span>
                                                     {% endif %}
                                                 </h6>
+
                                                 <div class="text-warning small my-1">
                                                     {% for i in "12345" %}
                                                         <i class="{% if forloop.counter <= review.rating %}fa-solid{% else %}fa-regular{% endif %} fa-star"></i>
@@ -222,10 +258,19 @@
                                                 </div>
                                             </div>
                                         </div>
+
                                         <div class="dropdown">
-                                            <button class="btn btn-link text-muted p-0" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                            <button class="btn btn-link text-muted p-0 shadow-none" data-bs-toggle="dropdown">
+                                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                                            </button>
                                             <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                                                <li><a class="dropdown-item small report-btn" href="#"><i class="fa-solid fa-flag me-2 text-warning"></i>Báo cáo</a></li>
+                                                <li>
+                                                    <a class="dropdown-item small report-btn {% if review.id in reported_ids %}text-danger disabled{% endif %}" 
+                                                    data-review-id="{{ review.id }}" data-is-tour="true" href="javascript:void(0)">
+                                                        <i class="fa-solid fa-flag me-2 text-warning"></i>
+                                                        <span>{% if review.id in reported_ids %}Đã báo cáo{% else %}Báo cáo vi phạm{% endif %}</span>
+                                                    </a>
+                                                </li>
                                             </ul>
                                         </div>
                                     </div>
@@ -242,27 +287,24 @@
                                                 {% endfor %}
                                             {% endif %}
                                             
-                                            {% if review.negative_keywords %}
-                                                {% for tag in review.negative_keywords %}
-                                                <span class="badge bg-danger-subtle text-danger fw-normal x-small">
-                                                    <i class="fa-solid fa-thumbs-down me-1"></i>{{ tag }}
-                                                </span>
-                                                {% endfor %}
-                                            {% endif %}
-
                                             {% if review.sentiment_score %}
-                                            <span class="badge {% if review.sentiment_score > 0 %}bg-info-subtle text-info{% else %}bg-secondary-subtle text-secondary{% endif %} fw-normal x-small" title="Điểm cảm xúc AI">
-                                                <i class="fa-solid fa-robot me-1"></i>AI: {{ review.sentiment_score|floatformat:2 }}
-                                            </span>
+                                                <span class="badge {% if review.sentiment_score > 0 %}bg-info-subtle text-info{% else %}bg-secondary-subtle text-secondary{% endif %} fw-normal x-small">
+                                                    <i class="fa-solid fa-robot me-1"></i>AI: {{ review.sentiment_score|floatformat:2 }}
+                                                </span>
                                             {% endif %}
                                         </div>
 
-                                        <div class="d-flex align-items-center gap-2">
-                                            <button class="btn btn-sm btn-outline-light border text-muted x-small vote-btn" data-vote="helpful">
-                                                <i class="fa-regular fa-thumbs-up me-1"></i>Hữu ích ({{ review.helpful_count }})
+                                        <div class="d-flex align-items-center gap-3">
+                                            <button class="btn btn-sm vote-btn p-0 text-muted shadow-none border-0 bg-transparent" 
+                                                    data-review-id="{{ review.id }}" data-vote="helpful" data-is-tour="true"> 
+                                                <i class="fa-regular fa-thumbs-up me-1"></i> 
+                                                Hữu ích (<span class="helpful-count">{{ review.helpful_count }}</span>)
                                             </button>
-                                            <button class="btn btn-sm btn-outline-light border text-muted x-small vote-btn" data-vote="not_helpful">
-                                                <i class="fa-regular fa-thumbs-down"></i>
+
+                                            <button class="btn btn-sm vote-btn p-0 text-muted shadow-none border-0 bg-transparent" 
+                                                    data-review-id="{{ review.id }}" data-vote="not_helpful" data-is-tour="true"> 
+                                                <i class="fa-regular fa-thumbs-down me-1"></i> 
+                                                Không hữu ích (<span class="not-helpful-count">{{ review.not_helpful_count }}</span>)
                                             </button>
                                         </div>
                                     </div>
@@ -273,15 +315,32 @@
                                 <nav class="mt-4">
                                     <ul class="pagination pagination-sm justify-content-center">
                                         {% if reviews.has_previous %}
-                                            <li class="page-item"><a class="page-link border-0 shadow-none" href="?reviews_page={{ reviews.previous_page_number }}#reviews-section"><i class="fa-solid fa-chevron-left"></i></a></li>
+                                            <li class="page-item"><a class="page-link border-0 shadow-none" href="?reviews_page={{ reviews.previous_page_number }}#reviewsList"><i class="fa-solid fa-chevron-left"></i></a></li>
                                         {% endif %}
+
                                         {% for num in reviews.paginator.page_range %}
-                                            <li class="page-item {% if reviews.number == num %}active{% endif %}">
-                                                <a class="page-link border-0 shadow-none" href="?reviews_page={{ num }}#reviews-section">{{ num }}</a>
-                                            </li>
+                                            {% if reviews.number == num %}
+                                                <li class="page-item active"><span class="page-link border-0 shadow-none">{{ num }}</span></li>
+                                            {% elif num > reviews.number|add:'-3' and num < reviews.number|add:'3' %}
+                                                <li class="page-item"><a class="page-link border-0 shadow-none" href="?reviews_page={{ num }}#reviewsList">{{ num }}</a></li>
+                                            {% endif %}
                                         {% endfor %}
+
                                         {% if reviews.has_next %}
-                                            <li class="page-item"><a class="page-link border-0 shadow-none" href="?reviews_page={{ reviews.next_page_number }}#reviews-section"><i class="fa-solid fa-chevron-right"></i></a></li>
+                                            <li class="page-item"><a class="page-link border-0 shadow-none" href="?reviews_page={{ reviews.next_page_number }}#reviewsList"><i class="fa-solid fa-chevron-right"></i></a></li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                                {% endif %}
+
+                                {% if reviews.has_other_pages %}
+                                <nav class="mt-4">
+                                    <ul class="pagination pagination-sm justify-content-center">
+                                        {% if reviews.has_previous %}
+                                            <li class="page-item"><a class="page-link border-0 shadow-none" href="?reviews_page={{ reviews.previous_page_number }}#reviewsList"><i class="fa-solid fa-chevron-left"></i></a></li>
+                                        {% endif %}
+                                        {% if reviews.has_next %}
+                                            <li class="page-item"><a class="page-link border-0 shadow-none" href="?reviews_page={{ reviews.next_page_number }}#reviewsList"><i class="fa-solid fa-chevron-right"></i></a></li>
                                         {% endif %}
                                     </ul>
                                 </nav>
@@ -295,7 +354,8 @@
                                 </div>
                             {% endif %}
                         </div>
-                    </div>
+
+                    </div> 
                 </div>
 
                 <style>
@@ -329,6 +389,28 @@
                     .review-item:last-child { border-bottom: none !important; }
                     .pagination .page-link { border-radius: 8px; margin: 0 3px; color: #666; }
                     .pagination .page-item.active .page-link { background-color: #0d6efd; border-color: #0d6efd; }
+                    .vote-btn * { pointer-events: none;}
+                    /* Ép modal-xl rộng tối đa trên màn hình lớn */
+                    /* Ép Modal XL rộng ra 95% màn hình */
+                    /* Chỉ tác động vào Modal có id là mapModal */
+                    #mapModal .modal-content {
+                        max-width: none !important; /* Loại bỏ giới hạn 500px */
+                        width: 100% !important;
+                        padding: 0 !important; /* Loại bỏ padding 25px đang có để bản đồ sát mép đẹp hơn */
+                    }
+
+                    /* Ép modal-xl rộng ra theo chuẩn màn hình lớn */
+                    @media (min-width: 1200px) {
+                        #mapModal .modal-xl {
+                            max-width: 90% !important; 
+                        }
+                    }
+
+                    /* Tăng chiều cao iframe để xem bản đồ sướng hơn */
+                    #mapIframe {
+                        height: 75vh !important;
+                        display: block;
+                    }
                 </style>
             </div>       
 
@@ -457,6 +539,21 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="mapModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 15px; overflow: hidden;">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fa-solid fa-map-location-dot me-2"></i>Bản đồ chi tiết</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <iframe id="mapIframe" width="100%" height="650px" 
+                            style="border:0; display: block;" 
+                            allowfullscreen="" loading="lazy"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>
 
 {% endblock %}
@@ -465,60 +562,63 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Lấy tọa độ gốc (xử lý dấu phẩy Django)
+    // 1. Lấy tọa độ gốc
     const lat = parseFloat("{{ tour.start_latitude|default:tour.destination.latitude|stringformat:'f' }}".replace(',', '.'));
     const lon = parseFloat("{{ tour.start_longitude|default:tour.destination.longitude|stringformat:'f' }}".replace(',', '.'));
 
     if (!lat || !lon) return;
 
-    // --- PHẦN 1: KHỞI TẠO BẢN ĐỒ ĐIỂM TẬP TRUNG ---
+    // --- PHẦN 1: BẢN ĐỒ LEAFLET (Giữ nguyên cho trang chính) ---
     const mapElement = document.getElementById('map');
     if (mapElement) {
-        // Khởi tạo map
         var map = L.map('map').setView([lat, lon], 15);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap'
         }).addTo(map);
-
-        // Thêm marker chính cho Tour
         L.marker([lat, lon]).addTo(map)
             .bindPopup("<b>Điểm tập trung:</b><br>{{ tour.meeting_point|default:tour.name }}")
             .openPopup();
-        
-        // Fix lỗi bản đồ bị xám/lệch khi load trong card
         setTimeout(() => { map.invalidateSize(); }, 400);
     }
 
-    // --- PHẦN 2: HÀM HIỆN KHÁCH SẠN VÀ QUÁN ĂN (GIỮ NGUYÊN LOGIC CỦA BẠN) ---
+    // --- PHẦN 2: HÀM MỞ MODAL BẢN ĐỒ ---
+    window.openMapModal = function(url) {
+        const iframe = document.getElementById('mapIframe');
+        if (iframe) {
+            // Thêm &output=embed để cho phép hiển thị trong iframe
+            iframe.src = url + "&output=embed";
+            const myModal = new bootstrap.Modal(document.getElementById('mapModal'));
+            myModal.show();
+        }
+    };
+
+    // --- PHẦN 3: TẢI ĐỊA ĐIỂM XUNG QUANH ---
     function loadNearby(type, elementId, categoryName) {
         const container = document.getElementById(elementId);
         if (!container) return;
 
         const searchQuery = (type === 'hotel') ? 'Khách sạn' : 'Quán ăn';
-        // Link Google Maps chuẩn
-        const googleMapsSearchUrl = `https://www.google.com/maps/search/${encodeURIComponent(searchQuery)}/@${lat},${lon},15z`;
+        // Link tìm kiếm chuẩn cho Embed
+        const googleMapsSearchUrl = `https://www.google.com/maps?q=${encodeURIComponent(searchQuery)}+gần+${lat},${lon}&hl=vi`;
 
         fetch(`/api/nearby/?lat=${lat}&lon=${lon}&type=${type}`)
             .then(res => res.json())
             .then(data => {
                 container.innerHTML = ''; 
-
                 const destinationName = "{{ tour.destination.name|escapejs }}";
 
                 let htmlHeader = `
-                    <a href="${googleMapsSearchUrl}" target="_blank" class="btn btn-outline-primary w-100 mb-3 text-start shadow-sm">
-                        <i class="fa-solid fa-map-location-dot me-2"></i> Tìm ${categoryName} trên Google Maps
-                    </a>
+                    <button onclick="openMapModal('${googleMapsSearchUrl}')" class="btn btn-outline-primary w-100 mb-3 text-start shadow-sm">
+                        <i class="fa-solid fa-map-location-dot me-2"></i> Xem ${categoryName} trên bản đồ
+                    </button>
                     <p class="small fw-bold mb-2 text-muted">Hoặc tìm trên:</p>
                     <div class="d-flex flex-wrap gap-2 mb-3">
                         ${type === 'hotel' ? `
                             <a href="https://www.booking.com/searchresults.vi.html?ss=${encodeURIComponent(destinationName)}" target="_blank" class="btn btn-sm btn-outline-secondary">Booking.com</a>
                             <a href="https://www.agoda.com/search?query=${encodeURIComponent(destinationName)}" target="_blank" class="btn btn-sm btn-outline-secondary">Agoda</a>
-                            <a href="https://www.traveloka.com/vi-vn/hotel/search?spec=${encodeURIComponent(destinationName)}" target="_blank" class="btn btn-sm btn-outline-secondary">Traveloka</a>
                         ` : `
                             <a href="https://www.foody.vn/tim-kiem/${encodeURIComponent(destinationName)}" target="_blank" class="btn btn-sm btn-outline-secondary">Foody</a>
                             <a href="https://shopeefood.vn/search?keyword=${encodeURIComponent(destinationName)}" target="_blank" class="btn btn-sm btn-outline-secondary">ShopeeFood</a>
-                            <a href="https://grabfood.vn/search?keyword=${encodeURIComponent(destinationName)}" target="_blank" class="btn btn-sm btn-outline-secondary">GrabFood</a>
                         `}
                     </div>
                     <hr>
@@ -529,27 +629,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 items.forEach(item => {
                     const iLat = item.lat || item.latitude;
                     const iLon = item.lon || item.longitude;
-                    const itemGMapUrl = `https://www.google.com/maps/search/?api=1&query=${iLat},${iLon}`;
+                    const itemGMapUrl = `https://www.google.com/maps?q=${iLat},${iLon}&hl=vi`;
 
                     const div = document.createElement('div');
                     div.className = 'list-group-item list-group-item-action mb-2 border-0 shadow-sm rounded';
                     div.innerHTML = `
                         <div class="d-flex justify-content-between align-items-center">
-                            <div style="cursor:pointer" class="item-info">
+                            <div style="cursor:pointer" class="item-info" onclick="openMapModal('${itemGMapUrl}')">
                                 <div class="fw-bold small">${item.name}</div>
                                 <small class="text-muted">${item.address || 'Đang cập nhật...'}</small>
                             </div>
-                            <a href="${itemGMapUrl}" target="_blank" class="btn btn-sm btn-light text-danger border">
+                            <button onclick="openMapModal('${itemGMapUrl}')" class="btn btn-sm btn-light text-danger border">
                                 <i class="fa-solid fa-location-dot"></i>
-                            </a>
+                            </button>
                         </div>
                     `;
                     
-                    if (map) {
+                    if (typeof map !== 'undefined' && map) {
                         L.circleMarker([iLat, iLon], {radius: 5, color: type==='hotel'?'blue':'red'}).addTo(map)
-                         .bindPopup(item.name);
+                        .bindPopup(item.name);
                     }
-
                     container.appendChild(div);
                 });
             })
@@ -562,6 +661,51 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <script>
+    const VOTE_API_URL = "{% url 'travel:api_vote_review' %}";
+    const REPORT_API_URL = "{% url 'travel:api_report_review' %}";
+
+    // Hàm kiểm tra cooldown dùng chung cho tất cả hành động
+    function isSpamming(actionName, seconds) {
+        const now = Date.now();
+        const lastTime = localStorage.getItem(`last_${actionName}_time`) || 0;
+        const cooldownMS = seconds * 1000;
+
+        if (now - lastTime < cooldownMS) {
+            const timeLeft = Math.ceil((cooldownMS - (now - lastTime)) / 1000);
+            alert(`Thao tác quá nhanh! Vui lòng đợi ${timeLeft} giây.`);
+            return true; // Đang spam
+        }
+        return false; // Không spam
+    }
+
+    // Hàm cập nhật mốc thời gian sau khi thành công
+    function updateActionTime(actionName) {
+        localStorage.setItem(`last_${actionName}_time`, Date.now());
+    }
+
+    function checkAuthAndRun(callback) {
+        const access = localStorage.getItem("access");
+        if (access) {
+            callback();
+        } else {
+            // Nếu chưa đăng nhập, bật Modal đăng nhập
+            const authModalElement = document.getElementById('authModal');
+            if (authModalElement) {
+                const authModal = new bootstrap.Modal(authModalElement);
+                // Hiển thị thông báo yêu cầu trong Modal nếu có vùng Alert
+                const authAlert = document.getElementById('authAlert');
+                if (authAlert) {
+                    authAlert.classList.remove('d-none');
+                    authAlert.className = "alert alert-warning";
+                    authAlert.textContent = "Bạn cần đăng nhập để thực hiện chức năng này!";
+                }
+                authModal.show();
+            } else {
+                alert("Vui lòng đăng nhập để thực hiện chức năng này!");
+            }
+        }
+    }
+
     // 1. Bộ đếm ký tự (Cập nhật ID cho Tour)
     const tourCommentInput = document.getElementById('tourComment'); // Đổi ID để khớp HTML Tour
     const tourCharCount = document.getElementById('tourCharCount');
@@ -614,155 +758,219 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // 3. Submit Review bằng AJAX
-    document.getElementById('reviewFormSubmit').addEventListener('submit', function(e) {
-        e.preventDefault(); // CHẶN tải lại trang
+    const tourReviewForm = document.getElementById('reviewFormSubmit');
 
-        const submitBtn = document.getElementById('submitReviewBtn');
-        const destinationId = document.getElementById('destinationId').value;
-        const authorName = document.getElementById('authorName').value;
-        const rating = document.querySelector('input[name="rating"]:checked').value; // Lấy giá trị sao đang chọn
-        const comment = document.getElementById('comment').value;
+    if (tourReviewForm) {
+        tourReviewForm.addEventListener('submit', function(e) {
+            e.preventDefault();
 
-        const selectedRating = document.querySelector('input[name="rating"]:checked');
-const ratingValue = selectedRating ? selectedRating.value : 5;
+            if (isSpamming('comment', 30)) return;
 
-        // Đoạn JS cần sửa trong hàm fetch
-        const payload = {
-            tour_id: document.getElementById('destinationId').value, // Phải là tour_id cho khớp với View
-            author_name: document.getElementById('authorName').value,
-            rating: document.getElementById('ratingValue').value,
-            comment: document.getElementById('comment').value
-        };
+            // Lấy đúng các giá trị dựa trên ID thực tế trong HTML
+            // Lưu ý: Phải dùng ID 'tourId' (hoặc destinationId tùy bạn đặt ở input hidden)
+            const tourIdInput = document.getElementById('destinationId') || document.getElementById('tourId');
+            const authorNameInput = document.getElementById('authorName');
+            const ratingInput = document.getElementById('ratingValue'); // Hidden input từ star-rating
+            const commentInput = document.getElementById('tourComment') || document.getElementById('comment');
 
-        fetch('/api/review/', { // Hãy đảm bảo URL này trỏ đúng đến api_submit_tour_review trong urls.py
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify(payload)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const review = data.review;
-                const reviewsList = document.getElementById('reviewsList');
-                
-                // 1. Tạo chuỗi sao HTML dựa trên rating
-                let starsHtml = '';
-                for (let i = 1; i <= 5; i++) {
-                    starsHtml += `<i class="${i <= review.rating ? 'fa-solid' : 'fa-regular'} fa-star"></i> `;
-                }
-
-                // 2. Tạo giao diện Review mới (giống hệt cấu trúc Jinja2 của bạn)
-                const newReviewHtml = `
-                    <div class="review-item border-bottom pb-4 mb-4 animate-fade-in" style="background: #f8f9ff; padding: 15px; border-radius: 15px;">
-                        <div class="d-flex justify-content-between">
-                            <div class="d-flex align-items-start">
-                                <div class="avatar-sm me-3">
-                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 48px; height: 48px;">
-                                        ${review.author_name.charAt(0).toUpperCase()}
-                                    </div>
-                                </div>
-                                <div>
-                                    <h6 class="mb-0 fw-bold text-dark">${review.author_name}</h6>
-                                    <div class="text-warning small my-1">
-                                        ${starsHtml}
-                                        <span class="text-muted ms-2 x-small">Vừa xong</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="ps-5 mt-2">
-                            <p class="text-secondary small mb-3">${review.comment}</p>
-                            <span class="badge bg-info-subtle text-info fw-normal x-small">
-                                <i class="fa-solid fa-clock-rotate-left me-1"></i>Đang chờ duyệt
-                            </span>
-                        </div>
-                    </div>
-                `;
-
-                // 3. Chèn vào đầu danh sách
-                // Nếu trước đó chưa có review nào (đang hiện box "Chưa có đánh giá")
-                if (reviewsList.querySelector('.text-center.py-5')) {
-                    reviewsList.innerHTML = newReviewHtml;
-                } else {
-                    reviewsList.insertAdjacentHTML('afterbegin', newReviewHtml);
-                }
-
-                // 4. Thu gọn form và reset
-                const bootstrapCollapse = bootstrap.Collapse.getInstance(document.getElementById('reviewForm'));
-                if (bootstrapCollapse) bootstrapCollapse.hide();
-                document.getElementById('reviewFormSubmit').reset();
-                
-                alert('Cảm ơn bạn! Đánh giá đã được gửi thành công.');
-            } else {
-                alert('Lỗi: ' + data.error);
+            if (!tourIdInput || !commentInput.value.trim()) {
+                alert("Vui lòng nhập nội dung đánh giá!");
+                return;
             }
-        })
-    });
 
+            const payload = {
+                tour_id: tourIdInput.value,
+                author_name: authorNameInput ? authorNameInput.value : 'Khách',
+                rating: ratingInput ? ratingInput.value : 5,
+                comment: document.getElementById('comment').value.trim()
+            };
 
+            const submitBtn = document.getElementById('submitReviewBtn');
+            if (submitBtn) submitBtn.disabled = true; // Chống spam click
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang gửi...';
 
-    // --- VOTE HỮU ÍCH ---
+            fetch('/api/tour_review/', { 
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateActionTime('comment');
+                    location.reload(); 
+                } else {
+                    alert('Lỗi: ' + data.error);
+                    if (submitBtn) submitBtn.disabled = false; submitBtn.innerHTML = originalText;
+                }
+            })
+            .catch(err => {
+                console.error('Lỗi fetch:', err);
+                if (submitBtn) submitBtn.disabled = false; submitBtn.innerHTML = originalText;
+            });
+        });
+    }
+
+    let isProcessing = false;
+    const COOLDOWN_MS = 2000;
+
     document.addEventListener('click', async function(e) {
-        
-        // 1. Logic Vote
+        // --- 1. LOGIC VOTE ---
         const voteBtn = e.target.closest('.vote-btn');
         if (voteBtn) {
             e.preventDefault();
-            const { reviewId, vote, isTour } = voteBtn.dataset;
-            
-            try {
-                const response = await fetch('{% url "travel:api_vote_review" %}', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-                    body: JSON.stringify({ review_id: reviewId, vote_type: vote, is_tour: isTour === "true" })
-                });
-                const data = await response.json();
-                if (data.success) {
-                    const container = voteBtn.closest('.review-item') || document.getElementById(`review-${reviewId}`);
-                    if (container) {
-                        const hCount = container.querySelector('.helpful-count');
-                        const nhCount = container.querySelector('.not-helpful-count');
-                        if (hCount) hCount.textContent = data.helpful_count;
-                        if (nhCount) nhCount.textContent = data.not_helpful_count;
-                    }
-                    voteBtn.classList.add('text-primary', 'fw-bold');
+
+            if (isSpamming('vote', 2)) return;
+
+            isProcessing = true;
+            if (voteBtn) voteBtn.style.opacity = "0.5";
+
+            checkAuthAndRun(async () => {
+                // Lấy dữ liệu từ data- attributes của nút
+                const reviewId = voteBtn.getAttribute('data-review-id');
+                const voteType = voteBtn.getAttribute('data-vote'); // 'helpful' hoặc 'not_helpful'
+                const isTour = String(voteBtn.getAttribute('data-is-tour')).toLowerCase() === "true";
+
+                if (!reviewId) {
+                    console.error("Lỗi: Không tìm thấy review_id trên nút!");
+                    return;
                 }
-            } catch (err) { console.error('Vote failed', err); }
+                // Trong sự kiện click của voteBtn
+                try {
+                    const response = await fetch(VOTE_API_URL, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json', 
+                            'X-CSRFToken': getCookie('csrftoken') 
+                        },
+                        body: JSON.stringify({ 
+                            review_id: reviewId, 
+                            vote_type: voteType, 
+                            is_tour: isTour 
+                        })
+                    });
+                    
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Tìm vùng chứa (container) của review vừa được bấm
+                        const reviewItem = voteBtn.closest('.review-item');
+                        
+                        // 1. Cập nhật số lượng hiển thị
+                        const helpfulSpan = reviewItem.querySelector('.helpful-count');
+                        const notHelpfulSpan = reviewItem.querySelector('.not-helpful-count');
+                        
+                        if (helpfulSpan) helpfulSpan.textContent = data.helpful_count;
+                        if (notHelpfulSpan) notHelpfulSpan.textContent = data.not_helpful_count;
+
+                        // 2. Thay đổi màu sắc nút để người dùng biết đã bấm
+                        // Xóa màu cũ của cả 2 nút trong cùng 1 review
+                        reviewItem.querySelectorAll('.vote-btn').forEach(btn => {
+                            btn.classList.remove('text-primary', 'fw-bold');
+                            btn.querySelector('i').className = btn.getAttribute('data-vote') === 'helpful' 
+                                ? 'fa-regular fa-thumbs-up' 
+                                : 'fa-regular fa-thumbs-down';
+                        });
+
+                        // Thêm màu mới cho nút vừa bấm
+                        voteBtn.classList.add('text-primary', 'fw-bold');
+                        const icon = voteBtn.querySelector('i');
+                        if (voteType === 'helpful') {
+                            icon.className = 'fa-solid fa-thumbs-up';
+                        } else {
+                            icon.className = 'fa-solid fa-thumbs-down';
+                        }
+
+                    } else {
+                        alert(data.message || 'Có lỗi xảy ra');
+                    }
+                } catch (err) { 
+                    console.error('Vote failed', err); 
+                }
+                finally {
+                    isProcessing = false;
+                    if (voteBtn) voteBtn.style.opacity = "1";
+                }
+                updateActionTime('vote');
+            });   
+            
         }
 
-        // 2. Logic Report
+        // --- 2. LOGIC REPORT ---
         const reportBtn = e.target.closest('.report-btn');
         if (reportBtn) {
             e.preventDefault();
-            const { reviewId, isTour } = reportBtn.dataset;
 
-            // Dùng prompt nhanh để lấy lý do (hoặc mở Modal nếu bạn đã làm HTML Modal)
-            const reason = prompt("Lý do báo cáo:\n1. Spam\n2. Xúc phạm\n3. Giả mạo\n4. Khác\n(Nhập số 1-4):");
-            if (!reason) return;
+            if (isSpamming('report', 5)) return;
 
-            const reasonMap = { '1': 'spam', '2': 'inappropriate', '3': 'fake', '4': 'other' };
-            const reasonCode = reasonMap[reason] || 'other';
 
-            try {
-                const response = await fetch('{% url "travel:api_report_review" %}', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-                    body: JSON.stringify({ 
-                        review_id: reviewId, 
-                        reason: reasonCode, 
-                        is_tour: isTour === "true",
-                        description: "Báo cáo nhanh từ người dùng" 
-                    })
-                });
-                const data = await response.json();
-                alert(data.message);
-            } catch (err) { alert('Gửi báo cáo thất bại'); }
+            isProcessing = true;
+            if (voteBtn) voteBtn.style.opacity = "0.5";
+
+            checkAuthAndRun(async () => {
+                const reviewId = reportBtn.getAttribute('data-review-id');
+                const isTour = String(reportBtn.getAttribute('data-is-tour')).toLowerCase() === "true";
+
+                const reason = prompt("Lý do báo cáo:\n1. Spam\n2. Xúc phạm\n3. Giả mạo\n4. Khác\n(Nhập số 1-4):");
+                if (!reason) return;
+
+                const reasonMap = { '1': 'spam', '2': 'inappropriate', '3': 'fake', '4': 'other' };
+                const reasonCode = reasonMap[reason] || 'other';
+
+                try {
+                    const response = await fetch(REPORT_API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                        body: JSON.stringify({ review_id: reviewId, reason: reasonCode, is_tour: isTour })
+                    });
+                    const data = await response.json();
+                    
+                    if (data.success || response.ok) {
+                        alert(data.message || "Đã gửi báo cáo thành công!");
+                        
+                        const icon = reportBtn.querySelector('i');
+                        if (icon) {
+                            // Đổi từ icon cờ (fa-flag) sang icon tích xanh hoặc dấu chấm than
+                            icon.className = 'fa-solid fa-circle-check me-2'; 
+                        }
+                        
+                        // Đổi chữ và màu nút
+                        reportBtn.innerHTML = '<i class="fa-solid fa-circle-check me-2"></i>Đã gửi báo cáo';
+                        reportBtn.classList.add('text-success', 'disabled'); // Đổi sang màu xanh lá cho dịu mắt
+                        reportBtn.style.pointerEvents = 'none'; // Khóa nút không cho bấm lại
+                        updateReportUI(reportBtn);
+                    }
+                } catch (err) { alert('Gửi báo cáo thất bại'); }
+                finally {
+                    isProcessing = false;
+                    if (voteBtn) voteBtn.style.opacity = "1";
+                }
+                updateActionTime('report');
+            });
+        }
+
+        // Hàm dùng chung để đổi icon và màu sắc
+        function updateReportUI(btn) {
+            btn.classList.add('text-danger', 'disabled');
+            btn.style.pointerEvents = 'none'; // Khóa nút
+
+            const icon = btn.querySelector('i');
+            if (icon) {
+                icon.className = 'fa-solid fa-circle-exclamation me-2'; // Đổi icon
+            }
+
+            const textSpan = btn.querySelector('span') || btn;
+            if (textSpan.tagName === 'SPAN') {
+                textSpan.textContent = 'Đã báo cáo';
+            } else {
+                btn.innerHTML = '<i class="fa-solid fa-circle-exclamation me-2"></i> Đã báo cáo';
+            }
         }
     });
-    
 
     function getCookie(name) {
         let cookieValue = null;
