@@ -41,10 +41,11 @@ urlpatterns = [
 
     # Url danh sách yêu thích
     path('favorites/', views.favorite_list, name='favorite_list'),
-    # Url yêu thích destination (id)
-    path('favorite/toggle-dest/<int:dest_id>/', views.toggle_destination_favorite, name='toggle_destination_favorite'),
-    
+
+    # Url yêu thích tour (id)
     path('favorite/toggle-tour/<int:tour_id>/', views.toggle_tour_favorite, name='toggle_tour_favorite'),
+    path("api/favorites/tours/", views.api_favorite_tours, name="api_favorite_tours"),
+    path("favorites/", views.favorite_list, name="favorite_list"),
 
     # URL hiển thị tất cả tour
     path('tours/', views.all_tours, name='all_tours'),

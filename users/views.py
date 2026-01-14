@@ -57,7 +57,7 @@ class LoginView(APIView):
             raise AuthenticationFailed("Email hoặc mật khẩu không đúng")
 
         user = authenticate(
-            username=user_obj.email,   # 🔥 KEY POINT
+            username=user_obj.email,   # KEY POINT
             password=password
         )
 

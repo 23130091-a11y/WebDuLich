@@ -638,20 +638,19 @@ class Favorite(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='favorites'
+        related_name="favorite_tours"
     )
-    destination = models.ForeignKey(
-        Destination,
+    tour = models.ForeignKey(
+        TourPackage,
         on_delete=models.CASCADE,
-        related_name='favorited_by'
+        related_name="favorited_by",
+        null=True,   # giữ lại
+        blank=True
     )
-
-    tour = models.ForeignKey(TourPackage, on_delete=models.CASCADE, related_name='favorited_by', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'destination', 'tour')  # Không cho thích trùng
+        unique_together = ("user", "tour")
 
     def __str__(self):
-        obj = self.destination or self.tour
-        return f"{self.user} thích {obj.name if obj else 'N/A'}"
+        return f"{self.user} thích {self.tour.name}"

@@ -355,21 +355,31 @@ def home(request):
         for loc in user_locations: 
             # Đi xuyên qua ForeignKey 'destination', sau đó lọc trực tiếp trên CharField 'location'
             tour_q |= Q(destination__location__icontains=loc)
-        
-        personalized_tours = TourPackage.objects.select_related('destination', 'category', 'recommendation')\
-            .filter(tour_q, is_active=True)\
-            .exclude(destination__id__in=viewed_history)\
-            .order_by('-recommendation__overall_score').distinct()[:6]
+
+        personalized_tours = (
+            TourPackage.objects
+            .select_related('destination', 'category', 'recommendation')
+            .prefetch_related('favorited_by')  # BẮT BUỘC
+            .filter(tour_q, is_active=True)
+            .exclude(destination__id__in=viewed_history)
+            .order_by('-recommendation__overall_score')
+            .distinct()[:6]
+        )
 
     if not personalized_tours:
         # Nếu không có gợi ý cá nhân, lấy 6 tour có điểm đánh giá cao nhất làm mặc định
-        personalized_tours = TourPackage.objects.select_related('destination', 'category', 'recommendation')\
-            .filter(is_active=True)\
+        personalized_tours = (
+            TourPackage.objects
+            .select_related('destination', 'category', 'recommendation')
+            .prefetch_related('favorited_by')  #
+            .filter(is_active=True)
             .order_by('-recommendation__overall_score')[:6]
-
+        )
     # --- 4. FEATURED TOURS (Theo danh mục) ---
     def get_featured_tours(cat_slug=None):
-        qs = TourPackage.objects.select_related('destination', 'category', 'recommendation').filter(is_active=True)
+        qs = (TourPackage.objects.select_related('destination', 'category', 'recommendation')
+              .prefetch_related('favorited_by')  # DÒNG QUYẾT ĐỊNH
+              .filter(is_active=True))
         if cat_slug: qs = qs.filter(category__slug=cat_slug)
         return list(qs[:12])  # Hiển thị 12 tour trên trang chủ
 
@@ -1411,40 +1421,67 @@ def api_nearby_places(request):
         'restaurants': restaurants
     })
 
-# Yêu thích destination
-@login_required
-def toggle_destination_favorite(request, dest_id):
-    destination = get_object_or_404(Destination, id=dest_id)
-    fav_qs = Favorite.objects.filter(user=request.user, destination=destination)
-    
-    if fav_qs.exists():
-        fav_qs.delete()
-        is_favorite = False
-    else:
-        Favorite.objects.create(user=request.user, destination=destination)
-        is_favorite = True
-    
-    return JsonResponse({'status': 'success', 'is_favorite': is_favorite})
-
+# Yêu thích tour
 """Click tim →
 → toggle_favorite →
 → nếu chưa có → tạo
 → nếu có → xóa
 → quay về trang trước"""
 
-@login_required
+@require_POST
 def toggle_tour_favorite(request, tour_id):
+    # 1. Chưa đăng nhập → trả JSON cho frontend mở modal
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            "code": "LOGIN_REQUIRED",
+            "message": "Vui lòng đăng nhập để thêm yêu thích"
+        }, status=401)
+
+    # 2. Lấy tour
     tour = get_object_or_404(TourPackage, id=tour_id)
-    fav_qs = Favorite.objects.filter(user=request.user, tour=tour)
-    
-    if fav_qs.exists():
-        fav_qs.delete()
-        is_favorite = False
-    else:
-        Favorite.objects.create(user=request.user, tour=tour)
+
+    # 3. Toggle favorite
+    favorite, created = Favorite.objects.get_or_create(
+        user=request.user,
+        tour=tour
+    )
+
+    if created:
         is_favorite = True
-    
-    return JsonResponse({'status': 'success', 'is_favorite': is_favorite})
+    else:
+        favorite.delete()
+        is_favorite = False
+
+    # 4. Trả kết quả
+    return JsonResponse({
+        "success": True,
+        "is_favorite": is_favorite,
+        "tour_id": tour.id
+    })
+
+# api lấy tour
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def api_favorite_tours(request):
+    favorites = (
+        Favorite.objects
+        .filter(user=request.user)
+        .select_related("tour")
+        .order_by("-created_at")
+    )
+
+    data = [
+        {
+            "id": f.tour.id,
+            "name": f.tour.name,
+            "slug": f.tour.slug,
+            "price": f.tour.price,
+            "image": f.tour.image_main.url if f.tour.image_main else "",
+        }
+        for f in favorites
+    ]
+
+    return Response(data)
 
 # List yêu thích
 @login_required
@@ -1453,12 +1490,16 @@ def favorite_list(request):
         Favorite.objects
         .filter(user=request.user)
         .select_related(
-            'destination', 
-            'destination__recommendation'
+            "tour",
+            "tour__destination",
+            "tour__category"
         )
-        .order_by('-created_at')
+        .order_by("-created_at")
     )
-    return render(request, 'travel/favorites.html', {'favorites': favorites})
+    return render(request, "travel/favorite.html", {
+        "favorites": favorites
+    })
+
 
 from django.utils.html import format_html
 from django.urls import reverse
