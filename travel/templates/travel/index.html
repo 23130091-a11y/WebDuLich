@@ -97,6 +97,26 @@
             .autocomplete-item:focus {
                 background: #e3f2fd !important;
             }
+
+            .login-modal {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 9999;
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .login-modal__content {
+                background: #fff;
+                padding: 20px 25px;
+                border-radius: 8px;
+                width: 320px;
+                text-align: center;
+            }
+
             </style>
 
             <!-- Tìm kiếm chi tiết -->
@@ -507,8 +527,13 @@
                             
                             <!-- Favorite button -->
                             <div class="position-absolute top-0 end-0 m-3">
-                                <button class="btn btn-sm btn-light rounded-circle shadow-sm favorite-btn p-2" data-url="{% url 'travel:toggle_tour_favorite' tour.id %}" style="width: 36px; height: 36px;">
-                                    <i class="{% if request.user in tour.favorites.all %}fa-solid{% else %}fa-regular{% endif %} fa-heart text-danger"></i>
+                                <button class="btn btn-sm btn-light rounded-circle shadow-sm favorite-btn p-2"
+                                        data-url="{% url 'travel:toggle_tour_favorite' tour.id %}">
+                                    <i class="{% if request.user in tour.favorites.all %}
+                                        fa-solid
+                                    {% else %}
+                                        fa-regular
+                                    {% endif %} fa-heart text-danger"></i>
                                 </button>
                             </div>
                             
@@ -1197,6 +1222,82 @@ document.addEventListener('DOMContentLoaded', function() {
 <!--&lt;!&ndash; JS custom &ndash;&gt;-->
 <!--<script src="{% static 'js/index.js' %}"></script>-->
 
+<!-- js cho button tim -->
+<div id="login-required-modal" class="login-modal d-none">
+    <div class="login-modal__content">
+        <h5>Thông báo</h5>
+        <p>Bạn cần đăng nhập để sử dụng chức năng yêu thích.</p>
+        <button id="close-login-modal" class="btn btn-primary btn-sm">Đóng</button>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll(".favorite-btn").forEach(btn => {
+            btn.addEventListener("click", function (e) {
+                e.preventDefault();
+
+                const url = this.dataset.url;
+                const icon = this.querySelector("i");
+
+                fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": getCookie("csrftoken"),
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                })
+                    .then(res => {
+                        if (res.status === 401) {
+                            openLoginRequiredModal();
+                            return null; // DỪNG TẠI ĐÂY
+                        }
+                        return res.json();
+                    })
+                    .then(data => {
+                        if (!data || !data.success) return;
+
+                        // CHỈ ĐỔI MÀU KHI BACKEND OK
+                        icon.classList.toggle("fa-solid", data.is_favorite);
+                        icon.classList.toggle("fa-regular", !data.is_favorite);
+                    })
+                    .catch(err => console.log(err));
+            });
+        });
+
+        document.getElementById("close-login-modal")
+            ?.addEventListener("click", closeLoginRequiredModal);
+    });
+
+    function openLoginRequiredModal() {
+        document.getElementById("login-required-modal")
+            ?.classList.remove("d-none");
+    }
+
+    function closeLoginRequiredModal() {
+        document.getElementById("login-required-modal")
+            ?.classList.add("d-none");
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(
+                        cookie.slice(name.length + 1)
+                    );
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+</script>
+
 <!-- Autocomplete Script -->
-<script src="{% static 'js/autocomplete.js' %}"></script>
+<!--<script src="{% static 'js/autocomplete.js' %}"></script>-->
 {% endblock %}

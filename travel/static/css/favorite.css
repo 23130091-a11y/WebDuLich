@@ -1,0 +1,12 @@
+.favorite-section {
+    background: #f8f9fa;
+}
+
+.tour-card {
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.tour-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0,0,0,.12);
+}
