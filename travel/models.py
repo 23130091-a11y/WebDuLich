@@ -654,3 +654,33 @@ class Favorite(models.Model):
 
     def __str__(self):
         return f"{self.user} thích {self.tour.name}"
+
+# Tram
+# dua chi so fix cung len admin
+
+from django.db import  models
+from django.core.exceptions import ValidationError
+
+class RecommendationConfig(models.Model):
+
+    # Các trọng số
+    review_score = models.FloatField(default=0.4, verbose_name="Review score")
+    sentiment_score = models.FloatField(default=0.3, verbose_name="Sentiment score")
+    popularity_score = models.FloatField(default=0.3, verbose_name="Popularity score")
+
+    # Hệ số quy đổi(total_reviews * 5)
+    popularity_point_per_review = models.IntegerField(default=5, verbose_name="Điểm cộng cho mỗi đánh giá")
+
+    class Meta:
+        verbose_name = "Công thức tính điểm"
+
+    def save(self, *args, **kwargs):
+        # Kiểm tra tổng trọng số phải ~ 1.0
+        total = self.review_score + self.sentiment_score + self.popularity_score
+        if not (0.99 <= total <= 1.01):
+            raise ValidationError(f"Tổng 3 trọng số phải bằng 1.0 (Hiện tại: {total})")
+
+        # Singleton: Chỉ cho phép 1 dòng cấu hình
+        if not self.pk and RecommendationConfig.objects.exists():
+            raise ValidationError('Chỉ được phép tạo 1 cấu hình duy nhất.')
+        return super().save(*args, **kwargs)
