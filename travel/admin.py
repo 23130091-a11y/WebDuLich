@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Category, Destination, TourPackage, DestinationImage, TourImage, Review, ReviewReport, ReviewVote, \
-    RecommendationScore, SearchHistory, TravelType
+    RecommendationScore, SearchHistory, TravelType, RecommendationConfig
 from django.utils.html import format_html
 
 
@@ -305,3 +305,10 @@ class SearchHistoryAdmin(admin.ModelAdmin):
     list_filter = ['created_at']
     search_fields = ['query']
     readonly_fields = ['query', 'user', 'user_ip', 'results_count', 'created_at']
+
+
+@admin.register(RecommendationConfig)
+class RecommendationConfigAdmin(admin.ModelAdmin):
+    list_display = ('review_score', 'sentiment_score', 'popularity_score')
+
+
