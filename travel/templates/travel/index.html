@@ -544,12 +544,15 @@
                             <!-- Favorite button -->
                             <div class="position-absolute top-0 end-0 m-3">
                                 <button class="btn btn-sm btn-light rounded-circle shadow-sm favorite-btn p-2"
-                                        data-url="{% url 'travel:toggle_tour_favorite' tour.id %}">
-                                    <i class="{% if request.user in tour.favorites.all %}
-                                        fa-solid
-                                    {% else %}
-                                        fa-regular
-                                    {% endif %} fa-heart text-danger"></i>
+                                        data-url="{% url 'travel:toggle_tour_favorite' tour.id %}"
+                                        data-auth="{{ request.user.is_authenticated|yesno:'1,0' }}">
+                                    <i class="
+                                        {% if request.user.is_authenticated and request.user in tour.favorited_by.all %}
+                                            fa-solid
+                                        {% else %}
+                                            fa-regular
+                                        {% endif %}
+                                        fa-heart text-danger"></i>
                                 </button>
                             </div>
                             
@@ -1253,8 +1256,16 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.addEventListener("click", function (e) {
                 e.preventDefault();
 
-                const url = this.dataset.url;
+                const isAuth = this.dataset.auth === "1";
                 const icon = this.querySelector("i");
+
+                // CHƯA LOGIN → KHÔNG ĐỔI ICON
+                if (!isAuth) {
+                    openLoginRequiredModal();
+                    return;
+                }
+
+                const url = this.dataset.url;
 
                 fetch(url, {
                     method: "POST",
@@ -1263,21 +1274,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         "X-Requested-With": "XMLHttpRequest"
                     }
                 })
-                    .then(res => {
-                        if (res.status === 401) {
-                            openLoginRequiredModal();
-                            return null; // DỪNG TẠI ĐÂY
-                        }
-                        return res.json();
-                    })
+                    .then(res => res.json())
                     .then(data => {
-                        if (!data || !data.success) return;
+                        if (!data.success) return;
 
-                        // CHỈ ĐỔI MÀU KHI BACKEND OK
                         icon.classList.toggle("fa-solid", data.is_favorite);
                         icon.classList.toggle("fa-regular", !data.is_favorite);
-                    })
-                    .catch(err => console.log(err));
+                    });
             });
         });
 
