@@ -29,7 +29,8 @@
             </nav>
 
             <div class="btn-group shadow-sm">
-                <button class="btn btn-white btn-sm border favorite-btn" data-url="{% url 'travel:toggle_destination_favorite' destination.id %}">
+                <button class="btn btn-white btn-sm border favorite-btn"
+                        data-url="{% url 'travel:toggle_tour_favorite' destination.id %}">
                     <i class="fa-regular fa-heart text-danger"></i>
                 </button>
                 <button class="btn btn-white btn-sm border" onclick="copyUrl()">
