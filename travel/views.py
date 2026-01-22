@@ -309,12 +309,29 @@ def home(request):
     personalized_tours = []
     user_travel_types = []
     user_locations = []
+    favorite_tours = []
+    favorite_destination_ids = []
 
     # Lấy sở thích nếu đã đăng nhập
     if request.user.is_authenticated:
         prefs = TravelPreference.objects.filter(user=request.user)
         user_travel_types = list(prefs.exclude(travel_type='').values_list('travel_type', flat=True).distinct())
         user_locations = list(prefs.exclude(location='').values_list('location', flat=True).distinct())
+        favorite_tours = Favorite.objects.filter(
+            user=request.user
+        ).select_related("tour", "tour__destination")
+
+        # đếm số tour
+        favorite_dest_stats = (
+            favorite_tours
+            .values("tour__destination")
+            .annotate(fav_count=Count("id"))
+            .order_by("-fav_count")
+        )
+        favorite_destination_ids = [
+            item["tour__destination"]
+            for item in favorite_dest_stats
+        ]
 
     # Nếu preference trống, lấy từ lịch sử xem
     if not user_travel_types and not user_locations and viewed_history:
@@ -336,13 +353,28 @@ def home(request):
             # location là CharField nên chỉ cần icontains trực tiếp
             dest_q |= Q(location__icontains=loc)
 
-        # Thực hiện truy vấn
+        # ⭐ thêm tiêu chí destination có nhiều tour được yêu thích
+        if favorite_destination_ids:
+            dest_q |= Q(id__in=favorite_destination_ids)
+
+        # ✅ QUERY DESTINATION SAU KHI dest_q ĐÃ HOÀN CHỈNH
         personalized_destinations = (
             Destination.objects
-            .select_related('recommendation')
-            .annotate(num_tours=Count('packages'))
+            .select_related("recommendation")
+            .annotate(
+                num_tours=Count("packages"),
+                fav_score=Count(
+                    "packages__favorited_by",
+                    filter=Q(packages__favorited_by__user=request.user),
+                    distinct=True
+                )
+            )
             .filter(dest_q)
             .exclude(id__in=viewed_history)
+            .order_by(
+                "-fav_score",
+                "-recommendation__overall_score"
+            )
             .distinct()[:6]
         )
 
@@ -355,6 +387,9 @@ def home(request):
         for loc in user_locations:
             # Đi xuyên qua ForeignKey 'destination', sau đó lọc trực tiếp trên CharField 'location'
             tour_q |= Q(destination__location__icontains=loc)
+
+        if favorite_destination_ids:
+            tour_q |= Q(destination__id__in=favorite_destination_ids)
 
         personalized_tours = (
             TourPackage.objects
