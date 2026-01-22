@@ -25,7 +25,7 @@
             <div class="row g-4">
             {% for fav in favorites %}
             {% with tour=fav.tour %}
-                <div class="col-xl-4 col-lg-4 col-md-6 favorite-item">
+                <div class="col-xl-4 col-lg-4 col-md-6 favorite-item" id="favorite-{{ tour.id }}">
                     <div class="card h-100 border-0 shadow-hover tour-card">
 
                     <!-- Image -->
@@ -142,12 +142,30 @@
 </section>
 
 <script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(
+                        cookie.substring(name.length + 1)
+                    );
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
     document.querySelectorAll(".favorite-btn").forEach(btn => {
         btn.addEventListener("click", function (e) {
             e.preventDefault();
 
             const url = this.dataset.url;
             const card = this.closest(".favorite-item");
+            if(!card) return;
 
             fetch(url, {
                 method: "POST",
