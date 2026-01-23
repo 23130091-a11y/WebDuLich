@@ -225,6 +225,45 @@ class TourReviewAdmin(admin.ModelAdmin):
     report_count_display.short_description = "Số lượt báo cáo"
 
 from django.contrib import admin
+from .models import Booking
+
+@admin.register(Booking)
+class BookingAdmin(admin.ModelAdmin):
+    # 1. Những cột sẽ hiển thị ở trang danh sách
+    list_display = ('booking_code', 'full_name', 'tour', 'departure_date', 'total_price', 'status', 'payment_status', 'created_at')
+    
+    # 2. Bộ lọc nhanh ở bên phải (Cực kỳ hữu ích)
+    list_filter = ('status', 'payment_status', 'departure_date', 'created_at')
+    
+    # 3. Ô tìm kiếm (Tìm theo mã đơn, tên khách hoặc số điện thoại)
+    search_fields = ('booking_code', 'full_name', 'phone_number', 'email')
+    
+    # 4. Cho phép sửa nhanh trạng thái ngay tại danh sách mà không cần bấm vào chi tiết
+    list_editable = ('status', 'payment_status')
+    
+    # 5. Phân trang (Tránh load quá nhiều đơn một lúc)
+    list_per_page = 20
+    
+    # 6. Sắp xếp đơn mới nhất lên đầu
+    ordering = ('-created_at',)
+    
+    # 7. Chỉ đọc (Không cho Admin sửa mã đơn hàng vì nó là duy nhất)
+    readonly_fields = ('booking_code', 'total_price', 'created_at')
+
+    # Group các thông tin lại cho dễ nhìn khi bấm vào xem chi tiết
+    fieldsets = (
+        ('Thông tin định danh', {
+            'fields': ('booking_code', 'user', 'status', 'payment_status')
+        }),
+        ('Thông tin khách hàng', {
+            'fields': ('full_name', 'email', 'phone_number', 'special_requests')
+        }),
+        ('Chi tiết Tour & Tài chính', {
+            'fields': ('tour', 'departure_date', 'number_of_adults', 'number_of_children', 'total_price')
+        }),
+    )
+
+from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
 from .models import ReviewReport

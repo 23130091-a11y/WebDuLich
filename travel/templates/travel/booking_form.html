@@ -1,0 +1,139 @@
+{% extends "travel/baseIndex.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <h2 class="fw-bold mb-4">Thông tin đặt Tour</h2>
+                    
+                    <form method="POST" id="bookingForm">
+                        {% csrf_token %}
+                        
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">Họ và tên</label>
+                                {{ form.full_name }}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Số điện thoại</label>
+                                {{ form.phone_number }}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Email</label>
+                                {{ form.email }}
+                            </div>
+                            
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">Ngày khởi hành dự kiến</label>
+                                {{ form.departure_date }}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Số người lớn</label>
+                                {{ form.number_of_adults }}
+                                <small class="text-muted">Giá: {{ tour.price|floatformat:0 }}đ / người</small>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Số trẻ em (Dưới 12 tuổi)</label>
+                                {{ form.number_of_children }}
+                                <small class="text-muted">Giá: 70% giá người lớn</small>
+                            </div>
+                            
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">Yêu cầu đặc biệt</label>
+                                {{ form.special_requests }}
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg shadow-sm">
+                                <i class="fa-solid fa-check-circle me-2"></i>THANH TOÁN
+                            </button>
+                            <a href="{% url 'travel:tour_detail' tour.slug %}" class="btn btn-link text-muted">Quay lại chi tiết tour</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 sticky-top" style="top: 100px; z-index: 10;">
+                {% if tour.image_main %}
+                    <img src="{{ tour.image_main.url }}" class="card-img-top" alt="{{ tour.name }}" style="height: 200px; object-fit: cover;">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="fw-bold text-success mb-1">{{ tour.name }}</h5>
+                    <p class="text-muted small mb-3">
+                        <i class="fa-solid fa-location-dot me-1 text-danger"></i> {{ tour.destination.name }}
+                    </p>
+                    
+                    <div class="d-flex justify-content-between small mb-2">
+                        <span>Thời lượng:</span>
+                        <span class="fw-bold">{{ tour.duration }} ngày</span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between small mb-2">
+                        <span>Đánh giá:</span>
+                        <span class="text-warning fw-bold">
+                            {{ tour.average_rating|floatformat:1 }} <i class="fa-solid fa-star"></i>
+                        </span>
+                    </div>
+                    
+                    <hr class="my-3">
+                    
+                    <div class="bg-light p-3 rounded">
+                        <p class="mb-1 fw-bold text-muted small">TỔNG TIỀN DỰ KIẾN:</p>
+                        <h3 class="text-danger fw-bold mb-0" id="display-total">0đ</h3>
+                        <small class="text-muted" style="font-size: 0.75rem;">* Đã bao gồm thuế và phí dịch vụ</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Lấy các element dựa trên ID mặc định của Django Form
+        const adultInput = document.getElementById('id_number_of_adults');
+        const childInput = document.getElementById('id_number_of_children');
+        const displayTotal = document.getElementById('display-total');
+        
+        // Lấy giá từ server truyền xuống
+        const adultPrice = parseFloat("{{ tour.price }}");
+        const childPrice = adultPrice * 0.7;
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('vi-VN').format(Math.round(value)) + 'đ';
+        }
+
+        function updateTotal() {
+            if (!adultInput || !childInput || !displayTotal) return;
+
+            let adults = parseInt(adultInput.value) || 0;
+            let children = parseInt(childInput.value) || 0;
+            
+            // Tính toán tổng tiền
+            let total = (adults * adultPrice) + (children * childPrice);
+            
+            // Hiển thị lên giao diện
+            displayTotal.innerText = formatCurrency(total);
+        }
+
+        // Lắng nghe sự kiện thay đổi
+        if (adultInput && childInput) {
+            adultInput.addEventListener('input', updateTotal);
+            childInput.addEventListener('input', updateTotal);
+            
+            // Gọi hàm ngay lập tức để hiển thị giá mặc định khi load trang
+            updateTotal();
+        }
+    });
+</script>
+{% endblock %}
