@@ -16,7 +16,7 @@ from django_ratelimit.decorators import ratelimit
 from users.models import TravelPreference
 from .services import get_weather_forecast, get_route, get_location_coordinates, get_nearby_hotels, get_nearby_restaurants, get_current_weather
 from django.core.paginator import Paginator
-from .models import TourPackage, Category, Destination, SearchHistory, Review, Favorite, TourReview, TourPackage, Booking, FavoriteDestination
+from .models import TourPackage, Category, Destination, SearchHistory, Review, Favorite, TourReview, TourPackage, Booking, FavoriteDestination, RecommendationConfig
 import bleach
 
 from .cache_utils import get_cache_key, get_or_set_cache
@@ -279,7 +279,7 @@ def home(request):
             for folder in os.listdir(base_path):
                 folder_path = os.path.join(base_path, folder)
                 if os.path.isdir(folder_path):
-                    images = [f"{folder}/{img}" for img in os.listdir(folder_path) 
+                    images = [f"{folder}/{img}" for img in os.listdir(folder_path)
                              if img.lower().endswith(('.jpg', '.jpeg', '.png', '.webp'))]
                     if images:
                         results.append({
@@ -301,7 +301,7 @@ def home(request):
             .annotate(num_tours=Count('packages'))
             .order_by('-recommendation__overall_score')[:6]
         )
-    
+
     top_destinations = get_or_set_cache(get_cache_key('homepage', 'top_destinations'), get_top_destinations, timeout=600)
 
     # --- 3. XỬ LÝ GỢI Ý CÁ NHÂN HÓA (DESTINATION & TOUR) ---
@@ -309,12 +309,29 @@ def home(request):
     personalized_tours = []
     user_travel_types = []
     user_locations = []
+    favorite_tours = []
+    favorite_destination_ids = []
 
     # Lấy sở thích nếu đã đăng nhập
     if request.user.is_authenticated:
         prefs = TravelPreference.objects.filter(user=request.user)
         user_travel_types = list(prefs.exclude(travel_type='').values_list('travel_type', flat=True).distinct())
         user_locations = list(prefs.exclude(location='').values_list('location', flat=True).distinct())
+        favorite_tours = Favorite.objects.filter(
+            user=request.user
+        ).select_related("tour", "tour__destination")
+
+        # đếm số tour
+        favorite_dest_stats = (
+            favorite_tours
+            .values("tour__destination")
+            .annotate(fav_count=Count("id"))
+            .order_by("-fav_count")
+        )
+        favorite_destination_ids = [
+            item["tour__destination"]
+            for item in favorite_dest_stats
+        ]
 
     # Nếu preference trống, lấy từ lịch sử xem
     if not user_travel_types and not user_locations and viewed_history:
@@ -330,31 +347,49 @@ def home(request):
 
         for t in user_travel_types:
             # travel_type là ManyToMany nên phải trỏ vào cột name của bảng TravelType
-            dest_q |= Q(travel_type__name__icontains=t) 
-            
+            dest_q |= Q(travel_type__name__icontains=t)
+
         for loc in user_locations:
             # location là CharField nên chỉ cần icontains trực tiếp
-            dest_q |= Q(location__icontains=loc) 
+            dest_q |= Q(location__icontains=loc)
 
-        # Thực hiện truy vấn
+        # ⭐ thêm tiêu chí destination có nhiều tour được yêu thích
+        if favorite_destination_ids:
+            dest_q |= Q(id__in=favorite_destination_ids)
+
+        # ✅ QUERY DESTINATION SAU KHI dest_q ĐÃ HOÀN CHỈNH
         personalized_destinations = (
             Destination.objects
-            .select_related('recommendation')
-            .annotate(num_tours=Count('packages'))
+            .select_related("recommendation")
+            .annotate(
+                num_tours=Count("packages"),
+                fav_score=Count(
+                    "packages__favorited_by",
+                    filter=Q(packages__favorited_by__user=request.user),
+                    distinct=True
+                )
+            )
             .filter(dest_q)
             .exclude(id__in=viewed_history)
+            .order_by(
+                "-fav_score",
+                "-recommendation__overall_score"
+            )
             .distinct()[:6]
         )
 
         # Lọc Tour
         tour_q = Q()
-        for t in user_travel_types: 
+        for t in user_travel_types:
             # Nếu Category.name là trường văn bản (thường là vậy)
             tour_q |= Q(category__name__icontains=t)
-            
-        for loc in user_locations: 
+
+        for loc in user_locations:
             # Đi xuyên qua ForeignKey 'destination', sau đó lọc trực tiếp trên CharField 'location'
             tour_q |= Q(destination__location__icontains=loc)
+
+        if favorite_destination_ids:
+            tour_q |= Q(destination__id__in=favorite_destination_ids)
 
         personalized_tours = (
             TourPackage.objects
@@ -1416,6 +1451,15 @@ def api_report_review(request):
 def update_destination_scores(destination):
     """Cập nhật điểm gợi ý và TRẢ VỀ bản ghi RecommendationScore"""
     try:
+        #Tram
+        #dua fix cung len admin
+        config = RecommendationConfig.objects.first()
+
+        review_score = config.review_score if config else 0.4
+        sentiment_score = config.sentiment_score if config else 0.3
+        popularity_score = config.popularity_score if config else 0.3
+        popularity_point_per_review = config.popularity_point_per_review if config else 5
+
         reviews = Review.objects.filter(destination=destination)
         stats = reviews.aggregate(
             avg_rating=Avg('rating'),
@@ -1431,11 +1475,18 @@ def update_destination_scores(destination):
         positive_ratio = (positive_reviews / total_reviews * 100) if total_reviews > 0 else 0
         
         # Công thức tính Overall Score
-        review_score = (avg_rating / 5) * 100
-        sentiment_score = ((avg_sentiment + 1) / 2) * 100
-        popularity_score = min(total_reviews * 5, 100)
-        overall_score = (review_score * 0.4) + (sentiment_score * 0.3) + (popularity_score * 0.3)
-        
+        # review_score = (avg_rating / 5) * 100
+        # sentiment_score = ((avg_sentiment + 1) / 2) * 100
+        # popularity_score = min(total_reviews * 5, 100)
+        # overall_score = (review_score * 0.4) + (sentiment_score * 0.3) + (popularity_score * 0.3)
+
+        score_from_rating = (avg_rating / 5) * 100
+        score_from_sentiment = ((avg_sentiment + 1) / 2) * 100
+        score_from_popularity = min(total_reviews * popularity_point_per_review, 100)
+        overall_score = (score_from_rating * review_score) + \
+                        (score_from_sentiment * sentiment_score) + \
+                        (score_from_popularity * popularity_score)
+
         recommendation, _ = RecommendationScore.objects.update_or_create(
             destination=destination,
             defaults={
