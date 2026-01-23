@@ -260,7 +260,6 @@
         </div>
     </section>
 
-<<<<<<< HEAD
     <!--    {% if personalized_destinations or personalized_tours %}-->
     <section class="recommend py-5 bg-white d-none" id="personalized-section">
         <div class="container">
@@ -269,18 +268,9 @@
                     <i class="fa-solid fa-wand-magic-sparkles text-primary me-2"></i>Dành riêng cho {% if request.user.is_authenticated %}{{ request.user.username }}{% else %}bạn{% endif %}
                 </h2>
                 <p class="text-muted">Hệ thống AI đã phân tích sở thích để đưa ra những gợi ý phù hợp nhất</p>
-=======
-<!--    {% if personalized_destinations or personalized_tours %}-->
-        <section class="recommend py-5 bg-white d-none" id="personalized-section">
-            <div class="container">
-                <div class="text-center mb-5">
-                    <h2 class="fw-bold mb-2">
-                        <i class="fa-solid fa-wand-magic-sparkles text-primary me-2"></i>Dành riêng cho {{ request.user.username|default:"bạn" }}
-                    </h2>
-                    <p class="text-muted">Hệ thống AI đã phân tích sở thích để đưa ra những gợi ý phù hợp nhất</p>
-                </div>
+            </div>
 
-                {% if personalized_destinations %}
+            {% if personalized_destinations %}
                 <div class="mb-5">
                     <h4 class="fw-bold mb-4"><i class="fa-solid fa-map-location-dot text-primary me-2"></i>Địa điểm bạn sẽ thích</h4>
                     <div class="row g-4">
@@ -366,106 +356,8 @@
                     </div>
                 </div>
                 {% endif %}
->>>>>>> 6735ae2ee07e3f426a0f25a1f1b8af95de87f576
             </div>
 
-            {% if personalized_destinations %}
-            <div class="mb-5">
-                <h4 class="fw-bold mb-4"><i class="fa-solid fa-map-location-dot text-primary me-2"></i>Địa điểm bạn sẽ
-                    thích</h4>
-                <div class="row g-4">
-                    {% for dest in personalized_destinations %}
-                    <div class="col-md-4">
-                        <div class="card h-100 shadow-sm border-0 position-relative card-hover"
-                            style="border-radius: 15px; overflow: hidden;">
-                            <span class="badge bg-primary position-absolute top-0 end-0 m-3 shadow-sm">
-                                <i class="fa-solid fa-heart"></i> Gợi ý AI
-                            </span>
-
-                            {% with db_img=dest.images.all.first %}
-                            {% if db_img %}
-                            <img src="{{ db_img.image.url }}" class="card-img-top" alt="{{ dest.name }}"
-                                style="height: 220px; object-fit: cover;">
-                            {% elif dest.image %}
-                            <img src="{{ dest.image.url }}" class="card-img-top" alt="{{ dest.name }}"
-                                style="height: 220px; object-fit: cover;">
-                            {% else %}
-                            <img src="{% static 'images/'|add:dest.slug|add:'/'|add:dest.slug|add:'.jpg' %}"
-                                class="card-img-top" style="height: 220px; object-fit: cover;"
-                                onerror="this.src='{% static 'images/default-destination.jpg' %}';">
-                            {% endif %}
-                            {% endwith %}
-
-                            <div class="card-body">
-                                <h5 class="card-title fw-bold mb-1">{{ dest.name }}</h5>
-                                <p class="text-muted small mb-3"><i class="fa-solid fa-location-dot"></i> {{ dest.location }}</p>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="text-warning small">
-                                        <i class="fa-solid fa-star"></i> {{ dest.avg_rating|default:"5.0" }}
-                                    </div>
-                                    <a href="{% url 'travel:destination_detail' dest.id %}"
-                                        class="btn btn-primary btn-sm px-4 rounded-pill">Khám phá</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-
-            <hr class="my-5 opacity-25">
-
-            {% if personalized_tours %}
-            <div>
-                <h4 class="fw-bold mb-4"><i class="fa-solid fa-suitcase-rolling text-danger me-2"></i>Tour dành cho bạn
-                </h4>
-                <div class="row g-4">
-                    {% for tour in personalized_tours %}
-                    <div class="col-lg-6">
-                        <div class="card h-100 shadow-sm border-0 bg-light card-hover"
-                            style="border-radius: 12px; transition: transform 0.3s;">
-                            <div class="row g-0 h-100">
-                                <div class="col-4 p-2">
-                                    {% if tour.image_main %}
-                                    <img src="{{ tour.image_main.url }}" class="img-fluid rounded h-100"
-                                        style="object-fit: cover; min-height: 120px;">
-                                    {% else %}
-                                    {% with t_dest_img=tour.destination.images.all.first %}
-                                    {% if t_dest_img %}
-                                    <img src="{{ t_dest_img.image.url }}" class="img-fluid rounded h-100"
-                                        style="object-fit: cover; min-height: 120px;">
-                                    {% else %}
-                                    <img src="{% static 'images/'|add:tour.destination.slug|add:'/'|add:tour.destination.slug|add:'.jpg' %}"
-                                        class="img-fluid rounded h-100" style="object-fit: cover; min-height: 120px;"
-                                        onerror="this.src='{% static 'images/default-tour.jpg' %}';">
-                                    {% endif %}
-                                    {% endwith %}
-                                    {% endif %}
-                                </div>
-                                <div class="col-8">
-                                    <div class="card-body d-flex flex-column h-100">
-                                        <h6 class="fw-bold mb-1 text-truncate-2">{{ tour.name }}</h6>
-                                        <div class="small text-muted mb-2">
-                                            <i class="fa-solid fa-calendar-day me-1"></i> Khởi hành hàng ngày
-                                        </div>
-                                        <div class="mt-auto d-flex justify-content-between align-items-end">
-                                            <div>
-                                                <span class="text-danger fw-bold fs-5">{{ tour.price|floatformat:0|intcomma }}</span>
-                                                <small class="text-muted">VND</small>
-                                            </div>
-                                            <a href="{% url 'travel:tour_detail' tour.slug %}"
-                                                class="btn btn-outline-danger btn-sm rounded-pill px-3">Chi tiết</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
         </div>
     </section>
     <!--    {% endif %}-->
@@ -558,7 +450,6 @@
         </div>
     </section>
 
-<<<<<<< HEAD
     <!-- CSS cho destination cards -->
     <style>
         .destination-card {
@@ -581,7 +472,9 @@
         .destination-card:hover .dest-title {
             color: #0d6efd !important;
         }
-=======
+    </style>
+    {% endif %}
+
     {% if booking_based_tours %} 
     <section class="booking-based-recommend py-5" style="background: #f8fbff; border-top: 2px solid #e1e9f4;">
         <div class="container">
@@ -673,30 +566,8 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
->>>>>>> 6735ae2ee07e3f426a0f25a1f1b8af95de87f576
     </style>
     {% endif %}
-        
-        <!-- CSS cho destination cards -->
-        <style>
-        .destination-card {
-            background: #fff;
-        }
-        .destination-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.12) !important;
-        }
-        .destination-card:hover .dest-img {
-            transform: scale(1.08);
-        }
-        .dest-title {
-            transition: color 0.3s ease;
-        }
-        .destination-card:hover .dest-title {
-            color: #0d6efd !important;
-        }
-        </style>
-        {% endif %}
 
     <!-- TRENDING SECTION -->
     <section class="trending-section py-5 bg-light">

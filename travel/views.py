@@ -455,7 +455,6 @@ def home(request):
         featured_tours = get_or_set_cache(get_cache_key('homepage', 'featured_tours'), get_featured_tours, timeout=600)
         category_name = "Tất cả Tour"
 
-<<<<<<< HEAD
     # --- 5. TRENDING DESTINATIONS (Last 7 Days với trọng số thời gian) ---
     def get_trending_destinations():
         from django.utils import timezone
@@ -843,11 +842,8 @@ def booking_history(request):
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 import json
-<<<<<<< HEAD
-=======
 from django.shortcuts import get_object_or_404
 
->>>>>>> 6735ae2ee07e3f426a0f25a1f1b8af95de87f576
 @require_POST
 def api_submit_tour_review(request):
     if not request.user.is_authenticated:
@@ -855,13 +851,9 @@ def api_submit_tour_review(request):
 
     try:
         data = json.loads(request.body)
-<<<<<<< HEAD
         tour_id = data.get('tour_id')
         if not tour_id:
             return JsonResponse({'success': False, 'error': 'Thiếu tour_id'}, status=400)
-=======
-        tour_id = data.get('tour_id') 
->>>>>>> 6735ae2ee07e3f426a0f25a1f1b8af95de87f576
         tour = get_object_or_404(TourPackage, id=tour_id)
         user = request.user
 
