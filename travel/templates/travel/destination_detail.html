@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="{% static 'css/detail.css' %}">
 {% endblock %}
 
+{% load humanize %}
+
 {% block content %}
 
 <main class="py-4">
@@ -275,10 +277,10 @@
                                         
                                         <div class="d-flex justify-content-between align-items-center mt-auto">
                                             <span class="text-secondary small">
-                                                <i class="fa-solid fa-clock me-1"></i>{{ tour.duration }}
+                                                <i class="fa-solid fa-clock me-1"></i>{{ tour.duration }} ngày
                                             </span>
                                             <span class="text-danger fw-bold fs-6">
-                                                {{ tour.price|floatformat:0 }}đ
+                                                {{ tour.price|floatformat:0|intcomma }}đ
                                             </span>
                                         </div>
 

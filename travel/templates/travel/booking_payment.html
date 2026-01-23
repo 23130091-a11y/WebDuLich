@@ -1,0 +1,136 @@
+{% extends "travel/baseIndex.html" %}
+{% load static %}
+{% load humanize %} 
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-0" style="border-radius: 15px;">
+                <div class="card-body p-5">
+                    <h2 class="fw-bold text-center mb-4">Xác nhận thanh toán</h2>
+                    
+                    <div class="alert alert-warning border-0 text-center mb-4 py-3">
+                        <p class="mb-1 text-uppercase small fw-bold">Mã đơn hàng của bạn</p>
+                        <h2 class="fw-bold text-dark mb-0 font-monospace">{{ booking.booking_code }}</h2>
+                        <small class="text-muted">* Vui lòng kiểm tra mã trước khi chuyển khoản!</small>
+                    </div>
+
+                    <div class="alert alert-info border-0">
+                        <h5 class="mb-1 fw-bold">{{ booking.tour.name }}</h5>
+                        <p class="mb-0 small"><i class="fa-solid fa-calendar-days me-2"></i>Ngày khởi hành: {{ booking.departure_date }}</p>
+                        <p class="mb-0 small"><i class="fa-solid fa-user me-2"></i>Người đặt: {{ booking.full_name }}</p>
+                    </div>
+
+                    <div class="table-responsive mt-4">
+                        <table class="table align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Hạng mục</th>
+                                    <th class="text-center">Số lượng</th>
+                                    <th class="text-end">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Người lớn ({{ adult_price|floatformat:0|intcomma }}đ)</td>
+                                    <td class="text-center">{{ booking.number_of_adults }}</td>
+                                    <td class="text-end text-dark fw-medium">{{ subtotal_adult|floatformat:0|intcomma }}đ</td>
+                                </tr>
+                                <tr>
+                                    <td>Trẻ em ({{ child_price|floatformat:0|intcomma }}đ)</td>
+                                    <td class="text-center">{{ booking.number_of_children }}</td>
+                                    <td class="text-end text-dark fw-medium">{{ subtotal_child|floatformat:0|intcomma }}đ</td>
+                                </tr>
+                                <tr class="fw-bold">
+                                    <td colspan="2" class="text-end">Tạm tính:</td>
+                                    <td class="text-end border-top">{{ subtotal_adult|add:subtotal_child|floatformat:0|intcomma }}đ</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" class="text-end text-muted small">Thuế VAT (10%):</td>
+                                    <td class="text-end text-muted small">{{ tax|floatformat:0|intcomma }}đ</td>
+                                </tr>
+                                <tr class="h4">
+                                    <td colspan="2" class="text-end fw-bold text-primary py-3">TỔNG THANH TOÁN:</td>
+                                    <td class="text-end fw-bold text-danger py-3">{{ total_price|floatformat:0|intcomma }}đ</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-5">
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-wallet me-2"></i>Phương thức thanh toán</h5>
+                        <div class="list-group shadow-sm">
+                            <label class="list-group-item d-flex gap-3 py-3">
+                                <input class="form-check-input flex-shrink-0" type="radio" name="pay" checked>
+                                <span>
+                                    <strong class="d-block text-dark">Chuyển khoản ngân hàng (VietQR)</strong>
+                                    <small class="text-muted">Nội dung: <b>{{ booking.booking_code }}</b>. Hệ thống tự động xác nhận sau khi nhận tiền.</small>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-5">
+                        <button type="button" onclick="generateQR()" class="btn btn-primary btn-lg rounded-pill shadow fw-bold">
+                            <i class="fa-solid fa-qrcode me-2"></i>THANH TOÁN NGAY
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="qrModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center pt-0">
+                <h4 class="fw-bold mb-3">Quét mã VietQR</h4>
+                <div class="bg-light p-3 rounded mb-4 d-inline-block">
+                    <img id="vietqr-img" src="" alt="VietQR Payment" class="img-fluid rounded" style="max-width: 280px;">
+                </div>
+
+                <div class="text-start bg-light p-3 rounded-3 mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Số tiền:</span>
+                        <span class="fw-bold text-danger">{{ total_price|floatformat:0|intcomma }}đ</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-0">
+                        <span class="text-muted">Nội dung:</span>
+                        <span class="fw-bold text-primary">{{ booking.booking_code }}</span>
+                    </div>
+                </div>
+                <div class="d-grid gap-2 mt-4">
+                    <a href="{% url 'travel:booking_success' booking.id %}" class="btn btn-success rounded-pill fw-bold">
+                        <i class="fa-solid fa-check-double me-2"></i>Tôi đã hoàn tất chuyển khoản
+                    </a>
+                    <small class="text-muted">Hệ thống sẽ xác nhận và gửi vé vào Email sau khi nhận được tiền.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function generateQR() {
+    const BANK_ID = 'mbbank'; 
+    const ACCOUNT_NO = '0919926338888'; 
+    const ACCOUNT_NAME = 'DU LICH VIET'; 
+    
+    // JS lấy số nguyên thuần túy
+    const rawAmount = "{{ total_price|floatformat:0 }}";
+    const amount = rawAmount.replace(/[^0-9]/g, ''); 
+    const description = "{{ booking.booking_code }}";
+
+    const qrUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png?amount=${amount}&addInfo=${description}&accountName=${ACCOUNT_NAME}`;
+    
+    document.getElementById('vietqr-img').src = qrUrl;
+    var myModal = new bootstrap.Modal(document.getElementById('qrModal'));
+    myModal.show();
+}
+</script>
+{% endblock %}

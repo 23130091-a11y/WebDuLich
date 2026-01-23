@@ -16,7 +16,7 @@ from django_ratelimit.decorators import ratelimit
 from users.models import TravelPreference
 from .services import get_weather_forecast, get_route, get_location_coordinates, get_nearby_hotels, get_nearby_restaurants, get_current_weather
 from django.core.paginator import Paginator
-from .models import TourPackage, Category, Destination, SearchHistory, Review, Favorite, TourReview, TourPackage, RecommendationConfig
+from .models import TourPackage, Category, Destination, SearchHistory, Review, Favorite, TourReview, TourPackage, Booking, FavoriteDestination, RecommendationConfig
 import bleach
 
 from .cache_utils import get_cache_key, get_or_set_cache
@@ -426,6 +426,24 @@ def home(request):
         featured_tours = get_or_set_cache(get_cache_key('homepage', 'featured_tours'), get_featured_tours, timeout=600)
         category_name = "Tất cả Tour"
 
+   # --- 5. SGỢI Ý DỰA TRÊN LỊCH SỬ BOOKING (CỦA BẠN) ---
+    booking_based_tours = []
+    if request.user.is_authenticated:
+        # Lấy các tour user đã đặt thành công (không tính tour đã hủy)
+        user_bookings = Booking.objects.filter(user=request.user).exclude(status='cancelled')
+
+        if user_bookings.exists():
+            # Lấy danh sách các ID danh mục đã đặt
+            fav_category_ids = user_bookings.values_list('tour__category_id', flat=True).distinct()
+            # Lấy danh sách ID các tour đã đặt để không gợi ý trùng
+            booked_tour_ids = user_bookings.values_list('tour_id', flat=True)
+
+            # Lấy ra 8 tour cùng danh mục nhưng chưa mua, ưu tiên tour điểm cao
+            booking_based_tours = TourPackage.objects.filter(
+                category_id__in=fav_category_ids,
+                is_active=True
+            ).exclude(id__in=booked_tour_ids).order_by('-recommendation__overall_score')[:8]
+
     context = {
         "results": static_results,
         "top_destinations": top_destinations,
@@ -435,10 +453,11 @@ def home(request):
         "featured_tours": featured_tours,
         "category_name": category_name,
         "selected_category": category_slug,
-
+        "booking_based_tours": booking_based_tours, 
     }
 
     return render(request, 'travel/index.html', context)
+
 
 # --- 2. API ENDPOINT: LỌC THEO THỂ LOẠI ---
 def goi_y_theo_the_loai(request):
@@ -565,10 +584,10 @@ def tour_detail(request, tour_slug):
     tour = get_object_or_404(TourPackage, slug=tour_slug)
     
     # 1. Lấy danh sách review liên quan đến tour này
-    # 'reviews' là related_name bạn đặt trong ForeignKey của Model TourReview
+    # 'reviews' là related_name đặt trong ForeignKey của Model TourReview
     all_reviews = tour.reviews.all().order_by('-created_at')
     
-    # 2. Thêm phân trang (ví dụ: 5 nhận xét mỗi trang)
+    # 2. Thêm phân trang (5 nhận xét mỗi trang)
     paginator = Paginator(all_reviews, 5)
     page_number = request.GET.get('reviews_page')
     page_obj = paginator.get_page(page_number)
@@ -587,10 +606,15 @@ def tour_detail(request, tour_slug):
             object_id__in=[r.id for r in page_obj]
         ).values_list('object_id', flat=True)
     
+    related_tours = TourPackage.objects.filter(
+        (Q(category=tour.category) | Q(destination=tour.destination)),
+        is_active=True
+    ).exclude(id=tour.id).distinct().order_by('-average_rating', '-total_views')[:4]
+
     context = {
         'tour': tour,
         'weather_info': nearby_data.get('weather'), 
-        'related_tours': TourPackage.objects.filter(category=tour.category).exclude(id=tour.id)[:4],
+        'related_tours': related_tours,
         
         # 3. Đưa dữ liệu review vào context để Template nhận được
         'reviews': page_obj,
@@ -599,10 +623,110 @@ def tour_detail(request, tour_slug):
     }
     return render(request, 'travel/tour_detail.html', context)
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from decimal import Decimal
+from .models import TourPackage, Booking
+from .forms import BookingForm
+
+@login_required
+def book_tour(request, tour_id):
+    tour = get_object_or_404(TourPackage, id=tour_id)
+    
+    if request.method == 'POST':
+        form = BookingForm(request.POST)
+        if form.is_valid():
+            booking = form.save(commit=False)
+            booking.user = request.user
+            booking.tour = tour
+            
+            # --- LOGIC TÍNH TOÁN CHI TIẾT ---
+            adult_price = tour.price
+            child_price = adult_price * Decimal('0.7')
+            
+            subtotal_adult = booking.number_of_adults * adult_price
+            subtotal_child = booking.number_of_children * child_price
+            subtotal = subtotal_adult + subtotal_child
+            
+            # Thuế VAT 10%
+            tax = subtotal * Decimal('0.1')
+            
+            # Gán tổng tiền cuối cùng vào model
+            booking.total_price = subtotal + tax
+            booking.status = 'pending'         # Chờ xác nhận đơn
+            booking.payment_status = 'unpaid'  # Chờ thanh toán tiền
+            
+            # Khi gọi save(), booking_code sẽ tự sinh nhờ hàm save() trong Model
+            booking.save()
+            
+            return redirect('travel:booking_payment', booking_id=booking.id)
+    else:
+        # Tự động điền thông tin user hiện tại vào form
+        initial_data = {
+            'full_name': request.user.get_full_name() or request.user.username,
+            'email': request.user.email
+        }
+        form = BookingForm(initial=initial_data)
+        
+    return render(request, 'travel/booking_form.html', {'form': form, 'tour': tour})
+
+@login_required
+def booking_payment(request, booking_id):
+    # Lấy thông tin booking, đảm bảo đúng user đang đăng nhập
+    booking = get_object_or_404(Booking, id=booking_id, user=request.user)
+    
+    # 1. Lấy giá gốc từ Tour đã lưu trong booking
+    adult_price = booking.tour.price
+    child_price = adult_price * Decimal('0.7')
+    
+    # 2. Tính toán các hạng mục để hiển thị lên bảng hóa đơn
+    subtotal_adult = booking.number_of_adults * adult_price
+    subtotal_child = booking.number_of_children * child_price
+    subtotal = subtotal_adult + subtotal_child
+    
+    # 3. Tính thuế (phải khớp với lúc lưu trong book_tour)
+    tax = subtotal * Decimal('0.1')
+    total_price = subtotal + tax
+
+    context = {
+        'booking': booking,
+        'adult_price': adult_price,
+        'child_price': child_price,
+        'subtotal_adult': subtotal_adult,
+        'subtotal_child': subtotal_child,
+        'tax': tax,
+        'total_price': total_price, # Biến này dùng cho JS generateQR()
+    }
+    return render(request, 'travel/booking_payment.html', context)
+
+@login_required
+def booking_success(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id, user=request.user)
+    
+    # Đánh dấu là khách đã báo thanh toán (để Admin dễ lọc đơn)
+    if booking.payment_status == 'unpaid':
+        booking.payment_status = 'processing' 
+        booking.save()
+        
+    return render(request, 'travel/booking_success.html', {'booking': booking})
+
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def booking_history(request):
+    # Lấy danh sách booking của user, dùng select_related('tour') để tối ưu truy vấn (tránh N+1 query)
+    bookings = Booking.objects.filter(user=request.user).select_related('tour').order_by('-created_at')
+    
+    context = {
+        'bookings': bookings,
+    }
+    return render(request, 'travel/booking_history.html', context)
+
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 import json
-@require_POST
+from django.shortcuts import get_object_or_404
+
 @require_POST
 def api_submit_tour_review(request):
     if not request.user.is_authenticated:
@@ -610,64 +734,57 @@ def api_submit_tour_review(request):
 
     try:
         data = json.loads(request.body)
+        tour_id = data.get('tour_id') 
         tour = get_object_or_404(TourPackage, id=tour_id)
-        
-        user = request.user if request.user.is_authenticated else None
-        
-        is_verified_user = False
-        author_name = data.get('author_name', 'Khách')
+        user = request.user
 
         # --- LOGIC XÁC MINH (VERIFICATION) ---
-        is_verified_purchase = False
         
-        if user:
-            # 1. Kiểm tra "Khách hàng thực tế" (Đã mua và hoàn thành tour)
-            # Giả sử bạn có app Booking và model Booking
-            is_verified_purchase = False
-            # Booking.objects.filter(
-            #     user=user, 
-            #     tour=tour, 
-            #     status='completed' # Chỉ tính đơn đã đi xong
-            # ).exists()
-            if not author_name or author_name == 'Khách':
-                author_name = user.get_full_name() or user.username
-            
-            # 2. Kiểm tra "Tài khoản chính chủ" (Ví dụ: đã verify email/SĐT)
-            # Tùy thuộc vào logic User Profile của bạn
-            if hasattr(user, 'profile') and user.profile.is_verified:
-                is_verified_user = True
+        # Kiểm tra "Khách hàng thực tế": 
+        # Tìm đơn hàng khớp User + Tour + Trạng thái đã hoàn thành
+        is_verified_purchase = Booking.objects.filter(
+            user=user, 
+            tour=tour, 
+            status='completed', # Đã đi tour xong
+            payment_status='paid' # Đã thanh toán tiền
+        ).exists()
 
-        # --- LƯU REVIEW VỚI CÁC TRƯỜNG MỚI ---
+        # Xử lý tên tác giả
+        author_name = data.get('author_name', '').strip()
+        if not author_name or author_name == 'Khách':
+            author_name = user.get_full_name() or user.username
+        
+        # Kiểm tra "Tài khoản chính chủ"
+        is_verified_user = False
+        if user.is_active: 
+            is_verified_user = True
+            # Nếu bạn có logic profile.is_verified thì thêm vào đây:
+            # if hasattr(user, 'profile') and user.profile.is_verified:
+            #     is_verified_user = True
+
+        # --- LƯU REVIEW ---
         review = TourReview.objects.create(
             tour=tour,
-            user=user, # Gán user nếu có
+            user=user,
             author_name=author_name,
             rating=int(data.get('rating', 5)),
             comment=data.get('comment', '').strip(),
-            # Gán trạng thái xác minh tự động
             is_verified_purchase=is_verified_purchase,
             is_verified_user=is_verified_user,
-            status='published' # Mặc định hiển thị, hoặc 'pending' nếu muốn duyệt
+            status='published'
         )
 
-        # Cập nhật điểm trung bình của Tour
+        # Cập nhật điểm và tổng số review cho TourPackage
         tour.update_rating() 
 
         return JsonResponse({
             'success': True,
             'review': {
                 'author_name': review.author_name,
-                'rating': review.rating,
-                'comment': review.comment,
                 'is_verified_purchase': review.is_verified_purchase,
                 'is_verified_user': review.is_verified_user,
-                'created_at': 'Vừa xong'
             },
-            'new_stats': {
-                'average_rating': round(tour.average_rating, 1),
-                'total_reviews': tour.total_reviews
-            },
-            'message': 'Cảm ơn bạn đã đánh giá!'
+            'message': 'Cảm ơn bạn đã chia sẻ trải nghiệm thực tế!' if is_verified_purchase else 'Cảm ơn bạn đã đánh giá!'
         })
 
     except Exception as e:
@@ -1509,6 +1626,23 @@ def toggle_tour_favorite(request, tour_id):
         "is_favorite": is_favorite,
         "tour_id": tour.id
     })
+
+@login_required
+def toggle_destination_favorite(request, destination_id):
+    destination_obj = get_object_or_404(Destination, id=destination_id)
+    
+    # Lấy hoặc tạo mới bản ghi yêu thích
+    favorite, created = FavoriteDestination.objects.get_or_create(
+        user=request.user,
+        destination=destination_obj
+    )
+
+    if not created:
+        # Nếu đã tồn tại từ trước (không phải vừa tạo mới) -> Xóa đi
+        favorite.delete()
+    
+    # Quay lại trang trước đó người dùng đang đứng
+    return redirect(request.META.get('HTTP_REFERER', 'travel:home'))
 
 # api lấy tour
 @api_view(["GET"])

@@ -1,0 +1,89 @@
+{% extends "travel/baseIndex.html" %}
+
+{% load humanize %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="fw-bold mb-4"><i class="fa-solid fa-clock-rotate-left me-2 text-primary"></i>Lịch sử đặt Tour</h2>
+            
+            {% if bookings %}
+                <div class="table-responsive shadow-sm rounded">
+                    <table class="table table-hover align-middle bg-white mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-3">Mã đơn</th>
+                                <th>Tour</th>
+                                <th>Ngày khởi hành</th>
+                                <th>Tổng tiền</th>
+                                <th>Trạng thái đơn</th>
+                                <th>Thanh toán</th>
+                                <th class="text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for b in bookings %}
+                            <tr>
+                                <td class="ps-3">
+                                    <span class="fw-bold text-primary">{{ b.booking_code }}</span>
+                                    <div class="small text-muted" style="font-size: 0.7rem;">{{ b.created_at|date:"d/m/Y H:i" }}</div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if b.tour.image_main %}
+                                            <img src="{{ b.tour.image_main.url }}" class="rounded me-2" style="width: 45px; height: 45px; object-fit: cover;">
+                                        {% endif %}
+                                        <div>
+                                            <a href="{% url 'travel:tour_detail' b.tour.slug %}" class="text-decoration-none text-dark fw-bold small">
+                                                {{ b.tour.name|truncatechars:35 }}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ b.departure_date|date:"d/m/Y" }}</td>
+                                <td><span class="text-danger fw-bold">{{ b.total_price|floatformat:0|intcomma }}đ</span></td>
+                                <td>
+                                    {% if b.status == 'pending' %}
+                                        <span class="badge rounded-pill bg-warning text-dark">Chờ xác nhận</span>
+                                    {% elif b.status == 'confirmed' %}
+                                        <span class="badge rounded-pill bg-info">Đã xác nhận</span>
+                                    {% elif b.status == 'completed' %}
+                                        <span class="badge rounded-pill bg-success">Hoàn thành</span>
+                                    {% else %}
+                                        <span class="badge rounded-pill bg-secondary">Đã hủy</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if b.payment_status == 'paid' %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                            <i class="fa-solid fa-check-circle me-1"></i>Đã trả
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                                            <i class="fa-solid fa-clock me-1"></i>Chưa trả
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'travel:booking_payment' b.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                        Chi tiết
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5 bg-white shadow-sm rounded border">
+                    <img src="https://cdn-icons-png.flaticon.com/512/4076/4076432.png" style="width: 80px; opacity: 0.4;">
+                    <h5 class="mt-3 fw-bold">Trống trải quá!</h5>
+                    <p class="text-muted">Bạn chưa có đơn đặt tour nào trong danh sách lịch sử.</p>
+                    <a href="{% url 'travel:home' %}" class="btn btn-primary rounded-pill px-4">Khám phá tour ngay</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
