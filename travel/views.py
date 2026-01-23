@@ -729,6 +729,7 @@ from django.shortcuts import get_object_or_404
 
 @require_POST
 def api_submit_tour_review(request):
+    print(f"User đang gửi là: {request.user}")
     if not request.user.is_authenticated:
         return JsonResponse({'success': False, 'error': 'Vui lòng đăng nhập để đánh giá'}, status=403)
 

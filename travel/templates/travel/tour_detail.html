@@ -178,6 +178,8 @@
                         <div class="collapse mb-4" id="reviewForm">
                             <div class="p-4 bg-light rounded-4 border">
                                 {% if user.is_authenticated %}
+                                    
+
                                     <h6 class="mb-3 fw-bold">
                                         <i class="fa-solid fa-paper-plane me-2 text-primary"></i>Chia sẻ trải nghiệm của bạn
                                         <span class="badge bg-success-subtle text-success ms-2 fw-normal">
@@ -186,6 +188,7 @@
                                     </h6>
                                     
                                     <form id="reviewFormSubmit">
+                                        {% csrf_token %}
                                         <input type="hidden" id="tourId" value="{{ tour.id }}"> 
                                         <div class="row g-3">
                                             <div class="col-md-6">
@@ -210,7 +213,7 @@
 
                                             <div class="col-12">
                                                 <label class="form-label small fw-bold">Nhận xét của bạn</label>
-                                                <textarea id="comment" class="form-control" rows="4" placeholder="Tour này thế nào? Bạn có hài lòng không..." maxlength="2000"></textarea>
+                                                <textarea id="comment" class="form-control" rows="4" placeholder="Tour này thế nào? Bạn có hài lòng không..." maxlength="2000" required minlength="10"></textarea>
                                                 <div class="d-flex justify-content-between mt-1">
                                                     <small class="text-muted x-small"><i class="fa-solid fa-robot me-1"></i>Hệ thống sẽ phân tích cảm xúc đánh giá</small>
                                                     <small class="text-muted x-small"><span id="charCount">0</span>/2000</small>
@@ -817,7 +820,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Khởi tạo 4 sao mặc định
-    updateStars(4);
+    updateStars(5);
 
     starLabels.forEach((label, index) => {
         const starValue = index + 1;
@@ -841,61 +844,68 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // 3. Submit Review bằng AJAX
+    function resetButton(btn, text) {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = text;
+        }
+    }
+
     const tourReviewForm = document.getElementById('reviewFormSubmit');
 
     if (tourReviewForm) {
         tourReviewForm.addEventListener('submit', function(e) {
-            e.preventDefault();
+            e.preventDefault(); // CHỐT CHẶN: Phải chạy được dòng này thì mới không bị gửi bừa
 
-            if (isSpamming('comment', 30)) return;
+            const tourIdInput = document.getElementById('tourId');
+            const commentInput = document.getElementById('comment');
+            const submitBtn = document.getElementById('submitReviewBtn');
+            const originalText = submitBtn ? submitBtn.innerHTML : 'Gửi đánh giá';
 
-            // Lấy đúng các giá trị dựa trên ID thực tế trong HTML
-            // Lưu ý: Phải dùng ID 'tourId' (hoặc destinationId tùy bạn đặt ở input hidden)
-            const tourIdInput = document.getElementById('destinationId') || document.getElementById('tourId');
-            const authorNameInput = document.getElementById('authorName');
-            const ratingInput = document.getElementById('ratingValue'); // Hidden input từ star-rating
-            const commentInput = document.getElementById('tourComment') || document.getElementById('comment');
-
-            if (!tourIdInput || !commentInput.value.trim()) {
-                alert("Vui lòng nhập nội dung đánh giá!");
+            if (!commentInput.value.trim()) {
+                alert("Vui lòng nhập nội dung!");
                 return;
             }
 
-            const payload = {
-                tour_id: tourIdInput.value,
-                author_name: authorNameInput ? authorNameInput.value : 'Khách',
-                rating: ratingInput ? ratingInput.value : 5,
-                comment: document.getElementById('comment').value.trim()
-            };
-
-            const submitBtn = document.getElementById('submitReviewBtn');
-            if (submitBtn) submitBtn.disabled = true; // Chống spam click
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang gửi...';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = 'Đang gửi...';
+            }
 
             fetch('/api/tour_review/', { 
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
+                    'X-CSRFToken': getCsrfToken()
                 },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({
+                    tour_id: tourIdInput.value,
+                    comment: commentInput.value.trim(),
+                    rating: document.getElementById('ratingValue').value
+                })
             })
-            .then(response => response.json())
+            .then(response => {
+                // ĐÂY LÀ CHỖ CHẶN ĐĂNG NHẬP
+                if (response.status === 403 || response.status === 401) {
+                    alert('Bạn cần đăng nhập để đánh giá!');
+                    location.reload(); 
+                    throw new Error("Unauthorized");
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
-                    updateActionTime('comment');
-                    location.reload(); 
+                    location.reload();
                 } else {
                     alert('Lỗi: ' + data.error);
-                    if (submitBtn) submitBtn.disabled = false; submitBtn.innerHTML = originalText;
+                    if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = originalText; }
                 }
             })
             .catch(err => {
-                console.error('Lỗi fetch:', err);
-                if (submitBtn) submitBtn.disabled = false; submitBtn.innerHTML = originalText;
+                console.error('Lỗi:', err);
+                if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = originalText; }
             });
-        });
+        }); // Đảm bảo đóng ngoặc đúng ở đây
     }
 
     let isProcessing = false;

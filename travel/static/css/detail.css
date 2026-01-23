@@ -787,3 +787,53 @@
 .animate-fade-in {
     animation: fadeIn 0.5s ease-out forwards;
 }
+
+/* Container bao ngoài */
+.tour-slider-container {
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none; /* Ẩn scrollbar cho Firefox */
+    -ms-overflow-style: none;  /* Ẩn cho IE/Edge */
+    padding: 10px 0;
+}
+
+.tour-slider-container::-webkit-scrollbar {
+    display: none; /* Ẩn cho Chrome/Safari */
+}
+
+.tour-slider-wrapper {
+    display: flex;
+    gap: 20px; /* Khoảng cách giữa các card */
+}
+
+.tour-item {
+    flex: 0 0 300px; /* Cố định độ rộng mỗi card là 300px */
+}
+
+/* Style cho nút bấm */
+.slider-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: none;
+    z-index: 5;
+    transition: 0.3s;
+}
+
+.slider-btn:hover {
+    background: #0d6efd;
+    color: white;
+}
+
+.prev-btn { left: -20px; }
+.next-btn { right: -20px; }
+
+/* Responsive cho điện thoại */
+@media (max-width: 768px) {
+    .slider-btn { display: none; } /* Mobile dùng vuốt tay nên ẩn nút */
+    .tour-item { flex: 0 0 85%; } /* Hiện 1 card rưỡi để khách biết còn bên phải */
+}
