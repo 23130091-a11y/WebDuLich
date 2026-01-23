@@ -473,14 +473,14 @@
                             </div>
                         </div>
 
-                        {% if not user.is_authenticated %}
+                        {% comment %} {% if not user.is_authenticated %}
                         <div class="card-footer bg-light border-0 py-3 text-center" style="border-radius: 0 0 20px 20px;">
                             <p class="small text-muted mb-0">
                                 <i class="fa-solid fa-circle-info me-1"></i> 
                                 Đăng ký thành viên để nhận thêm ưu đãi từ chúng tôi.
                             </p>
                         </div>
-                        {% endif %}
+                        {% endif %} {% endcomment %}
                     </div>
                     <div class="card mb-4">
                         <div class="card-body">

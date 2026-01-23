@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from .models import AccountProfile, Booking  # Import model Profile
+from datetime import date
 
 
 # Form xử lý thông tin cơ bản (User)
@@ -44,3 +45,8 @@ class BookingForm(forms.ModelForm):
             'number_of_children': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
             'special_requests': forms.Textarea(attrs={'class': 'form-control', 'rows': '3', 'placeholder': 'Ví dụ: Dị ứng hải sản, cần phòng tầng trệt...'}),
         }
+    def clean_departure_date(self):
+        departure_date = self.cleaned_data.get('departure_date')
+        if departure_date < date.today():
+            raise forms.ValidationError("Ngày khởi hành không thể ở quá khứ!")
+        return departure_date

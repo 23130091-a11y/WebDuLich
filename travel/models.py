@@ -387,16 +387,24 @@ class Booking(models.Model):
     # THÊM MÃ ĐƠN HÀNG (Dùng để khách chuyển khoản ghi nội dung)
     booking_code = models.CharField(max_length=10, unique=True, editable=False, null=True)
 
+    # chi gui mail 1 lan 
+    is_ticket_sent = models.BooleanField(default=False)
+
     def save(self, *args, **kwargs):
+        # 1. Logic sinh mã booking_code 
         if not self.booking_code:
             import random, string
-            # Vòng lặp đảm bảo mã booking_code không bị trùng lặp (unique)
-            trong_he_thong = True
-            while trong_he_thong:
+            while True:
                 code = 'HH' + ''.join(random.choices(string.digits, k=6))
                 if not Booking.objects.filter(booking_code=code).exists():
                     self.booking_code = code
-                    trong_he_thong = False
+                    break
+        
+        # 2. TỰ ĐỘNG CHUYỂN SANG 'ĐÃ XÁC NHẬN'
+        # Nếu thanh toán là 'paid' và vẫn đang ở trạng thái 'pending' (chờ)
+        if self.payment_status == 'paid' and self.status == 'pending':
+            self.status = 'confirmed'
+
         super().save(*args, **kwargs)
 
     def __str__(self):
