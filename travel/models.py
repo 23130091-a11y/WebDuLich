@@ -6,6 +6,7 @@ import requests
 from taggit.managers import TaggableManager
 from django.utils.text import slugify
 from django.conf import settings
+from django.db.models import Q
 
 from travel.services.nearby_service import get_nearby_hotels
 from travel.services.nearby_service import get_nearby_restaurants
@@ -252,10 +253,11 @@ class TourPackage(models.Model):
         ]
 
     def update_rating(self):
-        reviews = self.reviews.all()
+        reviews = self.reviews.filter(status='published')
         if reviews.exists():
+            from django.db.models import Avg
             self.total_reviews = reviews.count()
-            self.average_rating = sum([r.rating for r in reviews]) / self.total_reviews
+            self.average_rating = reviews.aggregate(Avg('rating'))['rating__avg']
         else:
             self.total_reviews = 0
             self.average_rating = 5.0
@@ -282,6 +284,12 @@ class TourPackage(models.Model):
             'restaurants': self.destination.get_restaurants(lat, lon) # Sẽ không còn lỗi nữa
         }
 
+    def get_similar_tours(self, limit=4):
+        return TourPackage.objects.filter(
+            Q(category=self.category) | Q(destination=self.destination), 
+            is_active=True
+        ).exclude(id=self.id).order_by('-average_rating')[:limit]
+
     def __str__(self):
         return f"{self.name} at {self.destination.name}"
     
@@ -303,7 +311,7 @@ class TourReview(models.Model):
     comment = models.TextField(verbose_name="Nội dung đánh giá")
     created_at = models.DateTimeField(auto_now_add=True)
     
-    # Thêm cái này để làm tính năng Like/Hữu ích mà bạn muốn
+    # Thêm cái này để làm tính năng Like/Hữu ích 
     helpful_count = models.PositiveIntegerField(default=0)
     not_helpful_count = models.PositiveIntegerField(default=0)
     is_verified = models.BooleanField(default=False)
@@ -313,7 +321,7 @@ class TourReview(models.Model):
 
     # Trạng thái xác minh
     is_verified_user = models.BooleanField(default=False, verbose_name="Tài khoản đã xác minh")
-    is_verified_purchase = models.BooleanField(default=False, verbose_name="Khách hàng thực tế")
+    is_verified_purchase = models.BooleanField(default=False, verbose_name="Khách đã trải nghiệm tour")
     
     # Thêm trạng thái để Admin có thể ẩn/hiện nhận xét
     STATUS_CHOICES = [
@@ -326,18 +334,63 @@ class TourReview(models.Model):
     class Meta:
         ordering = ['-created_at']
 
-    def update_rating(self):
-        reviews = self.reviews.all()
-        if reviews.exists():
-            self.total_reviews = reviews.count()
-            self.average_rating = sum([r.rating for r in reviews]) / self.total_reviews
-        else:
-            self.total_reviews = 0
-            self.average_rating = 5.0
-        self.save()
-
     def __str__(self):
         return f"{self.author_name} - {self.tour.name} ({self.rating}*)"
+    
+from django.conf import settings
+
+class Booking(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Chờ xác nhận'),
+        ('confirmed', 'Đã xác nhận'),
+        ('completed', 'Đã hoàn thành'),
+        ('cancelled', 'Đã hủy'),
+    ]
+
+    PAYMENT_STATUS = [
+        ('unpaid', 'Chưa thanh toán'),
+        ('paid', 'Đã thanh toán'),
+        ('refunded', 'Đã hoàn tiền'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookings')
+    tour = models.ForeignKey(TourPackage, on_delete=models.CASCADE, related_name='bookings')
+    
+    # Thông tin khách hàng cung cấp khi đặt
+    full_name = models.CharField(max_length=255, verbose_name="Họ tên người đặt")
+    phone_number = models.CharField(max_length=20, verbose_name="Số điện thoại")
+    email = models.EmailField()
+    
+    # Chi tiết tour đặt
+    departure_date = models.DateField(verbose_name="Ngày khởi hành")
+    number_of_adults = models.PositiveIntegerField(default=1, verbose_name="Số người lớn")
+    number_of_children = models.PositiveIntegerField(default=0, verbose_name="Số trẻ em")
+    
+    # Tài chính
+    total_price = models.DecimalField(max_digits=12, decimal_places=2)
+    special_requests = models.TextField(blank=True, null=True, verbose_name="Yêu cầu đặc biệt")
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='unpaid') 
+    
+    # THÊM MÃ ĐƠN HÀNG (Dùng để khách chuyển khoản ghi nội dung)
+    booking_code = models.CharField(max_length=10, unique=True, editable=False, null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.booking_code:
+            import random, string
+            # Vòng lặp đảm bảo mã booking_code không bị trùng lặp (unique)
+            trong_he_thong = True
+            while trong_he_thong:
+                code = 'HH' + ''.join(random.choices(string.digits, k=6))
+                if not Booking.objects.filter(booking_code=code).exists():
+                    self.booking_code = code
+                    trong_he_thong = False
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Booking {self.id} - {self.tour.name} by {self.full_name}"
     
 # Thanh
 # ======================================================================
@@ -654,3 +707,25 @@ class Favorite(models.Model):
 
     def __str__(self):
         return f"{self.user} thích {self.tour.name}"
+
+
+class FavoriteDestination(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="favorite_destinations"
+    )
+    destination = models.ForeignKey(
+        'Destination',  # Đảm bảo tên model Destination chính xác
+        on_delete=models.CASCADE,
+        related_name="favorited_by_users"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # Đảm bảo một người dùng không thể yêu thích một địa điểm 2 lần
+        unique_together = ("user", "destination")
+
+    def __str__(self):
+        return f"{self.user} thích {self.destination.name}"
+    
