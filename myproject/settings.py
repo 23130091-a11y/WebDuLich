@@ -150,3 +150,8 @@ CACHE_TTL = {
 }
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'travel/static')]
+
+
+# OpenWeatherMap API Key (for weather service)
+# Get free API key at: https://openweathermap.org/api
+OPENWEATHERMAP_API_KEY = os.environ.get('OPENWEATHERMAP_API_KEY', '')

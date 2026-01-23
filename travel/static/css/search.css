@@ -414,3 +414,92 @@
 .destination-card:nth-child(4) { animation-delay: 0.25s; }
 .destination-card:nth-child(5) { animation-delay: 0.3s; }
 .destination-card:nth-child(6) { animation-delay: 0.35s; }
+
+/* ====
+= AUTOCOMPLETE SUGGESTIONS - IMPROVED ===== */
+#quickSuggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+    display: none;
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 4px;
+    border: 1px solid #e0e0e0;
+}
+
+#quickSuggestions::-webkit-scrollbar {
+    width: 6px;
+}
+
+#quickSuggestions::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+}
+
+.suggestion-header {
+    padding: 8px 12px;
+    background: #f5f5f5;
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    border-bottom: 1px solid #eee;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.suggestion-header i {
+    margin-right: 6px;
+    color: #dc3545;
+}
+
+.suggestion-header.tour i {
+    color: #0d6efd;
+}
+
+.suggestion-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f5f5f5;
+    transition: background 0.15s;
+}
+
+.suggestion-item:hover {
+    background: #f0f7ff;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-name {
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 10px;
+}
+
+.suggestion-location {
+    font-size: 12px;
+    color: #888;
+    white-space: nowrap;
+}
+
+.suggestion-price {
+    font-size: 12px;
+    color: #0d6efd;
+    font-weight: 600;
+    white-space: nowrap;
+}

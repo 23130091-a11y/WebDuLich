@@ -6,7 +6,10 @@ from .text_utils import (
     remove_accents,
     normalize_search_text,
     search_provinces,
-    VIETNAM_PROVINCES
+    VIETNAM_PROVINCES,
+    levenshtein_distance,
+    fuzzy_match,
+    calculate_search_score,
 )
 
 __all__ = [
@@ -14,4 +17,7 @@ __all__ = [
     'normalize_search_text',
     'search_provinces',
     'VIETNAM_PROVINCES',
+    'levenshtein_distance',
+    'fuzzy_match',
+    'calculate_search_score',
 ]

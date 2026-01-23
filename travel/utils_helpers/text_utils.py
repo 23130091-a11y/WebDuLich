@@ -44,6 +44,122 @@ def normalize_search_text(text):
     return text
 
 
+def levenshtein_distance(s1, s2):
+    """
+    Tính khoảng cách Levenshtein giữa 2 chuỗi
+    Dùng cho fuzzy search
+    """
+    if len(s1) < len(s2):
+        return levenshtein_distance(s2, s1)
+    
+    if len(s2) == 0:
+        return len(s1)
+    
+    previous_row = range(len(s2) + 1)
+    for i, c1 in enumerate(s1):
+        current_row = [i + 1]
+        for j, c2 in enumerate(s2):
+            # Thêm 1 nếu ký tự khác nhau
+            insertions = previous_row[j + 1] + 1
+            deletions = current_row[j] + 1
+            substitutions = previous_row[j] + (c1 != c2)
+            current_row.append(min(insertions, deletions, substitutions))
+        previous_row = current_row
+    
+    return previous_row[-1]
+
+
+def fuzzy_match(query, text, threshold=0.6):
+    """
+    Kiểm tra xem query có khớp mờ với text không
+    
+    Args:
+        query: Từ khóa tìm kiếm
+        text: Text cần so sánh
+        threshold: Ngưỡng tương đồng (0-1), mặc định 0.6
+    
+    Returns:
+        tuple: (is_match, similarity_score)
+    """
+    query_norm = normalize_search_text(query)
+    text_norm = normalize_search_text(text)
+    
+    if not query_norm or not text_norm:
+        return False, 0
+    
+    # Exact match hoặc contains
+    if query_norm in text_norm:
+        return True, 1.0
+    
+    # Kiểm tra từng từ trong text
+    text_words = text_norm.split()
+    query_words = query_norm.split()
+    
+    best_score = 0
+    for q_word in query_words:
+        for t_word in text_words:
+            # Tính độ tương đồng
+            max_len = max(len(q_word), len(t_word))
+            if max_len == 0:
+                continue
+            distance = levenshtein_distance(q_word, t_word)
+            similarity = 1 - (distance / max_len)
+            best_score = max(best_score, similarity)
+            
+            # Kiểm tra prefix match (autofill)
+            if t_word.startswith(q_word) or q_word.startswith(t_word):
+                best_score = max(best_score, 0.9)
+    
+    return best_score >= threshold, best_score
+
+
+def calculate_search_score(query, name, location=None, description=None):
+    """
+    Tính điểm tìm kiếm tổng hợp
+    
+    Returns:
+        float: Điểm từ 0-1, cao hơn = khớp tốt hơn
+    """
+    query_norm = normalize_search_text(query)
+    name_norm = normalize_search_text(name)
+    
+    score = 0
+    
+    # 1. Exact match tên (cao nhất)
+    if query_norm == name_norm:
+        return 1.0
+    
+    # 2. Tên bắt đầu bằng query (autofill)
+    if name_norm.startswith(query_norm):
+        score = max(score, 0.95)
+    
+    # 3. Query nằm trong tên
+    elif query_norm in name_norm:
+        score = max(score, 0.85)
+    
+    # 4. Fuzzy match tên
+    else:
+        is_match, fuzzy_score = fuzzy_match(query, name)
+        if is_match:
+            score = max(score, fuzzy_score * 0.7)
+    
+    # 5. Kiểm tra location
+    if location:
+        loc_norm = normalize_search_text(location)
+        if query_norm in loc_norm:
+            score = max(score, 0.6)
+        elif loc_norm.startswith(query_norm):
+            score = max(score, 0.65)
+    
+    # 6. Kiểm tra description (thấp nhất)
+    if description:
+        desc_norm = normalize_search_text(description)
+        if query_norm in desc_norm:
+            score = max(score, 0.4)
+    
+    return score
+
+
 # Danh sách tỉnh thành Việt Nam
 VIETNAM_PROVINCES = [
     'Hà Nội', 'TP Hồ Chí Minh', 'Đà Nẵng', 'Hải Phòng', 'Cần Thơ',
@@ -60,6 +176,86 @@ VIETNAM_PROVINCES = [
     'Thanh Hóa', 'Thừa Thiên Huế', 'Tiền Giang', 'Trà Vinh', 'Tuyên Quang',
     'Vĩnh Long', 'Vĩnh Phúc', 'Yên Bái'
 ]
+
+# Mapping các biến thể tên địa điểm
+LOCATION_ALIASES = {
+    # TP Hồ Chí Minh
+    'tp hồ chí minh': ['hồ chí minh', 'hcm', 'tp. hcm', 'tp.hcm', 'sài gòn', 'saigon', 'thành phố hồ chí minh'],
+    'hồ chí minh': ['tp hồ chí minh', 'hcm', 'tp. hcm', 'tp.hcm', 'sài gòn', 'saigon', 'thành phố hồ chí minh'],
+    'hcm': ['tp hồ chí minh', 'hồ chí minh', 'tp. hcm', 'sài gòn', 'saigon', 'thành phố hồ chí minh'],
+    'sài gòn': ['tp hồ chí minh', 'hồ chí minh', 'hcm', 'tp. hcm', 'saigon', 'thành phố hồ chí minh'],
+    
+    # Hà Nội
+    'hà nội': ['ha noi', 'hanoi', 'thủ đô'],
+    'ha noi': ['hà nội', 'hanoi', 'thủ đô'],
+    
+    # Đà Nẵng
+    'đà nẵng': ['da nang', 'danang'],
+    'da nang': ['đà nẵng', 'danang'],
+    
+    # Đà Lạt
+    'đà lạt': ['da lat', 'dalat', 'tp. đà lạt', 'tp đà lạt'],
+    'da lat': ['đà lạt', 'dalat', 'tp. đà lạt'],
+    
+    # Nha Trang
+    'nha trang': ['tp. nha trang', 'tp nha trang', 'khánh hòa'],
+    
+    # Phú Quốc
+    'phú quốc': ['phu quoc', 'đảo phú quốc', 'kiên giang'],
+    
+    # Huế
+    'huế': ['hue', 'thừa thiên huế', 'cố đô huế'],
+    'hue': ['huế', 'thừa thiên huế'],
+    
+    # Hội An
+    'hội an': ['hoi an', 'phố cổ hội an', 'quảng nam'],
+    
+    # Hạ Long
+    'hạ long': ['ha long', 'vịnh hạ long', 'quảng ninh'],
+    'ha long': ['hạ long', 'vịnh hạ long', 'quảng ninh'],
+    
+    # Sa Pa
+    'sa pa': ['sapa', 'lào cai'],
+    'sapa': ['sa pa', 'lào cai'],
+}
+
+
+def get_search_variants(query):
+    """
+    Lấy tất cả các biến thể tìm kiếm cho một query.
+    
+    Args:
+        query: Từ khóa tìm kiếm gốc
+        
+    Returns:
+        list: Danh sách các biến thể bao gồm query gốc
+    """
+    if not query:
+        return []
+    
+    query_lower = query.lower().strip()
+    query_normalized = normalize_search_text(query)
+    
+    variants = [query]  # Bắt đầu với query gốc
+    
+    # Thêm các alias nếu có
+    if query_lower in LOCATION_ALIASES:
+        variants.extend(LOCATION_ALIASES[query_lower])
+    
+    # Thêm phiên bản không dấu
+    if query_normalized != query_lower:
+        variants.append(query_normalized)
+    
+    # Loại bỏ trùng lặp và giữ thứ tự
+    seen = set()
+    unique_variants = []
+    for v in variants:
+        v_lower = v.lower()
+        if v_lower not in seen:
+            seen.add(v_lower)
+            unique_variants.append(v)
+    
+    return unique_variants
 
 
 def search_provinces(query):

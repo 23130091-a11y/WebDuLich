@@ -133,9 +133,19 @@ def save_preferences(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
 def logout_view(request):
+    """Logout user - xóa Django session và blacklist JWT token"""
+    # Xóa Django session
     logout(request)
-    refresh_token = request.data["refresh"]
-    token = RefreshToken(refresh_token)
-    token.blacklist()
+    
+    # Blacklist JWT token nếu có
+    refresh_token = request.data.get("refresh", "")
+    if refresh_token:
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+        except Exception as e:
+            # Token có thể đã hết hạn hoặc không hợp lệ - vẫn cho logout
+            pass
+    
+    return Response({"detail": "Đăng xuất thành công"}, status=status.HTTP_200_OK)

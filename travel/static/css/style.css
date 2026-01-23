@@ -10,7 +10,9 @@ body {
     font-size: 25px;
 }
 
-h2, h3, h5 {
+h2,
+h3,
+h5 {
     font-weight: 800;
 }
 
@@ -24,7 +26,7 @@ h2, h3, h5 {
 .header .navbar {
     box-shadow: none !important;
     min-height: 80px;
-    padding-top: 30px;     
+    padding-top: 30px;
     padding-bottom: 30px;
 }
 
@@ -45,7 +47,8 @@ h2, h3, h5 {
     position: absolute;
     top: 100%;
     right: 0;
-    z-index: 1000; /* đảm bảo popup nổi trên các phần khác */
+    z-index: 1000;
+    /* đảm bảo popup nổi trên các phần khác */
 }
 
 /* ==============================
@@ -68,7 +71,7 @@ h2, h3, h5 {
 ============================== */
 .search-box {
     width: 95%;
-    
+
     z-index: 10;
     position: absolute;
     top: 65%;
@@ -91,8 +94,15 @@ h2, h3, h5 {
 
 /* Hiệu ứng nổi lên */
 @keyframes floatUp {
-    0% { opacity: 0; transform: translate(-50%, -40%) scale(0.9); }
-    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -40%) scale(0.9);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
 }
 
 /* Ô tìm kiếm lớn */
@@ -146,57 +156,63 @@ h2, h3, h5 {
 
 .categories a.category-link {
     display: block;
-    padding: 15px 5px; 
+    padding: 15px 5px;
     border-radius: 12px;
     transition: all 0.3s ease;
     position: relative;
-    border: 2px solid transparent; /* 💡 MỚI: Thêm viền trong suốt */
+    border: 2px solid transparent;
+    /* 💡 MỚI: Thêm viền trong suốt */
 }
 
 /* HIỆU ỨNG KHI RÊ CHUỘT (MẪU MỚI) */
 .categories a.category-link:hover {
-    background-color: #ffffff; /* 💡 MỚI: Đặt lại nền trắng */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Giữ lại đổ bóng nhẹ */
-    transform: translateY(-3px); 
-    border: 2px solid #0078ff; /* 💡 MỚI: Hiển thị viền màu xanh */
+    background-color: #ffffff;
+    /* 💡 MỚI: Đặt lại nền trắng */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    /* Giữ lại đổ bóng nhẹ */
+    transform: translateY(-3px);
+    border: 2px solid #0078ff;
+    /* 💡 MỚI: Hiển thị viền màu xanh */
 }
 
 /* Biểu tượng (Icon) */
 .categories i {
     color: #0078ff;
-    font-size: 36px !important; 
+    font-size: 36px !important;
     transition: all 0.3s ease;
 }
 
 /* Tên danh mục (Text) */
 .categories p {
-    margin-top: 15px !important; 
+    margin-top: 15px !important;
     font-weight: 500;
-    transition: color 0.3s, font-weight 0.3s; /* 💡 MỚI: Thêm transition cho font-weight */
+    transition: color 0.3s, font-weight 0.3s;
+    /* 💡 MỚI: Thêm transition cho font-weight */
     font-size: 17px;
     line-height: 1.2;
 }
 
 .categories a.category-link:hover p {
     color: #0078ff;
-    font-weight: 700; /* 💡 MỚI: Làm chữ đậm hơn khi hover */
+    font-weight: 700;
+    /* 💡 MỚI: Làm chữ đậm hơn khi hover */
 }
 
-@media (min-width: 992px) { 
+@media (min-width: 992px) {
     /* Áp dụng cho màn hình desktop */
-    
+
     /* 1. Ép các cột Bootstrap col-2 nhỏ lại (14.28% = 1/7) */
     .categories .col-lg-2,
     .categories .col-md-2,
     .categories .col-2 {
         flex: 0 0 auto;
         /* Buộc chiều rộng mỗi cột chỉ còn 1/7 = 14.28% */
-        width: 14.28%; 
+        width: 14.28%;
     }
-    
+
     /* 2. Căn giữa hàng (Nếu cần) */
     .categories .row {
-        justify-content: center !important; 
+        justify-content: center !important;
     }
 }
 
@@ -283,7 +299,8 @@ h2, h3, h5 {
 }
 
 /* Tiêu đề các cột */
-.footer h3, .footer h4 {
+.footer h3,
+.footer h4 {
     color: #ffffff;
     font-size: 1.1rem;
     font-weight: 700;
@@ -294,7 +311,8 @@ h2, h3, h5 {
     padding-bottom: 10px;
 }
 
-.footer h3::after, .footer h4::after {
+.footer h3::after,
+.footer h4::after {
     content: '';
     position: absolute;
     left: 0;
@@ -328,6 +346,7 @@ h2, h3, h5 {
     align-items: flex-start;
     color: rgba(255, 255, 255, 0.95);
 }
+
 .contact-info i {
     margin-top: 4px;
     min-width: 25px;
@@ -341,7 +360,8 @@ h2, h3, h5 {
     height: 40px;
     text-align: center !important;
     line-height: 40px !important;
-    border: 1px solid rgba(255, 255, 255, 0.3); /* Viền mỏng */
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    /* Viền mỏng */
     border-radius: 50%;
     margin-right: 10px;
     color: #fff !important;
@@ -426,6 +446,7 @@ h2, h3, h5 {
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -457,12 +478,15 @@ h2, h3, h5 {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.75); /* nền đậm hơn để che chữ phía sau */
-    backdrop-filter: blur(4px);          /* thêm hiệu ứng mờ nhẹ nền phía sau */
+    background-color: rgba(0, 0, 0, 0.75);
+    /* nền đậm hơn để che chữ phía sau */
+    backdrop-filter: blur(4px);
+    /* thêm hiệu ứng mờ nhẹ nền phía sau */
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 5000;                       /* đảm bảo nằm trên tất cả phần tử khác */
+    z-index: 5000;
+    /* đảm bảo nằm trên tất cả phần tử khác */
     animation: fadeIn 0.3s ease;
 }
 
@@ -470,8 +494,10 @@ h2, h3, h5 {
 /* Nút cuộn lên đầu trang */
 #btnTop {
     position: fixed;
-    bottom: 30px;            /* cách đáy màn hình */
-    right: 30px;             /* cách phải màn hình */
+    bottom: 30px;
+    /* cách đáy màn hình */
+    right: 30px;
+    /* cách phải màn hình */
     width: 55px;
     height: 55px;
     border-radius: 50%;
@@ -488,7 +514,8 @@ h2, h3, h5 {
     visibility: hidden;
     transition: 0.3s;
 }
-#btnTop:hover{
+
+#btnTop:hover {
     background: #EEEEEE;
     color: #0d6efd;
     transform: translateY(-5px);
@@ -511,7 +538,8 @@ h2, h3, h5 {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
     animation: popUp 0.3s ease;
     position: relative;
-    z-index: 6000; /* chắc chắn nội dung ở trên nền mờ */
+    z-index: 6000;
+    /* chắc chắn nội dung ở trên nền mờ */
 }
 
 .modal-content img {
@@ -550,13 +578,25 @@ h2, h3, h5 {
 
 /* Hiệu ứng xuất hiện */
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes popUp {
-    from { transform: scale(0.9); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 .close-icon {
@@ -568,6 +608,7 @@ h2, h3, h5 {
     font-size: 20px;
     transition: color 0.3s;
 }
+
 .close-icon:hover {
     color: #ff4444;
 }
@@ -577,90 +618,97 @@ h2, h3, h5 {
    Hiển thị ảnh và hiệu ứng slideshow
 -------------------------------- */
 .image-wrapper {
-  position: relative;
-  overflow: hidden;
-  border-radius: 12px;
-  cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    cursor: pointer;
 }
 
 .image-wrapper img.card-img-top {
-  width: 100%;
-  height: 220px;
-  object-fit: cover;
-  transition: transform 0.6s ease, filter 0.4s ease;
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    transition: transform 0.6s ease, filter 0.4s ease;
 }
 
 .image-wrapper:hover img.card-img-top {
-  transform: scale(1.05);
-  filter: brightness(0.8);
+    transform: scale(1.05);
+    filter: brightness(0.8);
 }
 
 /* Overlay khi hover */
 .image-overlay {
-  position: absolute;
-  inset: 0; /* phủ kín toàn khung */
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
-  transition: opacity 0.4s ease;
+    position: absolute;
+    inset: 0;
+    /* phủ kín toàn khung */
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.4s ease;
 }
 
 .image-wrapper:hover .image-overlay {
-  opacity: 1;
+    opacity: 1;
 }
 
 /* Slideshow */
 .slideshow {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  border-radius: 12px;
-  overflow: hidden;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
 .slideshow img.slide {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transition: opacity 1.5s ease; /* 🔹 đổi chậm & mượt */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 1.5s ease;
+    /* 🔹 đổi chậm & mượt */
 }
 
 .slideshow img.active {
-  opacity: 1;
-  z-index: 2;
+    opacity: 1;
+    z-index: 2;
 }
 
 /* Nút điều hướng slideshow */
 .slideshow .prev,
 .slideshow .next {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.85);
-  border: none;
-  color: #333;
-  font-size: 20px;
-  padding: 6px 12px;
-  border-radius: 50%;
-  cursor: pointer;
-  z-index: 3;
-  transition: background 0.3s ease, color 0.3s ease;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.85);
+    border: none;
+    color: #333;
+    font-size: 20px;
+    padding: 6px 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 3;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 .slideshow .prev:hover,
 .slideshow .next:hover {
-  background: #0d6efd;
-  color: #fff;
+    background: #0d6efd;
+    color: #fff;
 }
 
-.slideshow .prev { left: 10px; }
-.slideshow .next { right: 10px; }
+.slideshow .prev {
+    left: 10px;
+}
+
+.slideshow .next {
+    right: 10px;
+}
 
 /* Modal */
 .modal-content {
@@ -670,9 +718,12 @@ h2, h3, h5 {
 .modal-body input {
     margin-bottom: 0.75rem;
 }
-.modal-body span, .modal-body a {
+
+.modal-body span,
+.modal-body a {
     font-size: 0.9rem;
 }
+
 .modal-body a {
     cursor: pointer;
 }
@@ -682,7 +733,7 @@ a {
 }
 
 .full-width-container {
-    width: 100% !important; 
+    width: 100% !important;
     padding-right: var(--bs-gutter-x, 0.75rem);
     padding-left: var(--bs-gutter-x, 0.75rem);
     margin-right: auto;
@@ -699,7 +750,7 @@ a {
 
 .place-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
 .place-image {
@@ -736,7 +787,7 @@ a {
     font-size: 14px;
     font-weight: 600;
     border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     color: #333;
 }
 
@@ -767,10 +818,15 @@ a {
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+.autocomplete-box.show {
+    display: block !important;
 }
 
 .autocomplete-item {
@@ -802,11 +858,11 @@ a {
     padding-left: 22px;
 }
 
-.autocomplete-item > div:first-child {
+.autocomplete-item>div:first-child {
     flex: 1;
 }
 
-.autocomplete-item > div:first-child > div:first-child {
+.autocomplete-item>div:first-child>div:first-child {
     font-weight: 500;
     color: #333;
     margin-bottom: 4px;
@@ -829,7 +885,7 @@ a {
     font-size: 12px;
 }
 
-.autocomplete-item > div:last-child {
+.autocomplete-item>div:last-child {
     text-align: right;
     display: flex;
     flex-direction: column;
