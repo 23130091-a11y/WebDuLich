@@ -722,7 +722,28 @@ document.addEventListener('DOMContentLoaded', () => {
     checkAuthStatus();
     loadSearchHistory();
     setupEmailSuggestions();
+    handleRecommendVisibility();
 });
+
+
+function handleRecommendVisibility() {
+    const token = localStorage.getItem('access');
+
+    const recommendSection = document.getElementById('personalized-section');
+    const loginCTA = document.getElementById('recommend-login-cta');
+
+    if (!recommendSection || !loginCTA) return;
+
+    if (token) {
+        //  Đã đăng nhập
+        recommendSection.classList.remove('d-none');
+        loginCTA.classList.add('d-none');
+    } else {
+        //  Chưa đăng nhập
+        recommendSection.classList.add('d-none');
+        loginCTA.classList.remove('d-none');
+    }
+}
 
 
 

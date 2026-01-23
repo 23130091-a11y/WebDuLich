@@ -295,8 +295,24 @@
     <!-- Code của Thanh -->
     <!-- Gợi ý cá nhân hóa -->
 
-    {% if personalized_destinations or personalized_tours %}
-        <section class="recommend py-5 bg-white" id="personalized-section">
+    <section id="recommend-login-cta"
+         class="py-5 bg-white text-center d-none">
+        <div class="container">
+            <i class="fa-solid fa-user-lock fa-3x text-primary mb-3"></i>
+            <h4 class="fw-bold">Đăng nhập để xem gợi ý dành riêng cho bạn</h4>
+            <p class="text-muted mb-4">
+                Chúng tôi sẽ đề xuất địa điểm & tour phù hợp nhất với sở thích của bạn
+            </p>
+
+            <button class="btn btn-outline-primary btn-lg rounded-pill px-4" id="showLoginBtn"
+                    data-bs-toggle="modal" data-bs-target="#authModal">
+                <i class="fa-solid fa-right-to-bracket me-2"></i>Đăng nhập ngay
+            </button>
+        </div>
+    </section>
+
+<!--    {% if personalized_destinations or personalized_tours %}-->
+        <section class="recommend py-5 bg-white d-none" id="personalized-section">
             <div class="container">
                 <div class="text-center mb-5">
                     <h2 class="fw-bold mb-2">
@@ -315,14 +331,14 @@
                                 <span class="badge bg-primary position-absolute top-0 end-0 m-3 shadow-sm">
                                     <i class="fa-solid fa-heart"></i> Gợi ý AI
                                 </span>
-                                
+
                                 {% with db_img=dest.images.all.first %}
                                     {% if db_img %}
                                         <img src="{{ db_img.image.url }}" class="card-img-top" alt="{{ dest.name }}" style="height: 220px; object-fit: cover;">
                                     {% elif dest.image %}
                                         <img src="{{ dest.image.url }}" class="card-img-top" alt="{{ dest.name }}" style="height: 220px; object-fit: cover;">
                                     {% else %}
-                                        <img src="{% static 'images/'|add:dest.slug|add:'/'|add:dest.slug|add:'.jpg' %}" 
+                                        <img src="{% static 'images/'|add:dest.slug|add:'/'|add:dest.slug|add:'.jpg' %}"
                                             class="card-img-top" style="height: 220px; object-fit: cover;"
                                             onerror="this.src='{% static 'images/default-destination.jpg' %}';">
                                     {% endif %}
@@ -363,7 +379,7 @@
                                                 {% if t_dest_img %}
                                                     <img src="{{ t_dest_img.image.url }}" class="img-fluid rounded h-100" style="object-fit: cover; min-height: 120px;">
                                                 {% else %}
-                                                    <img src="{% static 'images/'|add:tour.destination.slug|add:'/'|add:tour.destination.slug|add:'.jpg' %}" 
+                                                    <img src="{% static 'images/'|add:tour.destination.slug|add:'/'|add:tour.destination.slug|add:'.jpg' %}"
                                                         class="img-fluid rounded h-100" style="object-fit: cover; min-height: 120px;"
                                                         onerror="this.src='{% static 'images/default-tour.jpg' %}';">
                                                 {% endif %}
@@ -393,7 +409,7 @@
                 {% endif %}
             </div>
         </section>
-    {% endif %}
+<!--    {% endif %}-->
 
     <hr class="container m-0">
 
@@ -621,12 +637,15 @@
                             <!-- Favorite button -->
                             <div class="position-absolute top-0 end-0 m-3">
                                 <button class="btn btn-sm btn-light rounded-circle shadow-sm favorite-btn p-2"
-                                        data-url="{% url 'travel:toggle_tour_favorite' tour.id %}">
-                                    <i class="{% if request.user in tour.favorites.all %}
-                                        fa-solid
-                                    {% else %}
-                                        fa-regular
-                                    {% endif %} fa-heart text-danger"></i>
+                                        data-url="{% url 'travel:toggle_tour_favorite' tour.id %}"
+                                        data-auth="{{ request.user.is_authenticated|yesno:'1,0' }}">
+                                    <i class="
+                                        {% if request.user.is_authenticated and request.user in tour.favorited_by.all %}
+                                            fa-solid
+                                        {% else %}
+                                            fa-regular
+                                        {% endif %}
+                                        fa-heart text-danger"></i>
                                 </button>
                             </div>
                             
@@ -1330,8 +1349,16 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.addEventListener("click", function (e) {
                 e.preventDefault();
 
-                const url = this.dataset.url;
+                const isAuth = this.dataset.auth === "1";
                 const icon = this.querySelector("i");
+
+                // CHƯA LOGIN → KHÔNG ĐỔI ICON
+                if (!isAuth) {
+                    openLoginRequiredModal();
+                    return;
+                }
+
+                const url = this.dataset.url;
 
                 fetch(url, {
                     method: "POST",
@@ -1340,21 +1367,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         "X-Requested-With": "XMLHttpRequest"
                     }
                 })
-                    .then(res => {
-                        if (res.status === 401) {
-                            openLoginRequiredModal();
-                            return null; // DỪNG TẠI ĐÂY
-                        }
-                        return res.json();
-                    })
+                    .then(res => res.json())
                     .then(data => {
-                        if (!data || !data.success) return;
+                        if (!data.success) return;
 
-                        // CHỈ ĐỔI MÀU KHI BACKEND OK
                         icon.classList.toggle("fa-solid", data.is_favorite);
                         icon.classList.toggle("fa-regular", !data.is_favorite);
-                    })
-                    .catch(err => console.log(err));
+                    });
             });
         });
 
