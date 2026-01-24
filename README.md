@@ -1,1 +1,3 @@
-# WebDuLich: Do có lỗi github trên project và muốn tiết kiệm thời gian khắc phục sự cố nên nhóm tạo project mới. Hân đã commit giao diện trang chủ, Trâm đã commit giao diện phần footer. Hạnh đã commit giao diện và xử lý đăng ký, đăng nhập. Thay mặt nhóm trưởng Hạnh xác nhận.
+# WebDuLich: Hệ thống gợi ý du lịch AI thông minh
+Nhóm 24
+Python - Django
