@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import Category, Destination, TourPackage, DestinationImage, TourImage, Review, ReviewReport, ReviewVote, \
     RecommendationScore, SearchHistory, TravelType, RecommendationConfig, Booking
+
 from django.utils.html import format_html
 
 
@@ -210,6 +211,7 @@ class TourReviewAdmin(admin.ModelAdmin):
         'is_verified_purchase', 
         'status',     
         'status_tag'   
+
     )
     list_filter = ('status', 'is_verified_purchase', 'is_verified_user', 'rating')
     list_editable = ('status', 'is_verified_user', 'is_verified_purchase')
@@ -218,7 +220,7 @@ class TourReviewAdmin(admin.ModelAdmin):
         from django.contrib.contenttypes.models import ContentType
         ct = ContentType.objects.get_for_model(obj)
         count = ReviewReport.objects.filter(content_type=ct, object_id=obj.id).count()
-        if count >= 5:
+        if count >= 5:    
             return format_html('<b style="color:red;">{} báo cáo (Cần xử lý!)</b>', count)
         return f"{count} báo cáo"
     
@@ -244,12 +246,14 @@ class BookingAdmin(admin.ModelAdmin):
     
     # 2. Bộ lọc nhanh ở bên phải (Cực kỳ hữu ích)
     list_filter = ('is_ticket_sent', 'status', 'payment_status', 'departure_date', 'created_at')
+
     
     # 3. Ô tìm kiếm (Tìm theo mã đơn, tên khách hoặc số điện thoại)
     search_fields = ('booking_code', 'full_name', 'phone_number', 'email')
     
     # 4. Cho phép sửa nhanh trạng thái ngay tại danh sách mà không cần bấm vào chi tiết
     list_editable = ('status', 'payment_status', 'is_ticket_sent')    
+
     # 5. Phân trang (Tránh load quá nhiều đơn một lúc)
     list_per_page = 20
     
@@ -259,7 +263,6 @@ class BookingAdmin(admin.ModelAdmin):
     # 7. Chỉ đọc (Không cho Admin sửa mã đơn hàng vì nó là duy nhất)
     readonly_fields = ('booking_code', 'total_price', 'created_at')
 
-    # Thêm vào trong class BookingAdmin:
     def status_tag(self, obj):
         colors = {
             'pending': '#ffc107',   # Vàng
@@ -273,6 +276,7 @@ class BookingAdmin(admin.ModelAdmin):
             obj.get_status_display()
         )
     status_tag.short_description = 'Trạng thái đơn'
+
 
     # Group các thông tin lại cho dễ nhìn khi bấm vào xem chi tiết
     fieldsets = (
@@ -305,8 +309,6 @@ class BookingAdmin(admin.ModelAdmin):
                 # Dùng update_fields để tối ưu hiệu suất
 
         return super().changelist_view(request, extra_context=extra_context)
-
-
 
 from django.contrib import admin
 from django.utils.html import format_html

@@ -242,7 +242,7 @@ class SentimentAnalyzer:
             logger.info("Loading PhoBERT sentiment model...")
             
             # Try to load fine-tuned model first
-            finetuned_path = os.path.join(settings.BASE_DIR, 'travel', 'models', 'phobert-travel-sentiment-final')
+            finetuned_path = os.path.join(settings.BASE_DIR, 'travel', 'phobert-travel-sentiment-final')
             
             if os.path.exists(finetuned_path):
                 model_name = finetuned_path

@@ -26,3 +26,4 @@ def send_ticket_email(sender, instance, created, **kwargs):
             Booking.objects.filter(id=instance.id).update(is_ticket_sent=True)
         except Exception as e:
             print(f"Lỗi gửi mail: {e}")
+

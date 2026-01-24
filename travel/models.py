@@ -404,7 +404,6 @@ class Booking(models.Model):
         # Nếu thanh toán là 'paid' và vẫn đang ở trạng thái 'pending' (chờ)
         if self.payment_status == 'paid' and self.status == 'pending':
             self.status = 'confirmed'
-
         super().save(*args, **kwargs)
 
     def __str__(self):

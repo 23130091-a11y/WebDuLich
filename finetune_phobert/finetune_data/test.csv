@@ -1,0 +1,338 @@
+text,label,label_id
+"đông quá, nhân viên cộc lốc, chán!",NEG,0
+"Tương đối xịn, tạm chấp nhận.",NEU,1
+"Hơi kém, còn lại ok.",NEU,1
+"phục vụ tốt, tiện nghi đầy đủ, sẽ quay lại!",POS,2
+"Giá cao, thất vọng, thất vọng!",NEG,0
+xuất sắc nhưng chen chúc.,NEU,1
+"Quá bẩn, dịch vụ tệ, phí tiền!",NEG,0
+"Giá mắc, chán, thất vọng!",NEG,0
+"bẩn quá, kém, không recommend!",NEG,0
+"Không quá tệ, tạm ổn.",NEU,1
+"Khá hay, phục vụ tốt.",POS,2
+Giá hơi cao,NEU,1
+Phòng sạch nhưng nhỏ,NEU,1
+"Mặc dù mắc, nhưng lãng mạn.",NEU,1
+"Cũng được, không có gì đặc biệt.",NEU,1
+"mê, chỉ hơi tồi thôi.",NEU,1
+"Tuyệt vời! ok, tuyệt vời, 10 điểm!",POS,2
+"Mặc dù không đáng tiền, nhưng thích.",NEU,1
+"View ok, đáng để ghé thăm.",POS,2
+"dở, đông quá.",NEG,0
+"Quá dở, không nhiệt tình, phí tiền!",NEG,0
+Không ổn,NEG,0
+"Dịch vụ bẩn, không nhiệt tình, không bao giờ quay lại!",NEG,0
+Không quá tệ,NEU,1
+"Khá chán, không đáng tiền.",NEG,0
+"Địa điểm thích, nhân viên thân thiện, rất recommend!",POS,2
+"View lãng mạn, phong cảnh ấn tượng, đáng đi lắm!",POS,2
+"View ổn, phong cảnh hay, đáng đi lắm!",POS,2
+xịn nhưng đông quá.,NEU,1
+"Cũng đẹp, recommend.",POS,2
+"thất vọng, chen chúc.",NEG,0
+"Dịch vụ bẩn, phục vụ chậm, không bao giờ quay lại!",NEG,0
+Hơi đông,NEU,1
+Không đẹp,NEG,0
+"Giá không đáng tiền, kém, thất vọng!",NEG,0
+Bình thường,NEU,1
+"Địa điểm mê, nhân viên vui vẻ, rất recommend!",POS,2
+"View xuất sắc, phong cảnh ấn tượng, đáng đi lắm!",POS,2
+View đẹp nhưng xa,NEU,1
+"Dịch vụ bẩn, không nhiệt tình, không bao giờ quay lại!",NEG,0
+"Giá hơi đắt, còn lại ok.",NEU,1
+"Khá thơ mộng, nhân viên vui vẻ.",POS,2
+"rác nhiều, tệ, không recommend!",NEG,0
+"View ấn tượng, nhưng phục vụ chậm.",NEU,1
+"Phòng sạch, view đẹp, chỉ hơi xa trung tâm",POS,2
+"Khá thích, dịch vụ chuyên nghiệp.",POS,2
+"Không tệ lắm, cũng được.",NEU,1
+phòng rộng rãi nhưng đắt.,NEU,1
+"Khá thơ mộng, hỗ trợ nhiệt tình.",POS,2
+"Cũng đỉnh, recommend.",POS,2
+"dịch vụ chuyên nghiệp, nhưng dở.",NEU,1
+"Địa điểm xuất sắc, nhân viên thân thiện.",POS,2
+"Cũng tệ, không recommend.",NEG,0
+"Quá bẩn, nhân viên thái độ kém, phí tiền!",NEG,0
+"hỗ trợ nhiệt tình, decor đẹp, sẽ quay lại!",POS,2
+"thất vọng, ồn ào.",NEG,0
+Phòng sạch nhưng nhỏ,NEU,1
+Phòng sạch nhưng nhỏ,NEU,1
+"Khá tệ, không đáng tiền.",NEG,0
+"Tương đối thích, tạm chấp nhận.",NEU,1
+"Địa điểm ok, phục vụ tốt.",POS,2
+phòng rộng rãi nhưng đắt.,NEU,1
+Phòng sạch nhưng nhỏ,NEU,1
+Cảnh ổn nhưng xấu.,NEU,1
+"tốt, chỉ hơi tồi thôi.",NEU,1
+Cảnh ấn tượng nhưng xấu.,NEU,1
+"Khá ok, không quá hay.",NEU,1
+"Không tệ lắm, cũng được.",NEU,1
+"Mặc dù mắc, nhưng tuyệt vời.",NEU,1
+"dở, ồn ào.",NEG,0
+"Không thất vọng lắm, cũng được.",NEU,1
+"Địa điểm xuất sắc, hỗ trợ nhiệt tình, rất recommend!",POS,2
+"chán, chen chúc.",NEG,0
+"Cũng dở, không recommend.",NEG,0
+"View thơ mộng, đáng để ghé thăm.",POS,2
+"Tuyệt vời! tuyệt vời, ấn tượng, 10 điểm!",POS,2
+"nhân viên thái độ kém, tệ.",NEG,0
+Không hề tệ,POS,2
+"nhân viên thân thiện, nhưng tệ.",NEU,1
+"Giá hơi không đáng tiền, còn lại ok.",NEU,1
+"Cũng lãng mạn, recommend.",POS,2
+"đông quá, phục vụ chậm, dở!",NEG,0
+"wifi mạnh, mê.",POS,2
+"Hơi chán, nhân viên cộc lốc.",NEG,0
+"Khá mê, hỗ trợ nhiệt tình.",POS,2
+"Tuyệt vời! lãng mạn, đẹp, 10 điểm!",POS,2
+"Tương đối xịn, tạm chấp nhận.",NEU,1
+"Dịch vụ bẩn, không nhiệt tình, không bao giờ quay lại!",NEG,0
+"wifi mạnh, ổn.",POS,2
+Không dở lắm,NEU,1
+"Khá thất vọng, không đáng tiền.",NEG,0
+"Te qua, ko bao gio quay lai",NEG,0
+"dịch vụ chuyên nghiệp, nhưng chán.",NEU,1
+"Cũng không chán, ok.",NEU,1
+wifi mạnh nhưng không đáng tiền.,NEU,1
+"Mặc dù không đáng tiền, nhưng ok.",NEU,1
+Cảnh tốt nhưng thất vọng.,NEU,1
+"Hơi xấu, nhân viên cộc lốc.",NEG,0
+"Cũng tồi, không recommend.",NEG,0
+"Không quá xấu, tạm ổn.",NEU,1
+thích nhưng chen chúc.,NEU,1
+"Cũng thơ mộng, recommend.",POS,2
+"Dịch vụ thất vọng, nhân viên thái độ kém, không bao giờ quay lại!",NEG,0
+"nhân viên thái độ kém, tồi.",NEG,0
+"Địa điểm mê, nhân viên vui vẻ, rất recommend!",POS,2
+"Không tệ lắm, cũng được.",NEU,1
+"nhân viên vui vẻ, phòng sạch sẽ, sẽ quay lại!",POS,2
+xịn nhưng chờ lâu.,NEU,1
+"Cảnh lãng mạn, chụp hình tốt, thích lắm!",POS,2
+"Không quá tệ, tạm ổn.",NEU,1
+"Khá xịn, nhân viên thân thiện.",POS,2
+"Cảnh đẹp, chụp hình xuất sắc, thích lắm!",POS,2
+"Hơi tồi, không nhiệt tình.",NEG,0
+"dịch vụ tệ, tồi.",NEG,0
+Tuy tồi nhưng tuyệt vời.,NEU,1
+"Tuyệt vời! xịn, xịn, 10 điểm!",POS,2
+"Giá chát, bẩn, thất vọng!",NEG,0
+"Cũng thơ mộng, recommend.",POS,2
+Cũng đẹp,NEU,1
+"Khá ok, không quá ấn tượng.",NEU,1
+"Tạm ổn, bình thường.",NEU,1
+"kém, chờ lâu.",NEG,0
+Hơi đắt nhưng đáng tiền,POS,2
+"Giá mắc, tệ, thất vọng!",NEG,0
+Khá xa,NEU,1
+"dịch vụ chuyên nghiệp, nhưng xấu.",NEU,1
+wifi mạnh nhưng đắt.,NEU,1
+"Dù chờ lâu, cảnh vẫn tuyệt vời.",NEU,1
+"phòng rộng rãi, thơ mộng.",POS,2
+"Địa điểm lãng mạn, phục vụ tốt.",POS,2
+Không đẹp,NEG,0
+"nhân viên thái độ kém, tệ.",NEG,0
+thơ mộng nhưng ồn ào.,NEU,1
+"Khá ấn tượng, hỗ trợ nhiệt tình.",POS,2
+"Tương đối tốt, tạm chấp nhận.",NEU,1
+"xếp hàng dài, dịch vụ tệ, chán!",NEG,0
+"tiện nghi đầy đủ, ổn.",POS,2
+"Cảnh ổn, chụp hình đỉnh, thích lắm!",POS,2
+phòng rộng rãi nhưng mắc.,NEU,1
+"Địa điểm xịn, nhân viên thân thiện.",POS,2
+"View mê, phong cảnh mê, đáng đi lắm!",POS,2
+"hỗ trợ nhiệt tình, tiện nghi đầy đủ, sẽ quay lại!",POS,2
+"Mặc dù không đáng tiền, nhưng ok.",NEU,1
+"Dịch vụ tệ, nhưng cảnh đẹp bù lại",NEU,1
+"Cũng thất vọng, không recommend.",NEG,0
+"ấn tượng, chỉ hơi tệ thôi.",NEU,1
+"Khá tốt, hỗ trợ nhiệt tình.",POS,2
+"Địa điểm xịn, phục vụ tốt.",POS,2
+"Quá kém, nhân viên cộc lốc, phí tiền!",NEG,0
+"Cung dc, binh thuong",NEU,1
+"Giá hơi không đáng tiền, còn lại ok.",NEU,1
+"đông quá, không nhiệt tình, dở!",NEG,0
+"Hơi đông quá, nhưng chấp nhận được.",NEU,1
+"Không kém lắm, cũng được.",NEU,1
+"dịch vụ chuyên nghiệp, phòng rộng rãi, sẽ quay lại!",POS,2
+"đông quá, không nhiệt tình, bẩn!",NEG,0
+"Không quá tồi, tạm ổn.",NEU,1
+"Dù ồn ào, cảnh vẫn ổn.",NEU,1
+Tuy xấu nhưng hay.,NEU,1
+"Quá chán, phục vụ chậm, phí tiền!",NEG,0
+"View hay, phong cảnh ấn tượng, đáng đi lắm!",POS,2
+"View thích, nhưng không nhiệt tình.",NEU,1
+"Khá xấu, không đáng tiền.",NEG,0
+"Cảnh đỉnh, chụp hình lãng mạn, thích lắm!",POS,2
+"Cũng không xấu, ok.",NEU,1
+"View hay, phong cảnh hay, đáng đi lắm!",POS,2
+"Cũng thích, recommend.",POS,2
+"Không quá xấu, tạm ổn.",NEU,1
+"View mê, đáng để ghé thăm.",POS,2
+"Tạm ổn, bình thường.",NEU,1
+"Giá mắc, chán, thất vọng!",NEG,0
+Cơ sở vật chất hơi cũ,NEU,1
+"Tạm ổn, bình thường.",NEU,1
+"Cảnh đỉnh, chụp hình xuất sắc, thích lắm!",POS,2
+"View ấn tượng, phong cảnh ổn, đáng đi lắm!",POS,2
+"Địa điểm mê, hỗ trợ nhiệt tình.",POS,2
+"Địa điểm thích, dịch vụ chuyên nghiệp, rất recommend!",POS,2
+Tuy bẩn nhưng mê.,NEU,1
+"phòng rộng rãi, đẹp.",POS,2
+"chờ lâu, nhân viên thái độ kém, xấu!",NEG,0
+"Cũng không xấu, ok.",NEU,1
+"Giá đắt, tồi, thất vọng!",NEG,0
+"Cảnh thích, chụp hình tuyệt vời, thích lắm!",POS,2
+"phòng rộng rãi, hay.",POS,2
+"Dịch vụ bẩn, phục vụ chậm, không bao giờ quay lại!",NEG,0
+"Cảnh xuất sắc, chụp hình tuyệt vời, thích lắm!",POS,2
+Giá đắt nhưng đáng tiền,POS,2
+"Cũng tồi, không recommend.",NEG,0
+"nhân viên thái độ kém, dở.",NEG,0
+"View đẹp, phong cảnh đỉnh, đáng đi lắm!",POS,2
+"Quá tồi, nhân viên thái độ kém, phí tiền!",NEG,0
+"đông quá, nhân viên thái độ kém, xấu!",NEG,0
+Khá ổn,NEU,1
+"phục vụ tốt, phòng rộng rãi, sẽ quay lại!",POS,2
+"Cũng đẹp, recommend.",POS,2
+tuyệt vời nhưng đông quá.,NEU,1
+"View xịn, phong cảnh đẹp, đáng đi lắm!",POS,2
+"nhân viên thân thiện, wifi mạnh, sẽ quay lại!",POS,2
+"decor đẹp, ấn tượng.",POS,2
+"kém, ồn ào.",NEG,0
+"Hơi dở, nhân viên cộc lốc.",NEG,0
+Không tệ,NEU,1
+"Dịch vụ thất vọng, không nhiệt tình, không bao giờ quay lại!",NEG,0
+"Cũng hay, recommend.",POS,2
+"dịch vụ chuyên nghiệp, decor đẹp, sẽ quay lại!",POS,2
+"nhân viên vui vẻ, phòng sạch sẽ, sẽ quay lại!",POS,2
+"Tuyệt vời! lãng mạn, xuất sắc, 10 điểm!",POS,2
+Khá ổn,NEU,1
+"Không bẩn lắm, cũng được.",NEU,1
+"chờ lâu, không nhiệt tình, kém!",NEG,0
+"Quá xấu, không nhiệt tình, phí tiền!",NEG,0
+"Tuyệt vời! ổn, mê, 10 điểm!",POS,2
+"nhân viên thân thiện, nhưng tệ.",NEU,1
+"Giá mắc, kém, thất vọng!",NEG,0
+Tuy xấu nhưng tuyệt vời.,NEU,1
+"Khá lãng mạn, hỗ trợ nhiệt tình.",POS,2
+"Quá kém, không nhiệt tình, phí tiền!",NEG,0
+"Tuyệt vời! hay, tuyệt vời, 10 điểm!",POS,2
+"wc hôi, kém, không recommend!",NEG,0
+"Hơi ồn ào, nhưng chấp nhận được.",NEU,1
+"Giá mắc, tệ, thất vọng!",NEG,0
+"xấu, chen chúc.",NEG,0
+"Cũng xịn, recommend.",POS,2
+"Địa điểm ok, hỗ trợ nhiệt tình.",POS,2
+Cũng được,NEU,1
+"Hơi bẩn, dịch vụ tệ.",NEG,0
+"View đỉnh, phong cảnh thơ mộng, đáng đi lắm!",POS,2
+"không nhiệt tình, kém.",NEG,0
+"View ổn, phong cảnh xuất sắc, đáng đi lắm!",POS,2
+"Cũng bẩn, không recommend.",NEG,0
+"View mê, nhưng nhân viên cộc lốc.",NEU,1
+"View đẹp, nhưng không nhiệt tình.",NEU,1
+"Cũng được, không có gì đặc biệt.",NEU,1
+"Quá tệ, dịch vụ tệ, phí tiền!",NEG,0
+"Khá ok, không quá mê.",NEU,1
+"Cảnh thích, chụp hình xịn, thích lắm!",POS,2
+"View thích, đáng để ghé thăm.",POS,2
+"View ok, phong cảnh lãng mạn, đáng đi lắm!",POS,2
+"Hơi chen chúc, nhưng chấp nhận được.",NEU,1
+"Tuyệt vời! hay, đỉnh, 10 điểm!",POS,2
+"Địa điểm xịn, nhân viên vui vẻ.",POS,2
+"Địa điểm hay, dịch vụ chuyên nghiệp, rất recommend!",POS,2
+"Cung dc, binh thuong",NEU,1
+"không nhiệt tình, chán.",NEG,0
+"hỗ trợ nhiệt tình, phòng sạch sẽ, sẽ quay lại!",POS,2
+"wifi mạnh, đỉnh.",POS,2
+"Mặc dù cao, nhưng mê.",NEU,1
+"Khá đẹp, phục vụ tốt.",POS,2
+"Giá đắt, dở, thất vọng!",NEG,0
+"xếp hàng dài, nhân viên thái độ kém, xấu!",NEG,0
+"Dep lam, rat thich",POS,2
+"Tuyệt vời! tuyệt vời, xuất sắc, 10 điểm!",POS,2
+"Cảnh thơ mộng, chụp hình tốt, thích lắm!",POS,2
+"View ổn, phong cảnh đẹp, đáng đi lắm!",POS,2
+"Khá dở, không đáng tiền.",NEG,0
+"Không tệ lắm, cũng được.",NEU,1
+"Khá ấn tượng, hỗ trợ nhiệt tình.",POS,2
+"Tạm ổn, bình thường.",NEU,1
+Cũng đẹp,NEU,1
+"Dịch vụ bẩn, phục vụ chậm, không bao giờ quay lại!",NEG,0
+"nhân viên vui vẻ, decor đẹp, sẽ quay lại!",POS,2
+"thơ mộng, chỉ hơi chán thôi.",NEU,1
+"Hơi kém, nhân viên cộc lốc.",NEG,0
+"Khá bẩn, không đáng tiền.",NEG,0
+"dịch vụ chuyên nghiệp, phòng rộng rãi, sẽ quay lại!",POS,2
+"không nhiệt tình, bẩn.",NEG,0
+"phòng rộng rãi, lãng mạn.",POS,2
+Cơ sở vật chất hơi cũ,NEU,1
+Tương đối tốt,NEU,1
+"thích, chỉ hơi dở thôi.",NEU,1
+"Cũng ok, recommend.",POS,2
+"Quá dở, nhân viên thái độ kém, phí tiền!",NEG,0
+"Hơi tồi, nhân viên thái độ kém.",NEG,0
+Tạm được,NEU,1
+"Cũng kém, không recommend.",NEG,0
+"Tuyệt vời! tuyệt vời, đỉnh, 10 điểm!",POS,2
+Ok thôi,NEU,1
+"Khá mê, nhân viên vui vẻ.",POS,2
+"dịch vụ tệ, thất vọng.",NEG,0
+"Mặc dù cao, nhưng thích.",NEU,1
+"Giá đắt, chán, thất vọng!",NEG,0
+"Giá hơi chát, còn lại ok.",NEU,1
+"Cảnh đẹp, chụp hình tuyệt vời, thích lắm!",POS,2
+"Cũng xấu, không recommend.",NEG,0
+"Không chán lắm, cũng được.",NEU,1
+"Địa điểm mê, nhân viên vui vẻ.",POS,2
+"Hơi tồi, phục vụ chậm.",NEG,0
+"Cũng ổn, recommend.",POS,2
+"thơ mộng, chỉ hơi dở thôi.",NEU,1
+"Không chán lắm, cũng được.",NEU,1
+"Cảnh lãng mạn, chụp hình ổn, thích lắm!",POS,2
+"Giá cao, chán, thất vọng!",NEG,0
+"Hơi bẩn, còn lại ok.",NEU,1
+Đẹp nhưng đắt,NEU,1
+"Hơi thất vọng, phục vụ chậm.",NEG,0
+"Giá hơi cao, còn lại ok.",NEU,1
+"Giá mắc, kém, thất vọng!",NEG,0
+"Cũng mê, recommend.",POS,2
+"View lãng mạn, nhưng nhân viên thái độ kém.",NEU,1
+"Khá xuất sắc, nhân viên thân thiện.",POS,2
+"dịch vụ tệ, chán.",NEG,0
+"Giá chát, thất vọng, thất vọng!",NEG,0
+"Cảnh mê, chụp hình hay, thích lắm!",POS,2
+"Giá hơi không đáng tiền, còn lại ok.",NEU,1
+"Khá ổn, dịch vụ chuyên nghiệp.",POS,2
+"Không quá bẩn, tạm ổn.",NEU,1
+decor đẹp nhưng cao.,NEU,1
+Tuy xấu nhưng ok.,NEU,1
+"View tốt, đáng để ghé thăm.",POS,2
+"Tuyệt vời! ok, xịn, 10 điểm!",POS,2
+"Cũng không kém, ok.",NEU,1
+"Giá đắt, kém, thất vọng!",NEG,0
+"Tạm ổn, bình thường.",NEU,1
+"Khá xấu, không đáng tiền.",NEG,0
+Bình thường,NEU,1
+"phục vụ chậm, bẩn.",NEG,0
+"Quá dở, nhân viên cộc lốc, phí tiền!",NEG,0
+"Cũng tuyệt vời, recommend.",POS,2
+"Hơi thất vọng, phục vụ chậm.",NEG,0
+"Dịch vụ kém, nhân viên thái độ kém, không bao giờ quay lại!",NEG,0
+"Cũng đẹp, recommend.",POS,2
+"Khá kém, không đáng tiền.",NEG,0
+"Hơi chờ lâu, nhưng chấp nhận được.",NEU,1
+đỉnh nhưng ồn ào.,NEU,1
+"xấu, xếp hàng dài.",NEG,0
+"View thích, phong cảnh ổn, đáng đi lắm!",POS,2
+đẹp nhưng chờ lâu.,NEU,1
+"Địa điểm đẹp, nhân viên vui vẻ.",POS,2
+Bình thường,NEU,1
+Tuy chán nhưng ok.,NEU,1
+"Địa điểm ổn, nhân viên vui vẻ.",POS,2
+"Địa điểm đẹp, nhân viên thân thiện.",POS,2
+"Hơi xếp hàng dài, nhưng chấp nhận được.",NEU,1
+"Khá tuyệt vời, nhân viên vui vẻ.",POS,2
+Giá đắt nhưng đáng tiền,POS,2
+"xếp hàng dài, phục vụ chậm, dở!",NEG,0
+Không hay,NEG,0

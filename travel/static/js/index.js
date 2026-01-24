@@ -8,7 +8,6 @@ const searchHistorySection = document.getElementById('searchHistorySection');
 const searchHistoryList = document.getElementById('searchHistoryList');
 const clearAllHistoryBtn = document.getElementById('clearAllHistory');
 
-
 // Load lịch sử tìm kiếm khi trang load (theo IP, không cần đăng nhập)
 function loadSearchHistory() {
     if (!searchHistorySection) return;
@@ -17,6 +16,7 @@ function loadSearchHistory() {
         .then(res => res.json())
         .then(data => {
             // Hiển thị nếu có lịch sử
+
             if (data.history && data.history.length > 0) {
                 displaySearchHistory(data.history);
                 searchHistorySection.classList.remove('d-none');
@@ -35,6 +35,7 @@ function displaySearchHistory(history) {
     if (!searchHistoryList) return;
     searchHistoryList.innerHTML = '';
     
+
     history.forEach(item => {
         const historyItem = document.createElement('a');
         historyItem.href = `/search/?q=${encodeURIComponent(item.query)}`;
@@ -45,7 +46,7 @@ function displaySearchHistory(history) {
             ? `<span class="search-count">${item.search_count} lần</span>` 
             : '';
         
-        historyItem.innerHTML = `
+     historyItem.innerHTML = `
             <i class="fa-solid fa-search text-muted"></i>
             <span>${item.query}</span>
             ${countBadge}
@@ -59,7 +60,7 @@ function displaySearchHistory(history) {
             e.stopPropagation();
             deleteSearchHistory(item.query);
         });
-        
+
         searchHistoryList.appendChild(historyItem);
     });
 }
@@ -86,6 +87,7 @@ function deleteSearchHistory(query) {
 }
 
 // Xóa tất cả lịch sử
+
 if (clearAllHistoryBtn) {
     clearAllHistoryBtn.addEventListener('click', () => {
         if (confirm('Bạn có chắc muốn xóa tất cả lịch sử tìm kiếm?')) {
@@ -111,6 +113,7 @@ if (clearAllHistoryBtn) {
 }
 
 // Lấy CSRF token
+
 function getCsrfToken() {
     const name = 'csrftoken';
     let cookieValue = null;
@@ -127,14 +130,11 @@ function getCsrfToken() {
     return cookieValue;
 }
 
-// ===== LƯU VÀ GỢI Ý EMAIL =====
+// ===== EMAIL SUGGESTIONS =====
 function saveRecentEmail(email) {
     let emails = JSON.parse(localStorage.getItem('recentEmails') || '[]');
-    // Xóa email cũ nếu đã tồn tại
     emails = emails.filter(e => e !== email);
-    // Thêm vào đầu
     emails.unshift(email);
-    // Giữ tối đa 5 email
     emails = emails.slice(0, 5);
     localStorage.setItem('recentEmails', JSON.stringify(emails));
 }
@@ -152,12 +152,12 @@ function setupEmailSuggestions() {
         if (!input) return;
         
         // Tạo dropdown gợi ý
+
         const suggestionDiv = document.createElement('div');
         suggestionDiv.className = 'email-suggestions';
         suggestionDiv.style.cssText = 'position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:1060;display:none;max-height:200px;overflow-y:auto;';
         input.parentElement.style.position = 'relative';
-        input.parentElement.appendChild(suggestionDiv);
-        
+        input.parentElement.appendChild(suggestionDiv);        
         input.addEventListener('focus', () => {
             const emails = getRecentEmails();
             if (emails.length > 0) {
@@ -195,46 +195,82 @@ function setupEmailSuggestions() {
 }
 
 // ===== AUTOCOMPLETE THÔNG MINH =====
-
-// Hàm loại bỏ dấu tiếng Việt
 function removeAccents(str) {
-    return str.normalize('NFD')
-              .replace(/[\u0300-\u036f]/g, '')
-              .replace(/đ/g, 'd')
-              .replace(/Đ/g, 'D');
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
 }
 
-// Autocomplete cho tìm kiếm nhanh
 const quickSearchInput = document.getElementById('quickSearchInput');
 const quickSuggestions = document.getElementById('quickSuggestions');
 let quickSearchTimeout;
+let lastSearchResults = { destinations: [], tours: [] }; // Lưu kết quả tìm kiếm gần nhất
 
 if (quickSearchInput) {
     quickSearchInput.addEventListener('input', function() {
         clearTimeout(quickSearchTimeout);
         const query = this.value.trim();
-        
-        if (query.length < 1) {
-            quickSuggestions.style.display = 'none';
-            return;
+        if (query.length < 1) { 
+            quickSuggestions.style.display = 'none'; 
+            lastSearchResults = { destinations: [], tours: [] };
+            return; 
         }
-        
         quickSearchTimeout = setTimeout(() => {
             fetch(`/api/search/?q=${encodeURIComponent(query)}`)
                 .then(res => res.json())
-                .then(data => {
-                    displayQuickSuggestions(data.results, query);
+                .then(data => { 
+                    // Lưu kết quả để dùng khi nhấn Enter
+                    lastSearchResults = {
+                        destinations: data.results || [],
+                        tours: data.tours || []
+                    };
+                    displayQuickSuggestions(data.results || [], query, data.tours || []); 
                 })
                 .catch(err => console.error('Error:', err));
-        }, 300);
+        }, 250);
     });
+    
+    // Xử lý khi nhấn Enter - chuyển thẳng đến destination đầu tiên trong kết quả
+    const quickSearchForm = document.getElementById('quickSearchForm');
+    if (quickSearchForm) {
+        quickSearchForm.addEventListener('submit', function(e) {
+            e.preventDefault(); // LUÔN ngăn form submit mặc định
+            
+            const query = quickSearchInput.value.trim();
+            if (!query) return;
+            
+            // Nếu đã có kết quả trong cache VÀ có destination -> chuyển đến destination đầu tiên
+            if (lastSearchResults.destinations.length > 0) {
+                const firstDest = lastSearchResults.destinations[0];
+                window.location.href = `/destination/${firstDest.id}/`;
+                return;
+            }
+            
+            // Nếu chưa có cache, fetch API rồi chuyển đến destination đầu tiên
+            fetch(`/api/search/?q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    const results = data.results || [];
+                    if (results.length > 0) {
+                        // Có kết quả destination -> chuyển đến destination đầu tiên
+                        window.location.href = `/destination/${results[0].id}/`;
+                    } else {
+                        // Không có destination -> chuyển đến trang search
+                        window.location.href = `/search/?q=${encodeURIComponent(query)}`;
+                    }
+                })
+                .catch(() => {
+                    // Lỗi -> chuyển đến trang search
+                    window.location.href = `/search/?q=${encodeURIComponent(query)}`;
+                });
+        });
+    }
 }
 
-function displayQuickSuggestions(results = [], query) {
+// Hiển thị gợi ý tìm kiếm - Giao diện đơn giản, gọn gàng
+function displayQuickSuggestions(results = [], query, tours = []) {
     if (!quickSuggestions) return;
     quickSuggestions.innerHTML = '';
     
-    if (results.length === 0) {
+    if (results.length === 0 && tours.length === 0) {
         quickSuggestions.style.display = 'none';
         return;
     }
@@ -279,12 +315,50 @@ function displayQuickSuggestions(results = [], query) {
         
         quickSuggestions.appendChild(div);
     });
+
+    // ===== ĐỊA ĐIỂM =====
+    if (results.length > 0) {
+        const destHeader = document.createElement('div');
+        destHeader.className = 'suggestion-header';
+        destHeader.innerHTML = '<i class="fa-solid fa-map-marker-alt"></i> Địa điểm';
+        quickSuggestions.appendChild(destHeader);
+        
+        results.slice(0, 5).forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'suggestion-item';
+            div.innerHTML = `
+                <span class="suggestion-name">${item.name}</span>
+                <span class="suggestion-location">${item.location}</span>
+            `;
+            div.addEventListener('click', () => { window.location.href = `/destination/${item.id}/`; });
+            quickSuggestions.appendChild(div);
+        });
+    }
+    
+    // ===== TOUR =====
+    if (tours.length > 0) {
+        const tourHeader = document.createElement('div');
+        tourHeader.className = 'suggestion-header tour';
+        tourHeader.innerHTML = '<i class="fa-solid fa-bus"></i> Tour du lịch';
+        quickSuggestions.appendChild(tourHeader);
+        
+        tours.slice(0, 5).forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'suggestion-item';
+            const price = item.price ? new Intl.NumberFormat('vi-VN').format(item.price) + 'đ' : '';
+            div.innerHTML = `
+                <span class="suggestion-name">${item.name}</span>
+                <span class="suggestion-price">${price}</span>
+            `;
+            div.addEventListener('click', () => { window.location.href = `/tour/${item.slug}/`; });
+            quickSuggestions.appendChild(div);
+        });
+    }
     
     quickSuggestions.style.display = 'block';
 }
 
-
-// Autocomplete cho vị trí xuất phát
+// ===== AUTOCOMPLETE TỈNH THÀNH =====
 const fromLocationInput = document.getElementById('fromLocationInput');
 const fromLocationSuggestions = document.getElementById('fromLocationSuggestions');
 let fromLocationTimeout;
@@ -292,8 +366,7 @@ let fromLocationTimeout;
 if (fromLocationInput) {
     fromLocationInput.addEventListener('input', function() {
         clearTimeout(fromLocationTimeout);
-        const query = this.value.trim();
-        
+        const query = this.value.trim();        
         if (query.length < 1) {
             fromLocationSuggestions.style.display = 'none';
             return;
@@ -311,6 +384,7 @@ if (fromLocationInput) {
 }
 
 // Autocomplete cho nơi muốn đến
+
 const toLocationInput = document.getElementById('toLocationInput');
 const toLocationSuggestions = document.getElementById('toLocationSuggestions');
 let toLocationTimeout;
@@ -386,11 +460,11 @@ document.addEventListener('click', (e) => {
 });
 
 // Không cho chọn ngày trong quá khứ
+// Giới hạn ngày
 const travelDateInput = document.getElementById('travelDateInput');
 if (travelDateInput) {
     const today = new Date().toISOString().split('T')[0];
     travelDateInput.setAttribute('min', today);
-    
     const maxDate = new Date();
     maxDate.setDate(maxDate.getDate() + 7);
     travelDateInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
@@ -398,15 +472,17 @@ if (travelDateInput) {
 
 
 // Thanh
+
 // ===== ĐĂNG KÝ / ĐĂNG NHẬP =====
 const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
 const preferencesForm = document.getElementById('preferencesForm');
 const modalTitle = document.getElementById('modalTitle');
 
-const authAlert = document.getElementById('authAlert');
 
 // Hàm hiển thị thông báo
+const authAlert = document.getElementById('authAlert');
+
 function showAlert(message, type = 'danger') {
     if (!authAlert) return;
     authAlert.className = `alert alert-${type}`;
@@ -433,6 +509,7 @@ if (showRegisterLink) {
 }
 
 // Chuyển sang form đăng nhập
+
 const showLoginLink = document.getElementById('showLoginLink');
 if (showLoginLink) {
     showLoginLink.addEventListener('click', (e) => {
@@ -486,7 +563,6 @@ if (loginBtn) {
 
                 const modal = bootstrap.Modal.getInstance(document.getElementById('authModal'));
                 if (modal) modal.hide();
-
                 checkAuthStatus();
                 loadSearchHistory();
                 window.location.reload();
@@ -606,7 +682,6 @@ if (savePreferencesBtn) {
                 showAlert('Đã lưu sở thích!', 'success');
                 const modal = bootstrap.Modal.getInstance(document.getElementById('authModal'));
                 if (modal) modal.hide();
-
                 checkAuthStatus();
                 loadSearchHistory();
             } else {
@@ -623,6 +698,7 @@ const showLoginBtn = document.getElementById('showLoginBtn');
 const showRegisterBtn = document.getElementById('showRegisterBtn');
 
 // Mở modal với form đăng nhập
+
 if (showLoginBtn) {
     showLoginBtn.addEventListener('click', () => {
         hideAllForms();
@@ -634,6 +710,7 @@ if (showLoginBtn) {
 }
 
 // Mở modal với form đăng ký
+
 if (showRegisterBtn) {
     showRegisterBtn.addEventListener('click', () => {
         hideAllForms();
@@ -648,6 +725,7 @@ if (showRegisterBtn) {
 function hasValidAuth() {
     return !!localStorage.getItem('access');
 }
+
 
 function checkAuthStatus() {
     const user = localStorage.getItem('user');
@@ -668,6 +746,7 @@ function checkAuthStatus() {
                     userData.username ||
                     (userData.email ? userData.email.split('@')[0] : 'User');
             }
+
 
             if (userEmail) userEmail.textContent = userData.email || '';
         } catch (e) {
@@ -728,24 +807,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function handleRecommendVisibility() {
     const token = localStorage.getItem('access');
-
     const recommendSection = document.getElementById('personalized-section');
     const loginCTA = document.getElementById('recommend-login-cta');
-
     if (!recommendSection || !loginCTA) return;
-
     if (token) {
-        //  Đã đăng nhập
         recommendSection.classList.remove('d-none');
         loginCTA.classList.add('d-none');
     } else {
-        //  Chưa đăng nhập
         recommendSection.classList.add('d-none');
         loginCTA.classList.remove('d-none');
     }
 }
-
-
-
-
 

@@ -50,3 +50,4 @@ class BookingForm(forms.ModelForm):
         if departure_date < date.today():
             raise forms.ValidationError("Ngày khởi hành không thể ở quá khứ!")
         return departure_date
+

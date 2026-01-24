@@ -170,7 +170,13 @@
                             <h5 class="card-title mb-0 fw-bold">
                                 <i class="fa-solid fa-comments text-primary me-2"></i>Đánh giá từ du khách
                             </h5>
-                            <button class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="collapse" data-bs-target="#reviewForm">
+
+                            <button class="btn btn-primary btn-sm rounded-pill px-3" 
+                                    {% if not user.is_authenticated %}
+                                        data-bs-toggle="modal" data-bs-target="#authModal"
+                                    {% else %}
+                                        data-bs-toggle="collapse" data-bs-target="#reviewForm"
+                                    {% endif %}>
                                 <i class="fa-solid fa-pen-to-square me-1"></i>Viết đánh giá
                             </button>
                         </div>
@@ -178,8 +184,6 @@
                         <div class="collapse mb-4" id="reviewForm">
                             <div class="p-4 bg-light rounded-4 border">
                                 {% if user.is_authenticated %}
-                                    
-
                                     <h6 class="mb-3 fw-bold">
                                         <i class="fa-solid fa-paper-plane me-2 text-primary"></i>Chia sẻ trải nghiệm của bạn
                                         <span class="badge bg-success-subtle text-success ms-2 fw-normal">
@@ -213,7 +217,8 @@
 
                                             <div class="col-12">
                                                 <label class="form-label small fw-bold">Nhận xét của bạn</label>
-                                                <textarea id="comment" class="form-control" rows="4" placeholder="Tour này thế nào? Bạn có hài lòng không..." maxlength="2000" required minlength="10"></textarea>
+
+                                                <textarea id="comment" class="form-control" rows="4" placeholder="Tour này thế nào? Bạn có hài lòng không..." maxlength="2000"></textarea>
                                                 <div class="d-flex justify-content-between mt-1">
                                                     <small class="text-muted x-small"><i class="fa-solid fa-robot me-1"></i>Hệ thống sẽ phân tích cảm xúc đánh giá</small>
                                                     <small class="text-muted x-small"><span id="charCount">0</span>/2000</small>
@@ -382,7 +387,13 @@
                                 <div class="text-center py-5 bg-light rounded-4 border-dashed">
                                     <i class="fa-solid fa-comment-dots fa-3x text-muted mb-3 opacity-25"></i>
                                     <p class="text-muted">Chưa có đánh giá nào. Hãy chia sẻ cảm nhận của bạn!</p>
-                                    <button class="btn btn-primary btn-sm rounded-pill" data-bs-toggle="collapse" data-bs-target="#reviewForm">Viết đánh giá đầu tiên</button>
+
+                                    <button class="btn btn-primary btn-sm rounded-pill" 
+                                            {% if not user.is_authenticated %}
+                                                data-bs-toggle="modal" data-bs-target="#authModal"
+                                            {% else %}
+                                                data-bs-toggle="collapse" data-bs-target="#reviewForm"
+                                            {% endif %}>Viết đánh giá đầu tiên</button>
                                 </div>
                             {% endif %}
                         </div>
@@ -474,6 +485,7 @@
                         </div>
 
                         {% comment %} {% if not user.is_authenticated %}
+
                         <div class="card-footer bg-light border-0 py-3 text-center" style="border-radius: 0 0 20px 20px;">
                             <p class="small text-muted mb-0">
                                 <i class="fa-solid fa-circle-info me-1"></i> 
@@ -481,6 +493,7 @@
                             </p>
                         </div>
                         {% endif %} {% endcomment %}
+
                     </div>
                     <div class="card mb-4">
                         <div class="card-body">
@@ -490,20 +503,38 @@
                             {% if weather_info and not weather_info.error %}
                             {% if weather_info.is_current %}
                             <div class="d-flex align-items-center">
-                                <span class="fs-1 me-3">🌡️</span>
+
+                                <span class="fs-1 me-3">{{ weather_info.icon|default:"🌡️" }}</span>
                                 <div>
-                                    <p class="mb-1"><strong>Hiện tại</strong></p>
-                                    <p class="mb-1">Nhiệt độ: <strong>{{ weather_info.temperature }}°C</strong></p>
-                                    <p class="mb-0">Gió: {{ weather_info.windspeed }} km/h</p>
+                                    <p class="mb-1"><strong>{{ weather_info.weather_desc|default:"Hiện tại" }}</strong></p>
+                                    <p class="mb-1">🌡️ Nhiệt độ: <strong>{{ weather_info.temperature }}°C</strong>
+                                        {% if weather_info.feels_like %}
+                                        <small class="text-muted">(Cảm giác {{ weather_info.feels_like }}°C)</small>
+                                        {% endif %}
+                                    </p>
+                                    {% if weather_info.humidity %}
+                                    <p class="mb-1">💧 Độ ẩm: {{ weather_info.humidity }}%</p>
+                                    {% endif %}
+                                    {% if weather_info.precipitation and weather_info.precipitation > 0 %}
+                                    <p class="mb-1">🌧️ Lượng mưa: {{ weather_info.precipitation }} mm</p>
+                                    {% endif %}
+                                    <p class="mb-0">💨 Gió: {{ weather_info.windspeed }} km/h</p>
                                 </div>
                             </div>
+                            {% if weather_info.time %}
+                            <small class="text-muted d-block mt-2">Cập nhật: {{ weather_info.time }}</small>
+                            {% endif %}
                             {% else %}
                             <div class="d-flex align-items-center">
                                 <span class="fs-1 me-3">{{ weather_info.icon }}</span>
                                 <div>
                                     <p class="mb-1"><strong>{{ weather_info.weather_desc }}</strong></p>
                                     <p class="mb-1">🌡️ {{ weather_info.temp_min }}°C - {{ weather_info.temp_max }}°C</p>
-                                    <p class="mb-1">💧 Mưa: {{ weather_info.precipitation }} mm</p>
+
+                                    {% if weather_info.precipitation_prob %}
+                                    <p class="mb-1">🌧️ Khả năng mưa: {{ weather_info.precipitation_prob }}%</p>
+                                    {% endif %}
+                                    <p class="mb-1">💧 Lượng mưa: {{ weather_info.precipitation|default:"0" }} mm</p>
                                     <p class="mb-0">💨 Gió: {{ weather_info.windspeed }} km/h</p>
                                 </div>
                             </div>
@@ -820,7 +851,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Khởi tạo 4 sao mặc định
-    updateStars(5);
+    updateStars(4);
 
     starLabels.forEach((label, index) => {
         const starValue = index + 1;
@@ -855,22 +886,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (tourReviewForm) {
         tourReviewForm.addEventListener('submit', function(e) {
-            e.preventDefault(); // CHỐT CHẶN: Phải chạy được dòng này thì mới không bị gửi bừa
 
-            const tourIdInput = document.getElementById('tourId');
-            const commentInput = document.getElementById('comment');
-            const submitBtn = document.getElementById('submitReviewBtn');
-            const originalText = submitBtn ? submitBtn.innerHTML : 'Gửi đánh giá';
+            e.preventDefault();
 
-            if (!commentInput.value.trim()) {
-                alert("Vui lòng nhập nội dung!");
+            if (isSpamming('comment', 30)) return;
+
+            // Lấy đúng các giá trị dựa trên ID thực tế trong HTML
+            // Lưu ý: Phải dùng ID 'tourId' (hoặc destinationId tùy bạn đặt ở input hidden)
+            const tourIdInput = document.getElementById('destinationId') || document.getElementById('tourId');
+            const authorNameInput = document.getElementById('authorName');
+            const ratingInput = document.getElementById('ratingValue'); // Hidden input từ star-rating
+            const commentInput = document.getElementById('tourComment') || document.getElementById('comment');
+
+            if (!tourIdInput || !commentInput.value.trim()) {
+                alert("Vui lòng nhập nội dung đánh giá!");
                 return;
             }
 
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = 'Đang gửi...';
-            }
+            const payload = {
+                tour_id: tourIdInput.value,
+                author_name: authorNameInput ? authorNameInput.value : 'Khách',
+                rating: ratingInput ? ratingInput.value : 5,
+                comment: document.getElementById('comment').value.trim()
+            };
+
+            const submitBtn = document.getElementById('submitReviewBtn');
+            if (submitBtn) submitBtn.disabled = true; // Chống spam click
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang gửi...';
 
             fetch('/api/tour_review/', { 
                 method: 'POST',
@@ -906,6 +949,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = originalText; }
             });
         }); // Đảm bảo đóng ngoặc đúng ở đây
+
     }
 
     let isProcessing = false;

@@ -3,6 +3,8 @@
 {% load static %}
 {% load currency_filters %}
 
+{% load humanize %}
+
 
 {% block title %}{{ destination.name }} - Web Du Lịch{% endblock %}
 
@@ -142,41 +144,35 @@
                                 font-weight: 700;
                                 letter-spacing: -0.02em;
                             }
-                            /* 1. Khung chứa chính: Cho phép cuộn ngang và ẩn thanh cuộn xấu */
+                            
+                            /* Tour slider - hiển thị ngang */
                             .tour-slider-container {
-                                width: 100%;
-                                overflow-x: auto; /* Kích hoạt cuộn ngang */
-                                padding: 15px 0;
-                                -webkit-overflow-scrolling: touch; /* Cuộn mượt trên mobile */
-                                scrollbar-width: none; /* Ẩn thanh cuộn trên Firefox */
+                                display: flex !important;
+                                flex-direction: row !important;
+                                align-items: center !important;
+                                gap: 15px !important;
                             }
-
-                            .tour-slider-container::-webkit-scrollbar {
-                                display: none; /* Ẩn thanh cuộn trên Chrome/Safari */
-                            }
-
-                            /* 2. Wrapper: Ép các item nằm trên một hàng duy nhất */
+                            
                             .tour-slider-wrapper {
                                 display: flex !important;
-                                flex-wrap: nowrap !important; /* Không cho phép xuống dòng */
-                                gap: 20px; /* Khoảng cách giữa các tour */
+                                flex-direction: row !important;
+                                flex-wrap: nowrap !important;
+                                overflow-x: auto !important;
+                                gap: 20px !important;
+                                padding: 10px 5px 20px 5px !important;
+                                scrollbar-width: none;
                             }
-
-                            /* 3. Item: Định nghĩa độ rộng cố định cho mỗi Card */
+                            
+                            .tour-slider-wrapper::-webkit-scrollbar {
+                                display: none;
+                            }
+                            
                             .tour-item {
-                                flex: 0 0 300px; /* Không co giãn, cố định 300px mỗi card */
-                                width: 300px;
-                                scroll-snap-align: start; /* Giúp card dừng đúng vị trí khi cuộn */
+                                flex: 0 0 280px !important;
+                                min-width: 280px !important;
+                                max-width: 280px !important;
                             }
-
-                            /* 4. Giới hạn tiêu đề để các card cao bằng nhau */
-                            .tour-title-limit {
-                                display: -webkit-box;
-                                -webkit-line-clamp: 2;
-                                -webkit-box-orient: vertical;
-                                overflow: hidden;
-                                height: 2.8em;
-                            }
+                            
                             /* Chỉ áp dụng cho modal bản đồ để không làm hỏng các modal khác */
                             #mapModal .modal-dialog {
                                 max-width: 90% !important; /* Độ rộng 90% màn hình */
@@ -210,7 +206,13 @@
                             <a href="#reviews-section" class="btn btn-outline-primary">
                                 <i class="fa-solid fa-comments me-2"></i>Xem {{ reviews|length }} đánh giá
                             </a>
-                            <button class="btn btn-outline-success" data-bs-toggle="collapse" data-bs-target="#reviewForm">
+
+                            <button class="btn btn-outline-success" 
+                                    {% if not user.is_authenticated %}
+                                        data-bs-toggle="modal" data-bs-target="#authModal"
+                                    {% else %}
+                                        data-bs-toggle="collapse" data-bs-target="#reviewForm"
+                                    {% endif %}>
                                 <i class="fa-solid fa-pen me-2"></i>Viết đánh giá
                             </button>
                             <button class="btn btn-outline-info" onclick="window.print()">
@@ -242,7 +244,8 @@
                 </div>
                 {% endif %}
 
-                <section class="mt-3 mb-3 pb-3 border-bottom">
+
+                <section class="mt-3 mb-3 pb-3 border-bottom tour-section">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <div>
                             <h3 class="fw-bold mb-0 text-primary">Tour du lịch tại {{ destination.name }}</h3>
@@ -255,62 +258,100 @@
                         {% endif %}
                     </div>
 
-
-                    <div class="position-relative related-tours-wrapper">
-                        <button class="slider-btn prev-btn shadow-sm" onclick="scrollRelatedSlider(-1)">
+                    <div class="tour-slider-container">
+                        <!-- Nút mũi tên trái -->
+                        <button class="tour-nav-btn tour-nav-prev" id="tourPrevBtn" aria-label="Previous">
                             <i class="fa-solid fa-chevron-left"></i>
                         </button>
-                        <button class="slider-btn next-btn shadow-sm" onclick="scrollRelatedSlider(1)">
-                            <i class="fa-solid fa-chevron-right"></i>
-                        </button>
                         
-                        <div class="tour-slider-container" id="relatedTourSlider">
-                            <div class="tour-slider-wrapper"> 
-                                {% for tour in related_packages %}
-                                <div class="tour-item">
-                                    <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
-                                        <div class="position-relative overflow-hidden">
-                                            <img src="{{ tour.image_main.url }}" class="card-img-top" alt="{{ tour.name }}" 
-                                                style="height: 180px; object-fit: cover; transition: 0.5s;">
-                                            <div class="position-absolute top-0 start-0 m-2">
-                                                <span class="badge bg-white text-dark shadow-sm">
-                                                    <i class="fa-solid fa-star text-warning"></i> {{ tour.average_rating|default:"5.0"|floatformat:1 }}
-                                                </span>
-                                            </div>
+                        <div class="tour-slider-wrapper" id="tourSlider"> 
+                            {% for tour in related_packages %}
+                            <div class="tour-item">
+                                <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+                                    <div class="position-relative overflow-hidden">
+                                        {% if tour.image_main %}
+                                        <img src="{{ tour.image_main.url }}" class="card-img-top" alt="{{ tour.name }}" 
+                                            style="height: 180px; object-fit: cover; transition: 0.5s;">
+                                        {% else %}
+                                        <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 180px;">
+                                            <i class="fa-solid fa-image text-white fa-2x"></i>
                                         </div>
-
-                                        <div class="card-body p-3 d-flex flex-column">
-                                            <h6 class="card-title fw-bold tour-title-limit mb-2" title="{{ tour.name }}">
-                                                {{ tour.name }}
-                                            </h6>
-                                            
-                                            <div class="d-flex justify-content-between align-items-center mt-auto">
-                                                <span class="text-secondary small">
-                                                    <i class="fa-solid fa-clock me-1"></i>{{ tour.duration }} ngày
-                                                </span>
-                                                <span class="text-danger fw-bold fs-6">
-                                                    {{ tour.price|floatformat:0|intcomma }}đ
-                                                </span>
-                                            </div>
-
-                                            <a href="{% url 'travel:tour_detail' tour.slug %}" class="btn btn-sm btn-outline-primary w-100 rounded-pill mt-3">
-                                                Xem chi tiết
-                                            </a>
+                                        {% endif %}
+                                        <div class="position-absolute top-0 start-0 m-2">
+                                            <span class="badge bg-white text-dark shadow-sm">
+                                                <i class="fa-solid fa-star text-warning"></i> {{ tour.average_rating|default:"5.0"|floatformat:1 }}
+                                            </span>
                                         </div>
                                     </div>
+
+                                    <div class="card-body p-3 d-flex flex-column">
+                                        <h6 class="card-title fw-bold tour-title-limit mb-2" title="{{ tour.name }}">
+                                            {{ tour.name }}
+                                        </h6>
+                                        
+                                        <div class="d-flex justify-content-between align-items-center mt-auto">
+                                            <span class="text-secondary small">
+                                                <i class="fa-solid fa-clock me-1"></i>{{ tour.duration }} ngày
+                                            </span>
+                                            <span class="text-danger fw-bold">
+                                                {{ tour.price|floatformat:0|intcomma }}đ
+                                            </span>
+                                        </div>
+
+                                        <a href="{% url 'travel:tour_detail' tour.slug %}" class="btn btn-sm btn-outline-primary w-100 rounded-pill mt-3">
+                                            Xem chi tiết
+                                        </a>
+                                    </div>
                                 </div>
-                                {% empty %}
-                                <div class="w-100 text-center py-5 bg-light rounded-4">
-                                    <i class="fa-solid fa-calendar-xmark fa-2x text-muted mb-3"></i>
-                                    <p class="text-muted mb-0">Hiện tại chưa có tour cho địa điểm này.</p>
-                                </div>
-                                {% endfor %}
                             </div>
+                            {% empty %}
+                            <div class="w-100 text-center py-5 bg-light rounded-4">
+                                <i class="fa-solid fa-calendar-xmark fa-2x text-muted mb-3"></i>
+                                <p class="text-muted mb-0">Hiện tại chưa có tour cho địa điểm này.</p>
+                            </div>
+                            {% endfor %}
                         </div>
+                        
+                        <!-- Nút mũi tên phải -->
+                        <button class="tour-nav-btn tour-nav-next" id="tourNextBtn" aria-label="Next">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
                     </div>
                 </section>
 
-                
+                <script>
+                (function() {
+                    // Hàm scroll tour slider
+                    function scrollTours(direction) {
+                        var slider = document.getElementById('tourSlider');
+                        if (slider) {
+                            var scrollAmount = 300;
+                            slider.scrollBy({
+                                left: direction * scrollAmount,
+                                behavior: 'smooth'
+                            });
+                        }
+                    }
+                    
+                    // Gắn event listeners khi DOM ready
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var prevBtn = document.getElementById('tourPrevBtn');
+                        var nextBtn = document.getElementById('tourNextBtn');
+                        
+                        if (prevBtn) {
+                            prevBtn.addEventListener('click', function() {
+                                scrollTours(-1);
+                            });
+                        }
+                        
+                        if (nextBtn) {
+                            nextBtn.addEventListener('click', function() {
+                                scrollTours(1);
+                            });
+                        }
+                    });
+                })();
+                </script>
 
                 <!-- Đánh giá -->
                 <div class="card" id="reviews-section">
@@ -357,15 +398,17 @@
                                     </div>
                                 </h6>
                                 
+
                                 <form id="reviewFormSubmit">
                                     <input type="hidden" id="destinationId" value="{{ destination.id }}">
                                     <div class="row g-3">
                                         <div class="col-md-6">
-                                            <label class="form-label fw-bold">Tên của bạn <span class="text-danger">*</span></label>
+                                            <label class="form-label fw-bold">Tên hiển thị <span class="text-danger">*</span></label>
                                             <input type="text" id="authorName" class="form-control" placeholder="Nhập tên của bạn..."
-                                                {% if user.is_authenticated %}value="{{ user.username|default:user.email }}" readonly{% endif %}
+                                                value="{% if user.is_authenticated %}{{ user.username|default:user.email }}{% endif %}"
                                                 minlength="2" maxlength="100" required>
-                                            <small class="text-muted">Tên sẽ hiển thị công khai</small>
+                                            <small class="text-muted">Bạn có thể đổi tên hiển thị tùy ý</small>
+
                                         </div>
                                         
                                         <div class="col-md-6">
@@ -414,6 +457,16 @@
                                         </div>
                                     </div>
                                 </form>
+                                {% else %}
+                                <div class="text-center py-3">
+                                    <i class="fa-solid fa-user-lock fa-3x text-muted mb-3"></i>
+                                    <h5>Bạn chưa đăng nhập</h5>
+                                    <p class="text-muted">Vui lòng đăng nhập để gửi đánh giá và đóng góp cho cộng đồng.</p>
+                                    <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#authModal">
+                                        Đăng nhập ngay
+                                    </button>
+                                </div>
+                                {% endif %}
 
                                 <div id="reviewSuccessMsg" class="alert alert-success d-none mt-3">
                                     <i class="fa-solid fa-check-circle me-2"></i>
@@ -643,20 +696,37 @@
                         {% if weather_info and not weather_info.error %}
                         {% if weather_info.is_current %}
                         <div class="d-flex align-items-center">
-                            <span class="fs-1 me-3">🌡️</span>
+                            <span class="fs-1 me-3">{{ weather_info.icon|default:"🌡️" }}</span>
                             <div>
-                                <p class="mb-1"><strong>Hiện tại</strong></p>
-                                <p class="mb-1">Nhiệt độ: <strong>{{ weather_info.temperature }}°C</strong></p>
-                                <p class="mb-0">Gió: {{ weather_info.windspeed }} km/h</p>
+                                <p class="mb-1"><strong>{{ weather_info.weather_desc|default:"Hiện tại" }}</strong></p>
+                                <p class="mb-1">🌡️ Nhiệt độ: <strong>{{ weather_info.temperature }}°C</strong>
+                                    {% if weather_info.feels_like %}
+                                    <small class="text-muted">(Cảm giác {{ weather_info.feels_like }}°C)</small>
+                                    {% endif %}
+                                </p>
+                                {% if weather_info.humidity %}
+                                <p class="mb-1">💧 Độ ẩm: {{ weather_info.humidity }}%</p>
+                                {% endif %}
+                                {% if weather_info.precipitation and weather_info.precipitation > 0 %}
+                                <p class="mb-1">🌧️ Lượng mưa: {{ weather_info.precipitation }} mm</p>
+                                {% endif %}
+                                <p class="mb-0">💨 Gió: {{ weather_info.windspeed }} km/h</p>
                             </div>
                         </div>
+                        {% if weather_info.time %}
+                        <small class="text-muted d-block mt-2">Cập nhật: {{ weather_info.time }}</small>
+                        {% endif %}
                         {% else %}
                         <div class="d-flex align-items-center">
                             <span class="fs-1 me-3">{{ weather_info.icon }}</span>
                             <div>
                                 <p class="mb-1"><strong>{{ weather_info.weather_desc }}</strong></p>
                                 <p class="mb-1">🌡️ {{ weather_info.temp_min }}°C - {{ weather_info.temp_max }}°C</p>
-                                <p class="mb-1">💧 Mưa: {{ weather_info.precipitation }} mm</p>
+
+                                {% if weather_info.precipitation_prob %}
+                                <p class="mb-1">🌧️ Khả năng mưa: {{ weather_info.precipitation_prob }}%</p>
+                                {% endif %}
+                                <p class="mb-1">💧 Lượng mưa: {{ weather_info.precipitation|default:"0" }} mm</p>
                                 <p class="mb-0">💨 Gió: {{ weather_info.windspeed }} km/h</p>
                             </div>
                         </div>
@@ -956,6 +1026,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateActionTime(actionName) {
         localStorage.setItem(`last_${actionName}_time`, Date.now());
     }
+
+
+    // Hàm hiển thị lỗi
+    function showError(message) {
+        alert(message);
+    }
 // Character counter for comment
     const commentInput = document.getElementById('comment');
     const charCount = document.getElementById('charCount');
@@ -1021,7 +1097,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('reviewFormSubmit');
 
     // Submit review form
-    form.addEventListener('submit', async (e) => {
+
+    if (form) {
+        form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         if (isSpamming('comment', 30)) return;
@@ -1155,6 +1233,8 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.innerHTML = originalText;
         }
     });
+
+    } // End if (form)
 
     // Vote helpful/not helpful
     document.querySelectorAll('.vote-btn').forEach(btn => {
@@ -1306,6 +1386,7 @@ function scrollRelatedSlider(direction) {
     });
 }
 </script>
+
 
 
 {% endblock %}

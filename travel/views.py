@@ -30,10 +30,31 @@ logger = logging.getLogger(__name__)
 
 # View hiển thị tất cả tour với phân trang
 def all_tours(request):
-    """Hiển thị tất cả tour với phân trang và sentiment analysis"""
+
+    """Hiển thị tất cả tour với phân trang, tìm kiếm và sentiment analysis"""
+    query = request.GET.get('q', '').strip()
+    category_filter = request.GET.get('category', '').strip()
+    location_filter = request.GET.get('location', '').strip()
+    
     tours_list = TourPackage.objects.filter(is_active=True).select_related(
         'destination', 'category', 'destination__recommendation'
     ).prefetch_related('reviews').order_by('-created_at')
+    
+    # Áp dụng bộ lọc tìm kiếm
+    if query:
+        tours_list = tours_list.filter(
+            Q(name__icontains=query) |
+            Q(destination__name__icontains=query) |
+            Q(destination__location__icontains=query) |
+            Q(category__name__icontains=query) |
+            Q(details__icontains=query)
+        )
+    
+    if category_filter:
+        tours_list = tours_list.filter(category__slug=category_filter)
+    
+    if location_filter:
+        tours_list = tours_list.filter(destination__location__icontains=location_filter)
     
     # Tính sentiment cho mỗi tour
     tours_with_sentiment = []
@@ -84,6 +105,11 @@ def all_tours(request):
         
         tours_with_sentiment.append(tour_data)
     
+
+    # Lấy danh sách categories và locations cho bộ lọc
+    all_categories = Category.objects.all()
+    all_locations = Destination.objects.values_list('location', flat=True).distinct()
+    
     # Phân trang
     paginator = Paginator(tours_with_sentiment, 12)
     page_number = request.GET.get('page')
@@ -92,6 +118,11 @@ def all_tours(request):
     context = {
         'tours': tours,
         'total_tours': paginator.count,
+        'query': query,
+        'category_filter': category_filter,
+        'location_filter': location_filter,
+        'all_categories': all_categories,
+        'all_locations': all_locations,
     }
     return render(request, 'travel/all_tours.html', context)
 
@@ -426,7 +457,94 @@ def home(request):
         featured_tours = get_or_set_cache(get_cache_key('homepage', 'featured_tours'), get_featured_tours, timeout=600)
         category_name = "Tất cả Tour"
 
-   # --- 5. SGỢI Ý DỰA TRÊN LỊCH SỬ BOOKING (CỦA BẠN) ---
+    # --- 5. TRENDING DESTINATIONS (Last 7 Days với trọng số thời gian) ---
+    def get_trending_destinations():
+        from django.utils import timezone
+        from datetime import timedelta
+        from django.db.models import Count, Q
+        from collections import defaultdict
+
+        now = timezone.now()
+        
+        # Lấy lịch sử tìm kiếm 7 ngày gần đây
+        last_7_days = now - timedelta(days=7)
+        
+        # Lấy tất cả search history trong 7 ngày
+        search_records = SearchHistory.objects.filter(created_at__gte=last_7_days)
+        
+        # Tính điểm với trọng số thời gian (tìm kiếm gần đây hơn = điểm cao hơn)
+        # Trọng số: Hôm nay = 3x, 1-2 ngày = 2x, 3-7 ngày = 1x
+        keyword_scores = defaultdict(float)
+        
+        for record in search_records:
+            query = record.query.lower().strip()
+            days_ago = (now - record.created_at).days
+            
+            # Tính trọng số dựa trên thời gian
+            if days_ago == 0:  # Hôm nay
+                weight = 3.0
+            elif days_ago <= 2:  # 1-2 ngày trước
+                weight = 2.0
+            else:  # 3-7 ngày trước
+                weight = 1.0
+            
+            keyword_scores[query] += weight
+        
+        # Sắp xếp theo điểm giảm dần, lấy top 20 keywords
+        sorted_keywords = sorted(keyword_scores.items(), key=lambda x: x[1], reverse=True)[:20]
+        
+        if not sorted_keywords:
+            # Fallback: Dùng Popularity Score nếu không có search history
+            return list(
+                Destination.objects
+                .select_related('recommendation')
+                .filter(recommendation__isnull=False)
+                .order_by('-recommendation__popularity_score')[:8]
+            )
+        
+        # Tính điểm trending cho mỗi destination
+        destination_scores = defaultdict(float)
+        all_destinations = Destination.objects.select_related('recommendation').all()
+        
+        for dest in all_destinations:
+            dest_name_lower = dest.name.lower()
+            dest_location_lower = (dest.location or '').lower()
+            
+            for keyword, score in sorted_keywords:
+                # Kiểm tra keyword có trong tên hoặc location không
+                if keyword in dest_name_lower or keyword in dest_location_lower:
+                    destination_scores[dest.id] = max(destination_scores[dest.id], score)
+        
+        # Sắp xếp destinations theo điểm trending
+        sorted_dest_ids = sorted(destination_scores.items(), key=lambda x: x[1], reverse=True)[:8]
+        
+        # Lấy destination objects theo thứ tự điểm
+        if sorted_dest_ids:
+            dest_id_order = [d[0] for d in sorted_dest_ids]
+            trending = list(Destination.objects.filter(id__in=dest_id_order).select_related('recommendation'))
+            # Sắp xếp lại theo thứ tự điểm
+            trending.sort(key=lambda d: dest_id_order.index(d.id))
+        else:
+            trending = []
+        
+        # Nếu ít kết quả, bổ sung bằng top popularity
+        if len(trending) < 8:
+            fill_ids = [d.id for d in trending]
+            others = list(
+                Destination.objects
+                .exclude(id__in=fill_ids)
+                .select_related('recommendation')
+                .filter(recommendation__isnull=False)
+                .order_by('-recommendation__popularity_score')[:(8 - len(trending))]
+            )
+            trending = trending + others
+            
+        return trending
+
+    # Cache 30 phút (1800 giây)
+    trending_destinations = get_or_set_cache('homepage_trending', get_trending_destinations, timeout=1800)
+
+    # --- 6. GỢI Ý DỰA TRÊN LỊCH SỬ BOOKING ---
     booking_based_tours = []
     if request.user.is_authenticated:
         # Lấy các tour user đã đặt thành công (không tính tour đã hủy)
@@ -447,6 +565,7 @@ def home(request):
     context = {
         "results": static_results,
         "top_destinations": top_destinations,
+        "trending_destinations": trending_destinations,
         "personalized_destinations": personalized_destinations,
         "personalized_tours": personalized_tours,
         "categories": categories,
@@ -730,12 +849,16 @@ from django.shortcuts import get_object_or_404
 @require_POST
 def api_submit_tour_review(request):
     print(f"User đang gửi là: {request.user}")
+
     if not request.user.is_authenticated:
         return JsonResponse({'success': False, 'error': 'Vui lòng đăng nhập để đánh giá'}, status=403)
 
     try:
         data = json.loads(request.body)
-        tour_id = data.get('tour_id') 
+
+        tour_id = data.get('tour_id')
+        if not tour_id:
+            return JsonResponse({'success': False, 'error': 'Thiếu tour_id'}, status=400)
         tour = get_object_or_404(TourPackage, id=tour_id)
         user = request.user
 
@@ -842,39 +965,133 @@ def search(request):
     travel_type = request.GET.get('type', '').strip()
     min_rating = request.GET.get('min_rating', '').strip()
     max_price = request.GET.get('max_price', '').strip()
+    search_type = request.GET.get('search_type', 'all').strip()  # all, destination, tour
+    
+    # New parameters for distance calculation
+    from_location = request.GET.get('from_location', '').strip()
+    travel_date = request.GET.get('travel_date', '').strip()
+    
+    # Xử lý trường hợp người dùng nhập "Điểm đến-Điểm xuất phát" vào ô tìm kiếm
+    # VD: "Hà Giang-Hà Nội" -> query="Hà Giang", from_location="Hà Nội" (nếu chưa có)
+    if query and '-' in query and not from_location:
+        parts = [p.strip() for p in query.split('-', 1)]
+        if len(parts) == 2 and parts[0] and parts[1]:
+            query = parts[0]  # Phần đầu là điểm đến
+            from_location = parts[1]  # Phần sau là điểm xuất phát
+    
+    # Import distance helper functions
+    from .services.distance_helper import (
+        get_location_coordinates_safe, 
+        calculate_distances_for_results,
+        parse_travel_date
+    )
+    
+    # Import search variants helper
+    from .utils_helpers.text_utils import get_search_variants
+    
+    # Get coordinates for from_location
+    from_coords = None
+    if from_location:
+        from_coords = get_location_coordinates_safe(from_location)
+    
+    # Parse travel_date
+    parsed_travel_date = parse_travel_date(travel_date)
+    
+    # Get search variants for better matching
+    search_variants = get_search_variants(query) if query else []
 
-    qs = (
+    # ===== TÌM KIẾM DESTINATION =====
+    dest_qs = (
         Destination.objects
         .select_related('category', 'recommendation')
         .prefetch_related('images', 'travel_type')
     )
 
+    # [FIX] Support unaccented search via slug
+    from django.utils.text import slugify
+    query_slug = slugify(query)
+
     if query:
-        qs = qs.filter(
-            Q(name__icontains=query) |
-            Q(location__icontains=query) |
-            Q(description__icontains=query)
-        )
+        # Build Q object with all variants - CHỈ tìm trong name và location, KHÔNG tìm trong description
+        q_dest = Q()
+        for variant in search_variants:
+            variant_slug = slugify(variant)
+            # Chỉ tìm trong name và location để tránh kết quả không liên quan
+            q_dest |= Q(name__icontains=variant) | Q(location__icontains=variant)
+            if variant_slug:
+                q_dest |= Q(slug__icontains=variant_slug)
+
+        dest_qs = dest_qs.filter(q_dest)
 
     if location:
-        qs = qs.filter(location__icontains=location)
+        dest_qs = dest_qs.filter(location__icontains=location)
 
     if travel_type:
-        qs = qs.filter(travel_type__slug=travel_type)
+        dest_qs = dest_qs.filter(travel_type__slug=travel_type)
 
     if min_rating:
         try:
-            qs = qs.filter(avg_rating__gte=float(min_rating))
+            dest_qs = dest_qs.filter(avg_rating__gte=float(min_rating))
         except ValueError:
             pass
 
     if max_price:
         try:
-            qs = qs.filter(avg_price__lte=float(max_price))
+            dest_qs = dest_qs.filter(avg_price__lte=float(max_price))
         except ValueError:
             pass
 
-    qs = qs.distinct().order_by('-recommendation__overall_score')
+    dest_qs = dest_qs.distinct().order_by('-recommendation__overall_score')
+
+    # ===== TÌM KIẾM TOUR =====
+    tour_qs = (
+        TourPackage.objects
+        .filter(is_active=True)
+        .select_related('destination', 'category', 'recommendation')
+        .prefetch_related('reviews')
+    )
+
+    if query:
+        # Build Q object with all variants for tours - CHỈ tìm trong location của destination
+        # KHÔNG tìm trong tên tour để tránh hiển thị tour có điểm xuất phát trùng với từ khóa
+        q_tour = Q()
+        for variant in search_variants:
+            variant_slug = slugify(variant)
+            # Chỉ tìm trong name và location của destination, KHÔNG tìm trong tên tour
+            q_tour |= Q(destination__name__icontains=variant) | \
+                      Q(destination__location__icontains=variant)
+            if variant_slug:
+                q_tour |= Q(destination__slug__icontains=variant_slug)
+
+        tour_qs = tour_qs.filter(q_tour)
+
+    if location:
+        tour_qs = tour_qs.filter(destination__location__icontains=location)
+
+    if travel_type:
+        tour_qs = tour_qs.filter(category__slug=travel_type)
+
+    if min_rating:
+        try:
+            tour_qs = tour_qs.filter(average_rating__gte=float(min_rating))
+        except ValueError:
+            pass
+
+    if max_price:
+        try:
+            tour_qs = tour_qs.filter(price__lte=float(max_price))
+        except ValueError:
+            pass
+
+    tour_qs = tour_qs.distinct().order_by('-recommendation__overall_score')
+    
+    # Filter tours by travel_date if provided
+    if parsed_travel_date:
+        # Filter tours that are available on the travel_date
+        tour_qs = tour_qs.filter(
+            Q(start_date__isnull=True) | Q(start_date__lte=parsed_travel_date),
+            Q(end_date__isnull=True) | Q(end_date__gte=parsed_travel_date)
+        )
 
     # Lưu lịch sử search
     if query:
@@ -882,18 +1099,41 @@ def search(request):
             query=query,
             user=request.user if request.user.is_authenticated else None,
             user_ip=get_client_ip(request),
-            results_count=qs.count()
+            results_count=dest_qs.count() + tour_qs.count()
         )
 
-    paginator = Paginator(qs, 12)
-    page_obj = paginator.get_page(request.GET.get('page', 1))
+    # Phân trang cho destinations
+    dest_paginator = Paginator(dest_qs, 6)
+    dest_page_obj = dest_paginator.get_page(request.GET.get('page', 1))
+
+    # Phân trang cho tours
+    tour_paginator = Paginator(tour_qs, 6)
+    tour_page_obj = tour_paginator.get_page(request.GET.get('tour_page', 1))
+    
+    # Calculate distances for results if from_location is provided
+    distance_info = {}
+    if from_coords:
+        distance_info = calculate_distances_for_results(
+            from_coords,
+            dest_page_obj.object_list,
+            tour_page_obj.object_list
+        )
 
     context = {
         'query': query,
-        'destinations': page_obj,
-        'total_results': paginator.count,
+        'search_type': search_type,
+        'destinations': dest_page_obj,
+        'tours': tour_page_obj,
+        'total_destinations': dest_paginator.count,
+        'total_tours': tour_paginator.count,
+        'total_results': dest_paginator.count + tour_paginator.count,
         'all_locations': Destination.objects.values_list('location', flat=True).distinct(),
         'all_types': TravelType.objects.all(),
+        # New context for distance feature
+        'from_location': from_location,
+        'travel_date': travel_date,
+        'from_coords': from_coords,
+        'distance_info': distance_info,
     }
     return render(request, 'travel/search.html', context)
 
@@ -972,6 +1212,7 @@ def destination_detail(request, destination_id):
                     'is_current': True
                 }
 
+
     # Lấy địa điểm tương tự
     similar_destinations = get_similar_destinations(destination, limit=4)
     related_packages = TourPackage.objects.filter(destination=destination, is_active=True).order_by('-created_at')[:6]
@@ -1022,59 +1263,133 @@ def calculate_distance(lat1, lon1, lat2, lon2):
 # API endpoints (cho AJAX requests)
 @ratelimit(key='ip', rate='30/m', method='GET', block=True)
 def api_search(request):
+    """
+    API tìm kiếm nâng cao với:
+    - Tìm kiếm cả Destination và Tour
+    - Fuzzy search (tìm kiếm mờ)
+    - Autofill (gợi ý theo chữ cái đầu)
+    - Sắp xếp theo bảng chữ cái
+    """
     query = bleach.clean(request.GET.get('q', '').strip())[:100]
 
     if not query:
-        return JsonResponse({'results': []})
+        return JsonResponse({'results': [], 'tours': []})
 
-    cache_key = get_cache_key('api_search', query=query.lower()[:5]) # có thể điều chỉnh ở đây trong tương lai
+    cache_key = get_cache_key('api_search_v3', query=query.lower()[:5])
 
     def perform_search():
-        from .utils_helpers import normalize_search_text
+        from .utils_helpers import normalize_search_text, calculate_search_score
 
+        # ===== TÌM KIẾM DESTINATION =====
         destinations = (
             Destination.objects
             .select_related('recommendation')
             .prefetch_related('travel_type')
         )
 
-        query_normalized = normalize_search_text(query)
-
-        matching_destinations = []
+        destination_results = []
         for dest in destinations:
-            if (
-                    query_normalized in normalize_search_text(dest.name)
-                    or query_normalized in normalize_search_text(dest.location)
-            ):
-                matching_destinations.append(dest)
+            # Tính điểm tìm kiếm (bao gồm fuzzy match)
+            search_score = calculate_search_score(
+                query, 
+                dest.name, 
+                location=dest.location,
+                description=dest.description
+            )
+            
+            if search_score > 0:
+                # Xử lý trường hợp không có recommendation
+                try:
+                    rec = dest.recommendation
+                    rec_score = round(rec.overall_score, 1) if rec else 0
+                except:
+                    rec_score = 0
+                    
+                destination_results.append({
+                    'id': dest.id,
+                    'name': dest.name,
+                    'location': dest.location,
+                    'type': 'destination',
+                    'travel_type': [t.slug for t in dest.travel_type.all()],
+                    'score': rec_score,
+                    'avg_rating': round(dest.avg_rating, 1) if dest.avg_rating is not None else None,
+                    'avg_price': float(dest.avg_price) if dest.avg_price else None,
+                    'search_score': search_score,  # Điểm khớp tìm kiếm
+                })
 
-        matching_destinations.sort(
-            key=lambda x: getattr(x.recommendation, 'overall_score', 0) if hasattr(x, 'recommendation') and x.recommendation else 0,
-            reverse=True
+        # ===== TÌM KIẾM TOUR =====
+        tours = (
+            TourPackage.objects
+            .filter(is_active=True)
+            .select_related('destination', 'category', 'recommendation')
         )
-        matching_destinations = matching_destinations[:10]
 
-        results = []
-        for dest in matching_destinations:
-            rec = dest.recommendation
-            results.append({
-                'id': dest.id,
-                'name': dest.name,
-                'location': dest.location,
-                'travel_type': [t.slug for t in dest.travel_type.all()], # theo slug
-                'score': round(rec.overall_score, 1) if rec else 0,
-                'avg_rating': round(dest.avg_rating, 1) if dest.avg_rating is not None else None,
-                'avg_price': float(dest.avg_price) if dest.avg_price else None,
-            })
+        tour_results = []
+        for tour in tours:
+            # Tính điểm tìm kiếm cho tour
+            # Thêm category vào search scope
+            cat_name = tour.category.name if tour.category else ""
+            
+            # Combine fields for broader match
+            # Priority: Name > Category > Location > Description
+            search_score = calculate_search_score(
+                query,
+                tour.name,
+                location=tour.destination.name if tour.destination else None,
+                description=f"{cat_name} {tour.details}" # Include category in description for scoring
+            )
+            
+            # Boost score if category matches explicitly
+            if cat_name:
+                from .utils_helpers import normalize_search_text
+                q_norm = normalize_search_text(query)
+                c_norm = normalize_search_text(cat_name)
+                if q_norm in c_norm:
+                    search_score = max(search_score, 0.75)
 
-        return results
+            if search_score > 0:
+                # Xử lý trường hợp không có recommendation
+                try:
+                    rec = tour.recommendation
+                    rec_score = round(rec.overall_score, 1) if rec else 0
+                except:
+                    rec_score = 0
+                    
+                tour_results.append({
+                    'id': tour.id,
+                    'name': tour.name,
+                    'slug': tour.slug,
+                    'type': 'tour',
+                    'destination': tour.destination.name if tour.destination else '',
+                    'category': tour.category.name if tour.category else '',
+                    'price': float(tour.price) if tour.price else None,
+                    'duration': tour.duration,
+                    'avg_rating': round(tour.average_rating, 1) if tour.average_rating else None,
+                    'score': rec_score,
+                    'image': tour.image_main.url if tour.image_main else None,
+                    'search_score': search_score,
+                })
 
+        # ===== SẮP XẾP KẾT QUẢ =====
+        # Ưu tiên: search_score cao -> tên theo bảng chữ cái
+        destination_results.sort(key=lambda x: (-x['search_score'], x['name'].lower()))
+        tour_results.sort(key=lambda x: (-x['search_score'], x['name'].lower()))
+
+        # Giới hạn kết quả
+        destination_results = destination_results[:10]
+        tour_results = tour_results[:10]
+
+        return {
+            'destinations': destination_results,
+            'tours': tour_results
+        }
+
+    results = get_or_set_cache(cache_key, perform_search, timeout=settings.CACHE_TTL['search'])
+    
     return JsonResponse({
-        'results': get_or_set_cache(
-            cache_key,
-            perform_search,
-            timeout=settings.CACHE_TTL['search']
-        )
+        'results': results.get('destinations', []),
+        'tours': results.get('tours', []),
+        'query': query
     })
 
 @ratelimit(key='ip', rate='30/m', method='GET', block=True)
@@ -1098,8 +1413,13 @@ if travel_type_obj:
 def api_submit_review(request):
     """
     API gửi đánh giá - Enhanced User-Generated Content
-    Hỗ trợ cả guest và logged-in users
+
+    Yêu cầu đăng nhập để đánh giá
     """
+    # Kiểm tra đăng nhập
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'error': 'Vui lòng đăng nhập để đánh giá'}, status=403)
+
     import json
     import logging
     logger = logging.getLogger(__name__)
@@ -1159,25 +1479,25 @@ def api_submit_review(request):
             return JsonResponse({'error': 'Đánh giá phải từ 1 đến 5 sao'}, status=400)
         
         # Spam detection - kiểm tra nhiều điều kiện
-        # 1. Cùng IP, cùng destination trong 1 giờ
+        # 1. Cùng IP, cùng destination trong 5 phút (giảm từ 1 giờ)
         recent_review_ip = Review.objects.filter(
             destination=destination,
             user_ip=client_ip,
-            created_at__gte=datetime.now() - timedelta(hours=1)
+            created_at__gte=datetime.now() - timedelta(minutes=5)
         ).exists()
         
-        # 2. Cùng user (nếu đã đăng nhập), cùng destination
+        # 2. Cùng user (nếu đã đăng nhập), cùng destination trong 5 phút (giảm từ 24 giờ)
         recent_review_user = False
         if user:
             recent_review_user = Review.objects.filter(
                 destination=destination,
                 user=user,
-                created_at__gte=datetime.now() - timedelta(hours=24)
+                created_at__gte=datetime.now() - timedelta(minutes=5)
             ).exists()
         
         if recent_review_ip or recent_review_user:
             return JsonResponse({
-                'error': 'Bạn đã đánh giá địa điểm này gần đây. Vui lòng đợi trước khi gửi đánh giá mới.',
+                'error': 'Bạn đã đánh giá địa điểm này gần đây. Vui lòng đợi 5 phút trước khi gửi đánh giá mới.',
                 'code': 'DUPLICATE_REVIEW'
             }, status=429)
         
@@ -1235,25 +1555,40 @@ def api_submit_review(request):
             status=Review.STATUS_APPROVED,  # Auto-approve (có thể đổi thành PENDING)
         )
         
-        # Cập nhật điểm gợi ý cho destination
-        rec = update_destination_scores(destination)
-        
+        # Cập nhật điểm gợi ý cho destination (wrap trong try-catch để không ảnh hưởng response)
+        rec = None
+        try:
+            rec = update_destination_scores(destination)
+        except Exception as e:
+            logger.warning(f"Failed to update destination scores: {e}")        
 
         # Lưu preference nếu user đã đăng nhập
         if user:
-            save_user_preference(user, destination)
+            try:
+                save_user_preference(user, destination)
+            except Exception as e:
+                logger.warning(f"Failed to save user preference: {e}")
         
         logger.info(f"New review #{review.id} for {destination.name} by {author_name}")
         
-        
-        stats_data = {
-            'avg_rating': float(rec.avg_rating if rec else destination.avg_rating or 0),
-            'total_reviews': int(rec.total_reviews if rec else destination.reviews.count()),
-            'overall_score': float(rec.overall_score if rec else 0),
-            'positive_review_ratio': float(rec.positive_review_ratio if rec else 0)
-        }
+        # Tính stats_data an toàn
+        try:
+            stats_data = {
+                'avg_rating': float(rec.avg_rating if rec else destination.avg_rating or 0),
+                'total_reviews': int(rec.total_reviews if rec else destination.reviews.count()),
+                'overall_score': float(rec.overall_score if rec else 0),
+                'positive_review_ratio': float(rec.positive_review_ratio if rec else 0)
+            }
+        except Exception as e:
+            logger.warning(f"Failed to calculate stats: {e}")
+            stats_data = {
+                'avg_rating': float(rating),
+                'total_reviews': destination.reviews.count(),
+                'overall_score': 0,
+                'positive_review_ratio': 0
+            }
 
-        print(f"ID Địa điểm: {destination.id} | Điểm mới: {rec.avg_rating} | Đã lưu vào DB chưa: {rec.pk is not None}")
+        print(f"ID Địa điểm: {destination.id} | Điểm mới: {rec.avg_rating if rec else 'N/A'} | Đã lưu vào DB chưa: {rec.pk is not None if rec else False}")
 
         return JsonResponse({
             'success': True,
