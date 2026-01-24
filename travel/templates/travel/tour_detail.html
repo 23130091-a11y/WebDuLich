@@ -7,42 +7,147 @@
 {% block extra_css %}
 
 <style>
-    :root { 
-        --primary-color: #0d6efd; 
-        --orange-action: #ff5722; 
-        --price-color: #e31c25; 
+    :root {
+        --primary-color: #0d6efd;
+        --orange-action: #ff5722;
+        --price-color: #e31c25;
         --bg-light: #f8f9fa;
         --star-color: #ffc107;
     }
-    
+
     /* Layout */
-    .sync-height { display: flex; align-items: flex-start; }
-    .tour-sidebar-container { position: sticky; top: 90px; height: fit-content; z-index: 10; }
-    
+    .sync-height {
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .tour-sidebar-container {
+        position: sticky;
+        top: 90px;
+        height: fit-content;
+        z-index: 10;
+    }
+
     /* Price Card */
-    .price-card { background: #fff; border-top: 5px solid var(--orange-action); border-radius: 15px !important; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-    .price-box { background: #fff5f2; border-radius: 12px; padding: 15px; margin-bottom: 20px; }
-    .price-amount { font-size: 2.4rem; color: var(--price-color); font-weight: 800; }
-    .btn-booking { background: linear-gradient(45deg, #ff5722, #ff9800); color: white; border: none; padding: 15px; font-size: 1.2rem; font-weight: bold; border-radius: 50px; transition: 0.3s; }
-    .btn-booking:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(255,87,34,0.4); color: white; }
+    .price-card {
+        background: #fff;
+        border-top: 5px solid var(--orange-action);
+        border-radius: 15px !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .price-box {
+        background: #fff5f2;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    .price-amount {
+        font-size: 2.4rem;
+        color: var(--price-color);
+        font-weight: 800;
+    }
+
+    .btn-booking {
+        background: linear-gradient(45deg, #ff5722, #ff9800);
+        color: white;
+        border: none;
+        padding: 15px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        border-radius: 50px;
+        transition: 0.3s;
+    }
+
+    .btn-booking:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(255, 87, 34, 0.4);
+        color: white;
+    }
 
     /* Nearby Services & Tabs */
-    .service-card { transition: all 0.3s ease; border: 1px solid #eee; height: 100%; background: #fff; }
-    .service-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-    .img-service { width: 70px; height: 70px; object-fit: cover; border-radius: 10px; }
-    .nav-pills .nav-link { color: #666; font-weight: 600; border-radius: 50px; padding: 8px 20px; }
-    .nav-pills .nav-link.active { background-color: var(--primary-color); shadow: 0 4px 10px rgba(13,110,253,0.2); }
+    .service-card {
+        transition: all 0.3s ease;
+        border: 1px solid #eee;
+        height: 100%;
+        background: #fff;
+    }
+
+    .service-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .img-service {
+        width: 70px;
+        height: 70px;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+
+    .nav-pills .nav-link {
+        color: #666;
+        font-weight: 600;
+        border-radius: 50px;
+        padding: 8px 20px;
+    }
+
+    .nav-pills .nav-link.active {
+        background-color: var(--primary-color);
+        shadow: 0 4px 10px rgba(13, 110, 253, 0.2);
+    }
 
     /* Star Rating System */
-    .star-rating-input-ltr { display: flex; flex-direction: row-reverse; justify-content: flex-end; gap: 5px; }
-    .star-rating-input-ltr input { display: none; }
-    .star-rating-input-ltr label { font-size: 1.8rem; color: #ddd; cursor: pointer; transition: 0.2s; }
-    .star-rating-input-ltr input:checked ~ label, .star-rating-input-ltr label:hover, .star-rating-input-ltr label:hover ~ label { color: var(--star-color); }
+    .star-rating-input-ltr {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 5px;
+    }
 
-    .section-title { border-left: 4px solid var(--primary-color); padding-left: 15px; margin-bottom: 25px; font-weight: 700; color: #333; }
-    .card { border: none; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05); border-radius: 1rem; margin-bottom: 1.5rem; }
-    .review-item { border-bottom: 1px solid #eee; padding: 20px 0; }
-    .sentiment-tag { font-size: 0.75rem; padding: 4px 8px; border-radius: 20px; }
+    .star-rating-input-ltr input {
+        display: none;
+    }
+
+    .star-rating-input-ltr label {
+        font-size: 1.8rem;
+        color: #ddd;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .star-rating-input-ltr input:checked~label,
+    .star-rating-input-ltr label:hover,
+    .star-rating-input-ltr label:hover~label {
+        color: var(--star-color);
+    }
+
+    .section-title {
+        border-left: 4px solid var(--primary-color);
+        padding-left: 15px;
+        margin-bottom: 25px;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05);
+        border-radius: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .review-item {
+        border-bottom: 1px solid #eee;
+        padding: 20px 0;
+    }
+
+    .sentiment-tag {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+        border-radius: 20px;
+    }
 </style>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 {% endblock %}
@@ -52,13 +157,15 @@
 <main class="py-4 bg-light">
     <div class="container">
         <div class="row g-4 sync-height">
-            
+
             <div class="col-lg-8">
                 <div class="mb-4">
                     {% if tour.image_main %}
-                        <img src="{{ tour.image_main.url }}" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 500px; object-fit: cover;">
+                    <img src="{{ tour.image_main.url }}" class="img-fluid rounded-4 shadow-sm w-100"
+                        style="max-height: 500px; object-fit: cover;">
                     {% else %}
-                        <div class="bg-secondary text-white rounded-4 d-flex align-items-center justify-content-center" style="height: 400px;">Không có ảnh</div>
+                    <div class="bg-secondary text-white rounded-4 d-flex align-items-center justify-content-center"
+                        style="height: 400px;">Không có ảnh</div>
                     {% endif %}
                 </div>
 
@@ -69,7 +176,8 @@
                             <div class="text-warning me-2">
                                 <span class="fw-bold text-dark me-1">{{ tour.average_rating|floatformat:1 }}</span>
                                 {% for i in "12345" %}
-                                    <i class="{% if forloop.counter <= tour.average_rating %}fa-solid{% else %}fa-regular{% endif %} fa-star small"></i>
+                                <i
+                                    class="{% if forloop.counter <= tour.average_rating %}fa-solid{% else %}fa-regular{% endif %} fa-star small"></i>
                                 {% endfor %}
                             </div>
                             <span class="text-muted border-start ps-2 small">
@@ -79,37 +187,47 @@
 
                         {% comment %} <div class="row g-0 mb-3 py-3 border rounded-3 bg-white shadow-sm">
                             <div class="col-6 col-md-4 border-end-md">
-                                <div class="d-flex align-items-center px-3 justify-content-center justify-content-md-start">
+                                <div
+                                    class="d-flex align-items-center px-3 justify-content-center justify-content-md-start">
                                     <i class="fa-solid fa-location-dot text-danger fs-5 me-2"></i>
                                     <div>
-                                        <div class="text-muted" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Điểm đến</div>
+                                        <div class="text-muted"
+                                            style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            Điểm đến</div>
                                         <div class="fw-bold small text-dark">{{ tour.destination.location }}</div>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="col-6 col-md-4 border-end-md">
-                                <div class="d-flex align-items-center px-3 justify-content-center justify-content-md-start border-start-mobile">
+                                <div
+                                    class="d-flex align-items-center px-3 justify-content-center justify-content-md-start border-start-mobile">
                                     <i class="fa-solid fa-clock text-primary fs-5 me-2"></i>
                                     <div>
-                                        <div class="text-muted" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Thời gian</div>
+                                        <div class="text-muted"
+                                            style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            Thời gian</div>
                                         <div class="fw-bold small text-dark">{{ tour.duration }} Ngày</div>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="col-6 col-md-4 mt-3 mt-md-0">
-                                <div class="d-flex align-items-center px-3 justify-content-center justify-content-md-start border-start-mobile">
+                                <div
+                                    class="d-flex align-items-center px-3 justify-content-center justify-content-md-start border-start-mobile">
                                     <i class="fa-solid fa-tags text-info fs-5 me-2"></i>
                                     <div>
-                                        <div class="text-muted" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Loại hình</div>
+                                        <div class="text-muted"
+                                            style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            Loại hình</div>
                                         <div class="fw-bold small text-dark">{{ tour.category.name }}</div>
                                     </div>
                                 </div>
                             </div>
                         </div> {% endcomment %}
 
-                        <h5 class="section-title mb-1 fw-bold"><i class="fa-solid fa-circle-info me-2 text-primary"></i>Chi tiết hành trình</h5>
+                        <h5 class="section-title mb-1 fw-bold"><i
+                                class="fa-solid fa-circle-info me-2 text-primary"></i>Chi tiết hành trình</h5>
 
                         <div class="description-text" style="margin-top: -10px !important;">
                             {{ tour.details|linebreaksbr }}
@@ -121,7 +239,8 @@
                                 <i class="fa-solid fa-comments me-2"></i>Xem {{ reviews|length }} đánh giá
                             </a>
 
-                            <button type="button" id="btnWriteReviewTop" class="btn btn-outline-success" data-bs-toggle="collapse" data-bs-target="#reviewForm">
+                            <button type="button" id="btnWriteReviewTop" class="btn btn-outline-success"
+                                data-bs-toggle="collapse" data-bs-target="#reviewForm">
                                 <i class="fa-solid fa-pen me-2"></i>Viết đánh giá
                             </button>
 
@@ -136,24 +255,28 @@
                     .description-text {
                         font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
                         font-size: 0.95rem;
-                        line-height: 1.6; /* Giảm nhẹ từ 1.8 xuống 1.6 để nhìn đặc hơn */
+                        line-height: 1.6;
+                        /* Giảm nhẹ từ 1.8 xuống 1.6 để nhìn đặc hơn */
                         color: #4b5563;
                         text-align: justify;
-                        
+
                         /* Chống khoảng trắng thừa */
                         display: block;
-                        margin-top: 0 !important; 
+                        margin-top: 0 !important;
                         padding-top: 0 !important;
-                        
+
                         /* Giữ xuống dòng nhưng bỏ các khoảng trắng dư thừa ở đầu/cuối */
-                        white-space: pre-line; 
+                        white-space: pre-line;
                     }
                 </style>
 
                 <section class="card mb-4 border-0 shadow-sm">
                     <div class="card-body p-4">
-                        <h5 class="section-title mb-3 fw-bold"><i class="fa-solid fa-map-location-dot me-2 text-primary"></i>Bản đồ điểm tập trung</h5>
-                        <div id="map" style="height: 350px; border-radius: 15px; border: 1px solid #eee; background-color: #f8f9fa;"></div>
+                        <h5 class="section-title mb-3 fw-bold"><i
+                                class="fa-solid fa-map-location-dot me-2 text-primary"></i>Bản đồ điểm tập trung</h5>
+                        <div id="map"
+                            style="height: 350px; border-radius: 15px; border: 1px solid #eee; background-color: #f8f9fa;">
+                        </div>
                         <div class="mt-3 p-3 bg-light rounded-3 d-flex align-items-start">
                             <i class="fa-solid fa-map-pin text-danger mt-1 me-2"></i>
                             <div>
@@ -170,12 +293,9 @@
                             <h5 class="card-title mb-0 fw-bold">
                                 <i class="fa-solid fa-comments text-primary me-2"></i>Đánh giá từ du khách
                             </h5>
-                            <button class="btn btn-primary btn-sm rounded-pill px-3" 
-                                    {% if not user.is_authenticated %}
-                                        data-bs-toggle="modal" data-bs-target="#authModal"
-                                    {% else %}
-                                        data-bs-toggle="collapse" data-bs-target="#reviewForm"
-                                    {% endif %}>
+                            <button class="btn btn-primary btn-sm rounded-pill px-3" {% if not user.is_authenticated %}
+                                data-bs-toggle="modal" data-bs-target="#authModal" {% else %} data-bs-toggle="collapse"
+                                data-bs-target="#reviewForm" {% endif %}>
                                 <i class="fa-solid fa-pen-to-square me-1"></i>Viết đánh giá
                             </button>
                         </div>
@@ -183,265 +303,378 @@
                         <div class="collapse mb-4" id="reviewForm">
                             <div class="p-4 bg-light rounded-4 border">
                                 {% if user.is_authenticated %}
-                                    <h6 class="mb-3 fw-bold">
-                                        <i class="fa-solid fa-paper-plane me-2 text-primary"></i>Chia sẻ trải nghiệm của bạn
-                                        <span class="badge bg-success-subtle text-success ms-2 fw-normal">
-                                            <i class="fa-solid fa-check-circle"></i> Tài khoản đã xác minh
-                                        </span>
-                                    </h6>
-                                    
-                                    <form id="reviewFormSubmit">
-                                        <input type="hidden" id="tourId" value="{{ tour.id }}"> 
-                                        <div class="row g-3">
-                                            <div class="col-md-6">
-                                                <label class="form-label small fw-bold">Tên của bạn</label>
-                                                <input type="text" id="authorName" class="form-control bg-white" 
-                                                    value="{{ user.get_full_name|default:user.username }}" readonly>
-                                                <small class="text-muted x-small">Tên hiển thị theo tài khoản của bạn</small>
+                                <h6 class="mb-3 fw-bold">
+                                    <i class="fa-solid fa-paper-plane me-2 text-primary"></i>Chia sẻ trải nghiệm của bạn
+                                    <span class="badge bg-success-subtle text-success ms-2 fw-normal">
+                                        <i class="fa-solid fa-check-circle"></i> Tài khoản đã xác minh
+                                    </span>
+                                </h6>
+
+                                <form id="reviewFormSubmit">
+                                    <input type="hidden" id="tourId" value="{{ tour.id }}">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold">Tên của bạn</label>
+                                            <input type="text" id="authorName" class="form-control bg-white"
+                                                value="{{ user.get_full_name|default:user.username }}" readonly>
+                                            <small class="text-muted x-small">Tên hiển thị theo tài khoản của
+                                                bạn</small>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold">Đánh giá <span
+                                                    class="text-danger">*</span></label>
+                                            <div class="d-flex flex-row-reverse justify-content-end gap-1 star-rating-input"
+                                                id="starRatingContainer">
+                                                {% for i in "54321" %}
+                                                <input type="radio" class="btn-check" name="rating" id="star{{ i }}"
+                                                    value="{{ i }}" {% if i == "5" %}checked{% endif %}>
+                                                <label for="star{{ i }}" class="text-muted cursor-pointer p-1">
+                                                    <i class="fa-solid fa-star fs-5"></i>
+                                                </label>
+                                                {% endfor %}
                                             </div>
-                                            
-                                            <div class="col-md-6">
-                                                <label class="form-label small fw-bold">Đánh giá <span class="text-danger">*</span></label>
-                                                <div class="d-flex flex-row-reverse justify-content-end gap-1 star-rating-input" id="starRatingContainer">
-                                                    {% for i in "54321" %}
-                                                    <input type="radio" class="btn-check" name="rating" id="star{{ i }}" value="{{ i }}" {% if i == "5" %}checked{% endif %}>
-                                                    <label for="star{{ i }}" class="text-muted cursor-pointer p-1">
-                                                        <i class="fa-solid fa-star fs-5"></i>
-                                                    </label>
-                                                    {% endfor %}
-                                                </div>
-                                                <input type="hidden" id="ratingValue" value="5">
+                                            <input type="hidden" id="ratingValue" value="5">
+                                        </div>
+
+                                        <div class="col-12">
+                                            <label class="form-label small fw-bold">Nhận xét của bạn</label>
+                                            <textarea id="comment" class="form-control" rows="4"
+                                                placeholder="Tour này thế nào? Bạn có hài lòng không..."
+                                                maxlength="2000"></textarea>
+                                            <div class="d-flex justify-content-between mt-1">
+                                                <small class="text-muted x-small"><i
+                                                        class="fa-solid fa-robot me-1"></i>Hệ thống sẽ phân tích cảm xúc
+                                                    đánh giá</small>
+                                                <small class="text-muted x-small"><span
+                                                        id="charCount">0</span>/2000</small>
                                             </div>
 
-                                            <div class="col-12">
-                                                <label class="form-label small fw-bold">Nhận xét của bạn</label>
-                                                <textarea id="comment" class="form-control" rows="4" placeholder="Tour này thế nào? Bạn có hài lòng không..." maxlength="2000"></textarea>
-                                                <div class="d-flex justify-content-between mt-1">
-                                                    <small class="text-muted x-small"><i class="fa-solid fa-robot me-1"></i>Hệ thống sẽ phân tích cảm xúc đánh giá</small>
-                                                    <small class="text-muted x-small"><span id="charCount">0</span>/2000</small>
+                                            <!-- Sentiment Analysis Result Box -->
+                                            <div id="sentimentResultBox" class="mt-3 p-3 rounded-3 border d-none"
+                                                style="transition: all 0.3s ease;">
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <div class="d-flex align-items-center">
+                                                        <span id="sentimentIcon" class="fs-3 me-2">😐</span>
+                                                        <div>
+                                                            <span class="fw-bold" id="sentimentLabel">Đang phân
+                                                                tích...</span>
+                                                            <div class="small text-muted">
+                                                                Điểm: <span id="sentimentScore"
+                                                                    class="fw-bold">0.00</span>
+                                                                <span id="sentimentMethod"
+                                                                    class="badge bg-light text-muted ms-2"
+                                                                    style="font-size: 0.65rem;"></span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div id="sentimentBadge" class="badge bg-secondary">Trung lập</div>
                                                 </div>
-                                            </div>
 
-                                            <div class="col-12 text-end">
-                                                <button type="button" class="btn btn-outline-secondary btn-sm me-2" data-bs-toggle="collapse" data-bs-target="#reviewForm">Hủy</button>
-                                                <button type="submit" class="btn btn-primary btn-sm px-4" id="submitReviewBtn">Gửi đánh giá</button>
+                                                <!-- Keywords -->
+                                                <div id="sentimentKeywords" class="mt-2 d-none">
+                                                    <div id="posKeywordsContainer" class="d-inline">
+                                                        <!-- Positive keywords will be inserted here -->
+                                                    </div>
+                                                    <div id="negKeywordsContainer" class="d-inline">
+                                                        <!-- Negative keywords will be inserted here -->
+                                                    </div>
+                                                </div>
+
+                                                <!-- Message -->
+                                                <div id="sentimentMessage" class="small text-muted mt-2 fst-italic">
+                                                </div>
                                             </div>
                                         </div>
-                                    </form>
 
-                                {% else %}
-                                    <div class="text-center py-3">
-                                        <div class="mb-3">
-                                            <i class="fa-solid fa-user-shield fa-3x text-muted opacity-50"></i>
-                                        </div>
-                                        <h6 class="fw-bold">Bạn cần đăng nhập để đánh giá</h6>
-                                        <p class="text-muted small mb-4">Để đảm bảo tính khách quan, chỉ thành viên mới có thể chia sẻ trải nghiệm.</p>
-                                        <div class="d-flex justify-content-center gap-2">
-                                            <button type="button" 
-                                                class="btn btn-primary btn-sm rounded-pill px-4" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#authModal"> Đăng nhập ngay
-                                            </button>
-                                            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-4" data-bs-toggle="collapse" data-bs-target="#reviewForm">Đóng</button>
+                                        <div class="col-12 text-end">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm me-2"
+                                                data-bs-toggle="collapse" data-bs-target="#reviewForm">Hủy</button>
+                                            <button type="submit" class="btn btn-primary btn-sm px-4"
+                                                id="submitReviewBtn">Gửi đánh giá</button>
                                         </div>
                                     </div>
+                                </form>
+
+                                {% else %}
+                                <div class="text-center py-3">
+                                    <div class="mb-3">
+                                        <i class="fa-solid fa-user-shield fa-3x text-muted opacity-50"></i>
+                                    </div>
+                                    <h6 class="fw-bold">Bạn cần đăng nhập để đánh giá</h6>
+                                    <p class="text-muted small mb-4">Để đảm bảo tính khách quan, chỉ thành viên mới có
+                                        thể chia sẻ trải nghiệm.</p>
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <button type="button" class="btn btn-primary btn-sm rounded-pill px-4"
+                                            data-bs-toggle="modal" data-bs-target="#authModal"> Đăng nhập ngay
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-4"
+                                            data-bs-toggle="collapse" data-bs-target="#reviewForm">Đóng</button>
+                                    </div>
+                                </div>
                                 {% endif %}
                             </div>
                         </div>
 
                         <div id="reviewsList">
                             {% if reviews %}
-                                <div class="mb-4 d-flex justify-content-between align-items-center">
-                                    <span class="badge bg-primary-subtle text-primary rounded-pill px-3">{{ total_reviews }} nhận xét</span>
-                                    <small class="text-muted">Trang {{ reviews.number }}/{{ reviews.paginator.num_pages }}</small>
-                                </div>
+                            <div class="mb-4 d-flex justify-content-between align-items-center">
+                                <span class="badge bg-primary-subtle text-primary rounded-pill px-3">{{ total_reviews }}
+                                    nhận xét</span>
+                                <small class="text-muted">Trang {{ reviews.number }}/{{ reviews.paginator.num_pages }}</small>
+                            </div>
 
-                                {% for review in reviews %}
-                                <div class="review-item border-bottom pb-4 mb-4" id="review-{{ review.id }}">
-                                    <div class="d-flex justify-content-between">
-                                        <div class="d-flex align-items-start">
-                                            <div class="avatar-sm me-3">
-                                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 48px; height: 48px;">
-                                                    {{ review.author_name|slice:":1"|upper }}
-                                                </div>
-                                            </div>
-                                            
-                                            <div>
-                                                <h6 class="mb-0 fw-bold text-dark">
-                                                    {{ review.author_name }}
-                                                    
-                                                    {% if review.user %}
-                                                        <i class="fa-solid fa-circle-check text-primary small ms-1" title="Thành viên đã xác minh"></i>
-                                                    {% else %}
-                                                        <span class="badge bg-light text-muted fw-normal ms-1" style="font-size: 0.6rem;">Khách vãng lai</span>
-                                                    {% endif %}
-                                                
-                                                    
-                                                    {% if review.is_verified_purchase %}
-                                                        <span class="badge bg-success-subtle text-success fw-normal ms-2" style="font-size: 0.65rem;">
-                                                            <i class="fa-solid fa-bag-shopping me-1"></i>Khách đã trải nghiệm tour
-                                                        </span>
-                                                    {% endif %}
-                                                </h6>
-
-                                                <div class="text-warning small my-1">
-                                                    {% for i in "12345" %}
-                                                        <i class="{% if forloop.counter <= review.rating %}fa-solid{% else %}fa-regular{% endif %} fa-star"></i>
-                                                    {% endfor %}
-                                                    <span class="text-muted ms-2 x-small">{{ review.created_at|date:"d/m/Y" }}</span>
-                                                </div>
+                            {% for review in reviews %}
+                            <div class="review-item border-bottom pb-4 mb-4" id="review-{{ review.id }}">
+                                <div class="d-flex justify-content-between">
+                                    <div class="d-flex align-items-start">
+                                        <div class="avatar-sm me-3">
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm"
+                                                style="width: 48px; height: 48px;">
+                                                {{ review.author_name|slice:":1"|upper }}
                                             </div>
                                         </div>
 
-                                        <div class="dropdown">
-                                            <button class="btn btn-link text-muted p-0 shadow-none" data-bs-toggle="dropdown">
-                                                <i class="fa-solid fa-ellipsis-vertical"></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                                                <li>
-                                                    <a class="dropdown-item small report-btn {% if review.id in reported_ids %}text-danger disabled{% endif %}" 
-                                                    data-review-id="{{ review.id }}" data-is-tour="true" href="javascript:void(0)">
-                                                        <i class="fa-solid fa-flag me-2 text-warning"></i>
-                                                        <span>{% if review.id in reported_ids %}Đã báo cáo{% else %}Báo cáo vi phạm{% endif %}</span>
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-bold text-dark">
+                                                {{ review.author_name }}
 
-                                    <div class="ps-5 mt-2">
-                                        <p class="text-secondary small mb-3">{{ review.comment }}</p>
-                                        
-                                        <div class="d-flex flex-wrap gap-2 mb-3">
-                                            {% if review.positive_keywords %}
-                                                {% for tag in review.positive_keywords %}
-                                                <span class="badge bg-success-subtle text-success fw-normal x-small">
-                                                    <i class="fa-solid fa-thumbs-up me-1"></i>{{ tag }}
+                                                {% if review.user %}
+                                                <i class="fa-solid fa-circle-check text-primary small ms-1"
+                                                    title="Thành viên đã xác minh"></i>
+                                                {% else %}
+                                                <span class="badge bg-light text-muted fw-normal ms-1"
+                                                    style="font-size: 0.6rem;">Khách vãng lai</span>
+                                                {% endif %}
+
+
+                                                {% if review.is_verified_purchase %}
+                                                <span class="badge bg-success-subtle text-success fw-normal ms-2"
+                                                    style="font-size: 0.65rem;">
+                                                    <i class="fa-solid fa-bag-shopping me-1"></i>Khách đã trải nghiệm
+                                                    tour
                                                 </span>
+                                                {% endif %}
+                                            </h6>
+
+                                            <div class="text-warning small my-1">
+                                                {% for i in "12345" %}
+                                                <i
+                                                    class="{% if forloop.counter <= review.rating %}fa-solid{% else %}fa-regular{% endif %} fa-star"></i>
                                                 {% endfor %}
-                                            {% endif %}
-                                            
-                                            {% if review.sentiment_score %}
-                                                <span class="badge {% if review.sentiment_score > 0 %}bg-info-subtle text-info{% else %}bg-secondary-subtle text-secondary{% endif %} fw-normal x-small">
-                                                    <i class="fa-solid fa-robot me-1"></i>AI: {{ review.sentiment_score|floatformat:2 }}
-                                                </span>
-                                            {% endif %}
-                                        </div>
-
-                                        <div class="d-flex align-items-center gap-3">
-                                            <button class="btn btn-sm vote-btn p-0 text-muted shadow-none border-0 bg-transparent" 
-                                                    data-review-id="{{ review.id }}" data-vote="helpful" data-is-tour="true"> 
-                                                <i class="fa-regular fa-thumbs-up me-1"></i> 
-                                                Hữu ích (<span class="helpful-count">{{ review.helpful_count }}</span>)
-                                            </button>
-
-                                            <button class="btn btn-sm vote-btn p-0 text-muted shadow-none border-0 bg-transparent" 
-                                                    data-review-id="{{ review.id }}" data-vote="not_helpful" data-is-tour="true"> 
-                                                <i class="fa-regular fa-thumbs-down me-1"></i> 
-                                                Không hữu ích (<span class="not-helpful-count">{{ review.not_helpful_count }}</span>)
-                                            </button>
+                                                <span class="text-muted ms-2 x-small">{{ review.created_at|date:"d/m/Y" }}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                {% endfor %}
 
-                                {% if reviews.has_other_pages %}
-                                <nav class="mt-4">
-                                    <ul class="pagination pagination-sm justify-content-center">
-                                        {% if reviews.has_previous %}
-                                            <li class="page-item"><a class="page-link border-0 shadow-none" href="?reviews_page={{ reviews.previous_page_number }}#reviewsList"><i class="fa-solid fa-chevron-left"></i></a></li>
+                                    <div class="dropdown">
+                                        <button class="btn btn-link text-muted p-0 shadow-none"
+                                            data-bs-toggle="dropdown">
+                                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                            <li>
+                                                <a class="dropdown-item small report-btn {% if review.id in reported_ids %}text-danger disabled{% endif %}"
+                                                    data-review-id="{{ review.id }}" data-is-tour="true"
+                                                    href="javascript:void(0)">
+                                                    <i class="fa-solid fa-flag me-2 text-warning"></i>
+                                                    <span>{% if review.id in reported_ids %}Đã báo cáo{% else %}Báo cáo
+                                                        vi phạm{% endif %}</span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="ps-5 mt-2">
+                                    <p class="text-secondary small mb-3">{{ review.comment }}</p>
+
+                                    <!-- Sentiment Analysis Display -->
+                                    <div class="d-flex flex-wrap gap-2 mb-3">
+                                        {% if review.positive_keywords %}
+                                        {% for tag in review.positive_keywords %}
+                                        <span class="badge bg-success-subtle text-success fw-normal x-small">
+                                            <i class="fa-solid fa-plus me-1"></i>{{ tag }}
+                                        </span>
+                                        {% endfor %}
                                         {% endif %}
 
-                                        {% for num in reviews.paginator.page_range %}
-                                            {% if reviews.number == num %}
-                                                <li class="page-item active"><span class="page-link border-0 shadow-none">{{ num }}</span></li>
-                                            {% elif num > reviews.number|add:'-3' and num < reviews.number|add:'3' %}
-                                                <li class="page-item"><a class="page-link border-0 shadow-none" href="?reviews_page={{ num }}#reviewsList">{{ num }}</a></li>
+                                        {% if review.negative_keywords %}
+                                        {% for tag in review.negative_keywords %}
+                                        <span class="badge bg-danger-subtle text-danger fw-normal x-small">
+                                            <i class="fa-solid fa-minus me-1"></i>{{ tag }}
+                                        </span>
+                                        {% endfor %}
+                                        {% endif %}
+
+                                        {% if review.sentiment_score %}
+                                        {% if review.sentiment_score > 0.18 %}
+                                        <span class="badge bg-success fw-normal x-small">
+                                            <i class="fa-solid fa-face-smile me-1"></i>Tích cực ({{ review.sentiment_score|floatformat:2 }})
+                                        </span>
+                                        {% elif review.sentiment_score < -0.18 %} <span
+                                            class="badge bg-danger fw-normal x-small">
+                                            <i class="fa-solid fa-face-frown me-1"></i>Tiêu cực ({{ review.sentiment_score|floatformat:2 }})
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-warning text-dark fw-normal x-small">
+                                                <i class="fa-solid fa-face-meh me-1"></i>Trung lập ({{ review.sentiment_score|floatformat:2 }})
+                                            </span>
                                             {% endif %}
+                                            {% endif %}
+                                    </div>
+
+                                    <div class="d-flex align-items-center gap-3">
+                                        <button
+                                            class="btn btn-sm vote-btn p-0 text-muted shadow-none border-0 bg-transparent"
+                                            data-review-id="{{ review.id }}" data-vote="helpful" data-is-tour="true">
+                                            <i class="fa-regular fa-thumbs-up me-1"></i>
+                                            Hữu ích (<span class="helpful-count">{{ review.helpful_count }}</span>)
+                                        </button>
+
+                                        <button
+                                            class="btn btn-sm vote-btn p-0 text-muted shadow-none border-0 bg-transparent"
+                                            data-review-id="{{ review.id }}" data-vote="not_helpful"
+                                            data-is-tour="true">
+                                            <i class="fa-regular fa-thumbs-down me-1"></i>
+                                            Không hữu ích (<span class="not-helpful-count">{{ review.not_helpful_count }}</span>)
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+
+                            {% if reviews.has_other_pages %}
+                            <nav class="mt-4">
+                                <ul class="pagination pagination-sm justify-content-center">
+                                    {% if reviews.has_previous %}
+                                    <li class="page-item"><a class="page-link border-0 shadow-none"
+                                            href="?reviews_page={{ reviews.previous_page_number }}#reviewsList"><i
+                                                class="fa-solid fa-chevron-left"></i></a></li>
+                                    {% endif %}
+
+                                    {% for num in reviews.paginator.page_range %}
+                                    {% if reviews.number == num %}
+                                    <li class="page-item active"><span class="page-link border-0 shadow-none">{{ num }}</span></li>
+                                    {% elif num > reviews.number|add:'-3' and num < reviews.number|add:'3' %} <li
+                                        class="page-item"><a class="page-link border-0 shadow-none"
+                                            href="?reviews_page={{ num }}#reviewsList">{{ num }}</a></li>
+                                        {% endif %}
                                         {% endfor %}
 
                                         {% if reviews.has_next %}
-                                            <li class="page-item"><a class="page-link border-0 shadow-none" href="?reviews_page={{ reviews.next_page_number }}#reviewsList"><i class="fa-solid fa-chevron-right"></i></a></li>
+                                        <li class="page-item"><a class="page-link border-0 shadow-none"
+                                                href="?reviews_page={{ reviews.next_page_number }}#reviewsList"><i
+                                                    class="fa-solid fa-chevron-right"></i></a></li>
                                         {% endif %}
-                                    </ul>
-                                </nav>
-                                {% endif %}
+                                </ul>
+                            </nav>
+                            {% endif %}
 
-                                {% if reviews.has_other_pages %}
-                                <nav class="mt-4">
-                                    <ul class="pagination pagination-sm justify-content-center">
-                                        {% if reviews.has_previous %}
-                                            <li class="page-item"><a class="page-link border-0 shadow-none" href="?reviews_page={{ reviews.previous_page_number }}#reviewsList"><i class="fa-solid fa-chevron-left"></i></a></li>
-                                        {% endif %}
-                                        {% if reviews.has_next %}
-                                            <li class="page-item"><a class="page-link border-0 shadow-none" href="?reviews_page={{ reviews.next_page_number }}#reviewsList"><i class="fa-solid fa-chevron-right"></i></a></li>
-                                        {% endif %}
-                                    </ul>
-                                </nav>
-                                {% endif %}
+                            {% if reviews.has_other_pages %}
+                            <nav class="mt-4">
+                                <ul class="pagination pagination-sm justify-content-center">
+                                    {% if reviews.has_previous %}
+                                    <li class="page-item"><a class="page-link border-0 shadow-none"
+                                            href="?reviews_page={{ reviews.previous_page_number }}#reviewsList"><i
+                                                class="fa-solid fa-chevron-left"></i></a></li>
+                                    {% endif %}
+                                    {% if reviews.has_next %}
+                                    <li class="page-item"><a class="page-link border-0 shadow-none"
+                                            href="?reviews_page={{ reviews.next_page_number }}#reviewsList"><i
+                                                class="fa-solid fa-chevron-right"></i></a></li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                            {% endif %}
 
                             {% else %}
-                                <div class="text-center py-5 bg-light rounded-4 border-dashed">
-                                    <i class="fa-solid fa-comment-dots fa-3x text-muted mb-3 opacity-25"></i>
-                                    <p class="text-muted">Chưa có đánh giá nào. Hãy chia sẻ cảm nhận của bạn!</p>
-                                    <button class="btn btn-primary btn-sm rounded-pill" 
-                                            {% if not user.is_authenticated %}
-                                                data-bs-toggle="modal" data-bs-target="#authModal"
-                                            {% else %}
-                                                data-bs-toggle="collapse" data-bs-target="#reviewForm"
-                                            {% endif %}>Viết đánh giá đầu tiên</button>
-                                </div>
+                            <div class="text-center py-5 bg-light rounded-4 border-dashed">
+                                <i class="fa-solid fa-comment-dots fa-3x text-muted mb-3 opacity-25"></i>
+                                <p class="text-muted">Chưa có đánh giá nào. Hãy chia sẻ cảm nhận của bạn!</p>
+                                <button class="btn btn-primary btn-sm rounded-pill" {% if not user.is_authenticated %}
+                                    data-bs-toggle="modal" data-bs-target="#authModal" {% else %}
+                                    data-bs-toggle="collapse" data-bs-target="#reviewForm" {% endif %}>Viết đánh giá đầu
+                                    tiên</button>
+                            </div>
                             {% endif %}
                         </div>
 
-                    </div> 
+                    </div>
                 </div>
 
                 <style>
-                    .x-small { font-size: 0.75rem; }
-                    .cursor-pointer { cursor: pointer; }
-                    .section-title { border-left: 4px solid #0d6efd; padding-left: 15px; }
-                    
+                    .x-small {
+                        font-size: 0.75rem;
+                    }
+
+                    .cursor-pointer {
+                        cursor: pointer;
+                    }
+
+                    .section-title {
+                        border-left: 4px solid #0d6efd;
+                        padding-left: 15px;
+                    }
+
                     /* 1. Reset màu mặc định cho label (bỏ text-muted ở HTML nếu cần, hoặc ép màu ở đây) */
-                    .star-rating-input label { 
-                        color: #ddd !important; /* Màu xám khi chưa chọn */
+                    .star-rating-input label {
+                        color: #ddd !important;
+                        /* Màu xám khi chưa chọn */
                         transition: all 0.2s;
                     }
 
                     /* 2. Khi di chuột vào: Sao hiện tại và các sao bên PHẢI (theo code) sẽ vàng lên */
-                    .star-rating-input label:hover, 
-                    .star-rating-input label:hover ~ label { 
-                        color: #ffc107 !important; 
-                    }
-
-                    /* 3. Khi đã click chọn: Sao đã chọn và các sao bên PHẢI (theo code) giữ màu vàng */
-                    .star-rating-input input:checked ~ label { 
-                        color: #ffc107 !important; 
-                    }
-                    
-                    /* Fix lỗi: Khi đang chọn sao thấp mà di chuột vào sao cao hơn thì vẫn phải sáng */
-                    .star-rating-input input:checked + label:hover,
-                    .star-rating-input input:checked + label:hover ~ label {
+                    .star-rating-input label:hover,
+                    .star-rating-input label:hover~label {
                         color: #ffc107 !important;
                     }
 
-                    .review-item:last-child { border-bottom: none !important; }
-                    .pagination .page-link { border-radius: 8px; margin: 0 3px; color: #666; }
-                    .pagination .page-item.active .page-link { background-color: #0d6efd; border-color: #0d6efd; }
-                    .vote-btn * { pointer-events: none;}
+                    /* 3. Khi đã click chọn: Sao đã chọn và các sao bên PHẢI (theo code) giữ màu vàng */
+                    .star-rating-input input:checked~label {
+                        color: #ffc107 !important;
+                    }
+
+                    /* Fix lỗi: Khi đang chọn sao thấp mà di chuột vào sao cao hơn thì vẫn phải sáng */
+                    .star-rating-input input:checked+label:hover,
+                    .star-rating-input input:checked+label:hover~label {
+                        color: #ffc107 !important;
+                    }
+
+                    .review-item:last-child {
+                        border-bottom: none !important;
+                    }
+
+                    .pagination .page-link {
+                        border-radius: 8px;
+                        margin: 0 3px;
+                        color: #666;
+                    }
+
+                    .pagination .page-item.active .page-link {
+                        background-color: #0d6efd;
+                        border-color: #0d6efd;
+                    }
+
+                    .vote-btn * {
+                        pointer-events: none;
+                    }
+
                     /* Ép modal-xl rộng tối đa trên màn hình lớn */
                     /* Ép Modal XL rộng ra 95% màn hình */
                     /* Chỉ tác động vào Modal có id là mapModal */
                     #mapModal .modal-content {
-                        max-width: none !important; /* Loại bỏ giới hạn 500px */
+                        max-width: none !important;
+                        /* Loại bỏ giới hạn 500px */
                         width: 100% !important;
-                        padding: 0 !important; /* Loại bỏ padding 25px đang có để bản đồ sát mép đẹp hơn */
+                        padding: 0 !important;
+                        /* Loại bỏ padding 25px đang có để bản đồ sát mép đẹp hơn */
                     }
 
                     /* Ép modal-xl rộng ra theo chuẩn màn hình lớn */
                     @media (min-width: 1200px) {
                         #mapModal .modal-xl {
-                            max-width: 90% !important; 
+                            max-width: 90% !important;
                         }
                     }
 
@@ -451,7 +684,7 @@
                         display: block;
                     }
                 </style>
-            </div>       
+            </div>
 
             <div class="col-lg-4">
                 <div class="tour-sidebar-container">
@@ -461,136 +694,140 @@
                                 <small class="text-muted fw-bold d-block mb-1">GIÁ CHỈ TỪ</small>
                                 <div>
                                     <span class="text-danger fw-bold fs-5">{{ tour.price|floatformat:0|intcomma }}đ</span>
-                            </div>
+                                </div>
 
-                            <div class="d-grid gap-2">
-                                {% if user.is_authenticated %}
-                                    <a href="{% url 'travel:book_tour' tour.id %}" class="btn btn-booking btn-lg shadow rounded-pill">
+                                <div class="d-grid gap-2">
+                                    {% if user.is_authenticated %}
+                                    <a href="{% url 'travel:book_tour' tour.id %}"
+                                        class="btn btn-booking btn-lg shadow rounded-pill">
                                         <i class="fa-solid fa-cart-plus me-2"></i>ĐẶT TOUR NGAY
                                     </a>
-                                {% else %}
-                                    <button type="button" 
-                                            class="btn btn-booking btn-lg shadow rounded-pill" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#authModal">
+                                    {% else %}
+                                    <button type="button" class="btn btn-booking btn-lg shadow rounded-pill"
+                                        data-bs-toggle="modal" data-bs-target="#authModal">
                                         <i class="fa-solid fa-lock me-2"></i>ĐĂNG NHẬP ĐỂ ĐẶT TOUR
                                     </button>
                                     <small class="text-muted mt-2">Vui lòng đăng nhập để thực hiện đặt chỗ</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            {% if not user.is_authenticated %}
+                            <div class="card-footer bg-light border-0 py-3 text-center"
+                                style="border-radius: 0 0 20px 20px;">
+                                <p class="small text-muted mb-0">
+                                    <i class="fa-solid fa-circle-info me-1"></i>
+                                    Đăng ký thành viên để nhận thêm ưu đãi từ chúng tôi.
+                                </p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fa-solid fa-cloud-sun text-warning"></i> Thời tiết
+                                </h5>
+                                {% if weather_info and not weather_info.error %}
+                                {% if weather_info.is_current %}
+                                <div class="d-flex align-items-center">
+                                    <span class="fs-1 me-3">{{ weather_info.icon|default:"🌡️" }}</span>
+                                    <div>
+                                        <p class="mb-1"><strong>{{ weather_info.weather_desc|default:"Hiện tại" }}</strong></p>
+                                        <p class="mb-1">🌡️ Nhiệt độ: <strong>{{ weather_info.temperature }}°C</strong>
+                                            {% if weather_info.feels_like %}
+                                            <small class="text-muted">(Cảm giác {{ weather_info.feels_like }}°C)</small>
+                                            {% endif %}
+                                        </p>
+                                        {% if weather_info.humidity %}
+                                        <p class="mb-1">💧 Độ ẩm: {{ weather_info.humidity }}%</p>
+                                        {% endif %}
+                                        {% if weather_info.precipitation and weather_info.precipitation > 0 %}
+                                        <p class="mb-1">🌧️ Lượng mưa: {{ weather_info.precipitation }} mm</p>
+                                        {% endif %}
+                                        <p class="mb-0">💨 Gió: {{ weather_info.windspeed }} km/h</p>
+                                    </div>
+                                </div>
+                                {% if weather_info.time %}
+                                <small class="text-muted d-block mt-2">Cập nhật: {{ weather_info.time }}</small>
+                                {% endif %}
+                                {% else %}
+                                <div class="d-flex align-items-center">
+                                    <span class="fs-1 me-3">{{ weather_info.icon }}</span>
+                                    <div>
+                                        <p class="mb-1"><strong>{{ weather_info.weather_desc }}</strong></p>
+                                        <p class="mb-1">🌡️ {{ weather_info.temp_min }}°C - {{ weather_info.temp_max
+                                            }}°C</p>
+                                        {% if weather_info.precipitation_prob %}
+                                        <p class="mb-1">🌧️ Khả năng mưa: {{ weather_info.precipitation_prob }}%</p>
+                                        {% endif %}
+                                        <p class="mb-1">💧 Lượng mưa: {{ weather_info.precipitation|default:"0" }} mm
+                                        </p>
+                                        <p class="mb-0">💨 Gió: {{ weather_info.windspeed }} km/h</p>
+                                    </div>
+                                </div>
+                                <small class="text-muted d-block mt-2">Ngày: {{ weather_info.date }}</small>
+                                {% endif %}
+                                {% elif weather_info.error %}
+                                <p class="text-muted">{{ weather_info.error }}</p>
+                                {% else %}
+                                <p class="text-muted small">
+                                    Nhập ngày đi để xem dự báo thời tiết.
+                                </p>
                                 {% endif %}
                             </div>
                         </div>
 
-                        {% if not user.is_authenticated %}
-                        <div class="card-footer bg-light border-0 py-3 text-center" style="border-radius: 0 0 20px 20px;">
-                            <p class="small text-muted mb-0">
-                                <i class="fa-solid fa-circle-info me-1"></i> 
-                                Đăng ký thành viên để nhận thêm ưu đãi từ chúng tôi.
-                            </p>
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                <i class="fa-solid fa-cloud-sun text-warning"></i> Thời tiết
-                            </h5>
-                            {% if weather_info and not weather_info.error %}
-                            {% if weather_info.is_current %}
-                            <div class="d-flex align-items-center">
-                                <span class="fs-1 me-3">{{ weather_info.icon|default:"🌡️" }}</span>
-                                <div>
-                                    <p class="mb-1"><strong>{{ weather_info.weather_desc|default:"Hiện tại" }}</strong></p>
-                                    <p class="mb-1">🌡️ Nhiệt độ: <strong>{{ weather_info.temperature }}°C</strong>
-                                        {% if weather_info.feels_like %}
-                                        <small class="text-muted">(Cảm giác {{ weather_info.feels_like }}°C)</small>
-                                        {% endif %}
-                                    </p>
-                                    {% if weather_info.humidity %}
-                                    <p class="mb-1">💧 Độ ẩm: {{ weather_info.humidity }}%</p>
-                                    {% endif %}
-                                    {% if weather_info.precipitation and weather_info.precipitation > 0 %}
-                                    <p class="mb-1">🌧️ Lượng mưa: {{ weather_info.precipitation }} mm</p>
-                                    {% endif %}
-                                    <p class="mb-0">💨 Gió: {{ weather_info.windspeed }} km/h</p>
-                                </div>
-                            </div>
-                            {% if weather_info.time %}
-                            <small class="text-muted d-block mt-2">Cập nhật: {{ weather_info.time }}</small>
-                            {% endif %}
-                            {% else %}
-                            <div class="d-flex align-items-center">
-                                <span class="fs-1 me-3">{{ weather_info.icon }}</span>
-                                <div>
-                                    <p class="mb-1"><strong>{{ weather_info.weather_desc }}</strong></p>
-                                    <p class="mb-1">🌡️ {{ weather_info.temp_min }}°C - {{ weather_info.temp_max }}°C</p>
-                                    {% if weather_info.precipitation_prob %}
-                                    <p class="mb-1">🌧️ Khả năng mưa: {{ weather_info.precipitation_prob }}%</p>
-                                    {% endif %}
-                                    <p class="mb-1">💧 Lượng mưa: {{ weather_info.precipitation|default:"0" }} mm</p>
-                                    <p class="mb-0">💨 Gió: {{ weather_info.windspeed }} km/h</p>
-                                </div>
-                            </div>
-                            <small class="text-muted d-block mt-2">Ngày: {{ weather_info.date }}</small>
-                            {% endif %}
-                            {% elif weather_info.error %}
-                            <p class="text-muted">{{ weather_info.error }}</p>
-                            {% else %}
-                            <p class="text-muted small">
-                                Nhập ngày đi để xem dự báo thời tiết.
-                            </p>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <!-- Khách sạn gần đó -->
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                <i class="fa-solid fa-hotel text-primary"></i> Khách sạn gần đó
-                            </h5>
-                            <div id="nearbyHotels">
-                                <div class="text-center py-3">
-                                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                                    <small class="text-muted ms-2">Đang tải...</small>
+                        <!-- Khách sạn gần đó -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fa-solid fa-hotel text-primary"></i> Khách sạn gần đó
+                                </h5>
+                                <div id="nearbyHotels">
+                                    <div class="text-center py-3">
+                                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                        <small class="text-muted ms-2">Đang tải...</small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Quán ăn gần đó -->
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                <i class="fa-solid fa-utensils text-danger"></i> Quán ăn gần đó
-                            </h5>
-                            <div id="nearbyRestaurants">
-                                <div class="text-center py-3">
-                                    <div class="spinner-border spinner-border-sm text-danger" role="status"></div>
-                                    <small class="text-muted ms-2">Đang tải...</small>
+                        <!-- Quán ăn gần đó -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fa-solid fa-utensils text-danger"></i> Quán ăn gần đó
+                                </h5>
+                                <div id="nearbyRestaurants">
+                                    <div class="text-center py-3">
+                                        <div class="spinner-border spinner-border-sm text-danger" role="status"></div>
+                                        <small class="text-muted ms-2">Đang tải...</small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
 
-                    <div class="card shadow-sm border-0 mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold mb-4">
-                                <i class="fa-solid fa-compass text-success me-2"></i>Tour tương tự
-                            </h5>
-                            {% if related_tours %}
+                        <div class="card shadow-sm border-0 mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold mb-4">
+                                    <i class="fa-solid fa-compass text-success me-2"></i>Tour tương tự
+                                </h5>
+                                {% if related_tours %}
                                 {% for rt in related_tours %}
                                 <div class="d-flex align-items-center mb-3 pb-3 border-bottom last-child-border-0">
                                     <div class="flex-shrink-0">
                                         {% if rt.image_main %}
-                                            <img src="{{ rt.image_main.url }}" class="rounded shadow-sm" style="width: 65px; height: 65px; object-fit: cover;">
+                                        <img src="{{ rt.image_main.url }}" class="rounded shadow-sm"
+                                            style="width: 65px; height: 65px; object-fit: cover;">
                                         {% else %}
-                                            <div class="bg-light rounded" style="width: 65px; height: 65px;"></div>
+                                        <div class="bg-light rounded" style="width: 65px; height: 65px;"></div>
                                         {% endif %}
                                     </div>
-                                    
+
                                     <div class="flex-grow-1 ms-3">
-                                        <a href="{% url 'travel:tour_detail' rt.slug %}" class="text-decoration-none text-dark card-hover-link">
+                                        <a href="{% url 'travel:tour_detail' rt.slug %}"
+                                            class="text-decoration-none text-dark card-hover-link">
                                             <strong class="d-block mb-1 small lh-sm">{{ rt.name }}</strong>
                                         </a>
                                         <div class="small text-muted mb-1">
@@ -602,17 +839,17 @@
                                     </div>
                                 </div>
                                 {% endfor %}
-                            {% else %}
+                                {% else %}
                                 <div class="text-center py-3">
                                     <p class="text-muted small mb-0">Không có tour tương tự.</p>
                                 </div>
-                            {% endif %}
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            
+
             </div>
         </div>
     </div>
@@ -624,9 +861,8 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-0">
-                    <iframe id="mapIframe" width="100%" height="650px" 
-                            style="border:0; display: block;" 
-                            allowfullscreen="" loading="lazy"></iframe>
+                    <iframe id="mapIframe" width="100%" height="650px" style="border:0; display: block;"
+                        allowfullscreen="" loading="lazy"></iframe>
                 </div>
             </div>
         </div>
@@ -639,84 +875,84 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Lấy đối tượng form và nút phía trên
-    const reviewFormEl = document.getElementById('reviewForm');
-    const btnTop = document.getElementById('btnWriteReviewTop');
+    document.addEventListener('DOMContentLoaded', function () {
+        // Lấy đối tượng form và nút phía trên
+        const reviewFormEl = document.getElementById('reviewForm');
+        const btnTop = document.getElementById('btnWriteReviewTop');
 
-    // Lắng nghe sự kiện "đang mở" của Bootstrap Collapse
-    reviewFormEl.addEventListener('show.bs.collapse', function () {
-        // Đợi một chút để hiệu ứng mở bắt đầu rồi mới cuộn
-        setTimeout(() => {
-            const yOffset = -100; // Khoảng cách bù trừ để không bị Menu che mất
-            const y = reviewFormEl.getBoundingClientRect().top + window.pageYOffset + yOffset;
-            
-            window.scrollTo({
-                top: y, 
-                behavior: 'smooth'
-            });
-        }, 100);
-    });
+        // Lắng nghe sự kiện "đang mở" của Bootstrap Collapse
+        reviewFormEl.addEventListener('show.bs.collapse', function () {
+            // Đợi một chút để hiệu ứng mở bắt đầu rồi mới cuộn
+            setTimeout(() => {
+                const yOffset = -100; // Khoảng cách bù trừ để không bị Menu che mất
+                const y = reviewFormEl.getBoundingClientRect().top + window.pageYOffset + yOffset;
 
-    // Nếu form ĐÃ MỞ RỒI mà khách vẫn bấm nút trên, thì chỉ cần cuộn xuống
-    btnTop.addEventListener('click', function() {
-        if (reviewFormEl.classList.contains('show')) {
-            const yOffset = -100;
-            const y = reviewFormEl.getBoundingClientRect().top + window.pageYOffset + yOffset;
-            window.scrollTo({top: y, behavior: 'smooth'});
-        }
+                window.scrollTo({
+                    top: y,
+                    behavior: 'smooth'
+                });
+            }, 100);
+        });
+
+        // Nếu form ĐÃ MỞ RỒI mà khách vẫn bấm nút trên, thì chỉ cần cuộn xuống
+        btnTop.addEventListener('click', function () {
+            if (reviewFormEl.classList.contains('show')) {
+                const yOffset = -100;
+                const y = reviewFormEl.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+            }
+        });
     });
-});
 </script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // 1. Lấy tọa độ gốc
-    const lat = parseFloat("{{ tour.start_latitude|default:tour.destination.latitude|stringformat:'f' }}".replace(',', '.'));
-    const lon = parseFloat("{{ tour.start_longitude|default:tour.destination.longitude|stringformat:'f' }}".replace(',', '.'));
+    document.addEventListener('DOMContentLoaded', function () {
+        // 1. Lấy tọa độ gốc
+        const lat = parseFloat("{{ tour.start_latitude|default:tour.destination.latitude|stringformat:'f' }}".replace(',', '.'));
+        const lon = parseFloat("{{ tour.start_longitude|default:tour.destination.longitude|stringformat:'f' }}".replace(',', '.'));
 
-    if (!lat || !lon) return;
+        if (!lat || !lon) return;
 
-    // --- PHẦN 1: BẢN ĐỒ LEAFLET (Giữ nguyên cho trang chính) ---
-    const mapElement = document.getElementById('map');
-    if (mapElement) {
-        var map = L.map('map').setView([lat, lon], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-        L.marker([lat, lon]).addTo(map)
-            .bindPopup("<b>Điểm tập trung:</b><br>{{ tour.meeting_point|default:tour.name }}")
-            .openPopup();
-        setTimeout(() => { map.invalidateSize(); }, 400);
-    }
-
-    // --- PHẦN 2: HÀM MỞ MODAL BẢN ĐỒ ---
-    window.openMapModal = function(url) {
-        const iframe = document.getElementById('mapIframe');
-        if (iframe) {
-            // Thêm &output=embed để cho phép hiển thị trong iframe
-            iframe.src = url + "&output=embed";
-            const myModal = new bootstrap.Modal(document.getElementById('mapModal'));
-            myModal.show();
+        // --- PHẦN 1: BẢN ĐỒ LEAFLET (Giữ nguyên cho trang chính) ---
+        const mapElement = document.getElementById('map');
+        if (mapElement) {
+            var map = L.map('map').setView([lat, lon], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+            L.marker([lat, lon]).addTo(map)
+                .bindPopup("<b>Điểm tập trung:</b><br>{{ tour.meeting_point|default:tour.name }}")
+                .openPopup();
+            setTimeout(() => { map.invalidateSize(); }, 400);
         }
-    };
 
-    // --- PHẦN 3: TẢI ĐỊA ĐIỂM XUNG QUANH ---
-    function loadNearby(type, elementId, categoryName) {
-        const container = document.getElementById(elementId);
-        if (!container) return;
+        // --- PHẦN 2: HÀM MỞ MODAL BẢN ĐỒ ---
+        window.openMapModal = function (url) {
+            const iframe = document.getElementById('mapIframe');
+            if (iframe) {
+                // Thêm &output=embed để cho phép hiển thị trong iframe
+                iframe.src = url + "&output=embed";
+                const myModal = new bootstrap.Modal(document.getElementById('mapModal'));
+                myModal.show();
+            }
+        };
 
-        const searchQuery = (type === 'hotel') ? 'Khách sạn' : 'Quán ăn';
-        // Link tìm kiếm chuẩn cho Embed
-        const googleMapsSearchUrl = `https://www.google.com/maps?q=${encodeURIComponent(searchQuery)}+gần+${lat},${lon}&hl=vi`;
+        // --- PHẦN 3: TẢI ĐỊA ĐIỂM XUNG QUANH ---
+        function loadNearby(type, elementId, categoryName) {
+            const container = document.getElementById(elementId);
+            if (!container) return;
 
-        fetch(`/api/nearby/?lat=${lat}&lon=${lon}&type=${type}`)
-            .then(res => res.json())
-            .then(data => {
-                container.innerHTML = ''; 
-                const destinationName = "{{ tour.destination.name|escapejs }}";
+            const searchQuery = (type === 'hotel') ? 'Khách sạn' : 'Quán ăn';
+            // Link tìm kiếm chuẩn cho Embed
+            const googleMapsSearchUrl = `https://www.google.com/maps?q=${encodeURIComponent(searchQuery)}+gần+${lat},${lon}&hl=vi`;
 
-                let htmlHeader = `
+            fetch(`/api/nearby/?lat=${lat}&lon=${lon}&type=${type}`)
+                .then(res => res.json())
+                .then(data => {
+                    container.innerHTML = '';
+                    const destinationName = "{{ tour.destination.name|escapejs }}";
+
+                    let htmlHeader = `
                     <button onclick="openMapModal('${googleMapsSearchUrl}')" class="btn btn-outline-primary w-100 mb-3 text-start shadow-sm">
                         <i class="fa-solid fa-map-location-dot me-2"></i> Xem ${categoryName} trên bản đồ
                     </button>
@@ -732,17 +968,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <hr>
                 `;
-                container.insertAdjacentHTML('beforeend', htmlHeader);
+                    container.insertAdjacentHTML('beforeend', htmlHeader);
 
-                const items = data.results || data.places || (Array.isArray(data) ? data : []);
-                items.forEach(item => {
-                    const iLat = item.lat || item.latitude;
-                    const iLon = item.lon || item.longitude;
-                    const itemGMapUrl = `https://www.google.com/maps?q=${iLat},${iLon}&hl=vi`;
+                    const items = data.results || data.places || (Array.isArray(data) ? data : []);
+                    items.forEach(item => {
+                        const iLat = item.lat || item.latitude;
+                        const iLon = item.lon || item.longitude;
+                        const itemGMapUrl = `https://www.google.com/maps?q=${iLat},${iLon}&hl=vi`;
 
-                    const div = document.createElement('div');
-                    div.className = 'list-group-item list-group-item-action mb-2 border-0 shadow-sm rounded';
-                    div.innerHTML = `
+                        const div = document.createElement('div');
+                        div.className = 'list-group-item list-group-item-action mb-2 border-0 shadow-sm rounded';
+                        div.innerHTML = `
                         <div class="d-flex justify-content-between align-items-center">
                             <div style="cursor:pointer" class="item-info" onclick="openMapModal('${itemGMapUrl}')">
                                 <div class="fw-bold small">${item.name}</div>
@@ -753,20 +989,20 @@ document.addEventListener('DOMContentLoaded', function() {
                             </button>
                         </div>
                     `;
-                    
-                    if (typeof map !== 'undefined' && map) {
-                        L.circleMarker([iLat, iLon], {radius: 5, color: type==='hotel'?'blue':'red'}).addTo(map)
-                        .bindPopup(item.name);
-                    }
-                    container.appendChild(div);
-                });
-            })
-            .catch(err => console.error("Lỗi tải " + type, err));
-    }
 
-    loadNearby('hotel', 'nearbyHotels', 'Khách sạn');
-    loadNearby('restaurant', 'nearbyRestaurants', 'Quán ăn');
-});
+                        if (typeof map !== 'undefined' && map) {
+                            L.circleMarker([iLat, iLon], { radius: 5, color: type === 'hotel' ? 'blue' : 'red' }).addTo(map)
+                                .bindPopup(item.name);
+                        }
+                        container.appendChild(div);
+                    });
+                })
+                .catch(err => console.error("Lỗi tải " + type, err));
+        }
+
+        loadNearby('hotel', 'nearbyHotels', 'Khách sạn');
+        loadNearby('restaurant', 'nearbyRestaurants', 'Quán ăn');
+    });
 </script>
 
 <script>
@@ -860,7 +1096,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.querySelectorAll('.star-rating-input input[name="rating"]').forEach(input => {
-        input.addEventListener('change', function() {
+        input.addEventListener('change', function () {
             document.getElementById('ratingValue').value = this.value;
             console.log("Đã chọn:", this.value, "sao");
         });
@@ -870,7 +1106,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const tourReviewForm = document.getElementById('reviewFormSubmit');
 
     if (tourReviewForm) {
-        tourReviewForm.addEventListener('submit', function(e) {
+        tourReviewForm.addEventListener('submit', function (e) {
             e.preventDefault();
 
             if (isSpamming('comment', 30)) return;
@@ -899,7 +1135,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const originalText = submitBtn.innerHTML;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang gửi...';
 
-            fetch('/api/tour_review/', { 
+            fetch('/api/tour_review/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -907,27 +1143,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify(payload)
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    updateActionTime('comment');
-                    location.reload(); 
-                } else {
-                    alert('Lỗi: ' + data.error);
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateActionTime('comment');
+                        location.reload();
+                    } else {
+                        alert('Lỗi: ' + data.error);
+                        if (submitBtn) submitBtn.disabled = false; submitBtn.innerHTML = originalText;
+                    }
+                })
+                .catch(err => {
+                    console.error('Lỗi fetch:', err);
                     if (submitBtn) submitBtn.disabled = false; submitBtn.innerHTML = originalText;
-                }
-            })
-            .catch(err => {
-                console.error('Lỗi fetch:', err);
-                if (submitBtn) submitBtn.disabled = false; submitBtn.innerHTML = originalText;
-            });
+                });
         });
     }
 
     let isProcessing = false;
     const COOLDOWN_MS = 2000;
 
-    document.addEventListener('click', async function(e) {
+    document.addEventListener('click', async function (e) {
         // --- 1. LOGIC VOTE ---
         const voteBtn = e.target.closest('.vote-btn');
         if (voteBtn) {
@@ -952,27 +1188,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 try {
                     const response = await fetch(VOTE_API_URL, {
                         method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json', 
-                            'X-CSRFToken': getCookie('csrftoken') 
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
                         },
-                        body: JSON.stringify({ 
-                            review_id: reviewId, 
-                            vote_type: voteType, 
-                            is_tour: isTour 
+                        body: JSON.stringify({
+                            review_id: reviewId,
+                            vote_type: voteType,
+                            is_tour: isTour
                         })
                     });
-                    
+
                     const data = await response.json();
 
                     if (data.success) {
                         // Tìm vùng chứa (container) của review vừa được bấm
                         const reviewItem = voteBtn.closest('.review-item');
-                        
+
                         // 1. Cập nhật số lượng hiển thị
                         const helpfulSpan = reviewItem.querySelector('.helpful-count');
                         const notHelpfulSpan = reviewItem.querySelector('.not-helpful-count');
-                        
+
                         if (helpfulSpan) helpfulSpan.textContent = data.helpful_count;
                         if (notHelpfulSpan) notHelpfulSpan.textContent = data.not_helpful_count;
 
@@ -980,8 +1216,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Xóa màu cũ của cả 2 nút trong cùng 1 review
                         reviewItem.querySelectorAll('.vote-btn').forEach(btn => {
                             btn.classList.remove('text-primary', 'fw-bold');
-                            btn.querySelector('i').className = btn.getAttribute('data-vote') === 'helpful' 
-                                ? 'fa-regular fa-thumbs-up' 
+                            btn.querySelector('i').className = btn.getAttribute('data-vote') === 'helpful'
+                                ? 'fa-regular fa-thumbs-up'
                                 : 'fa-regular fa-thumbs-down';
                         });
 
@@ -997,16 +1233,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else {
                         alert(data.message || 'Có lỗi xảy ra');
                     }
-                } catch (err) { 
-                    console.error('Vote failed', err); 
+                } catch (err) {
+                    console.error('Vote failed', err);
                 }
                 finally {
                     isProcessing = false;
                     if (voteBtn) voteBtn.style.opacity = "1";
                 }
                 updateActionTime('vote');
-            });   
-            
+            });
+
         }
 
         // --- 2. LOGIC REPORT ---
@@ -1037,16 +1273,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         body: JSON.stringify({ review_id: reviewId, reason: reasonCode, is_tour: isTour })
                     });
                     const data = await response.json();
-                    
+
                     if (data.success || response.ok) {
                         alert(data.message || "Đã gửi báo cáo thành công!");
-                        
+
                         const icon = reportBtn.querySelector('i');
                         if (icon) {
                             // Đổi từ icon cờ (fa-flag) sang icon tích xanh hoặc dấu chấm than
-                            icon.className = 'fa-solid fa-circle-check me-2'; 
+                            icon.className = 'fa-solid fa-circle-check me-2';
                         }
-                        
+
                         // Đổi chữ và màu nút
                         reportBtn.innerHTML = '<i class="fa-solid fa-circle-check me-2"></i>Đã gửi báo cáo';
                         reportBtn.classList.add('text-success', 'disabled'); // Đổi sang màu xanh lá cho dịu mắt
@@ -1097,6 +1333,169 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 </script>
 
+<!-- ==================== SENTIMENT ANALYSIS REALTIME ==================== -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const span = btn.querySelector('span');
+        if (span) {
+            span.textContent = 'Đã báo cáo';
+        }
+    }
+    });
 
+    // Hàm lấy CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+
+<!-- ==================== SENTIMENT ANALYSIS REALTIME ==================== -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const commentInput = document.getElementById('comment');
+        const charCount = document.getElementById('charCount');
+        const sentimentBox = document.getElementById('sentimentResultBox');
+
+        if (!commentInput || !sentimentBox) return;
+
+        let debounceTimer = null;
+        const DEBOUNCE_DELAY = 500; // Chờ 500ms sau khi ngừng gõ
+
+        // Cập nhật số ký tự
+        commentInput.addEventListener('input', function () {
+            const length = this.value.length;
+            if (charCount) charCount.textContent = length;
+
+            // Debounce: Chờ người dùng ngừng gõ rồi mới gọi API
+            clearTimeout(debounceTimer);
+
+            if (length < 10) {
+                // Ẩn box nếu text quá ngắn
+                sentimentBox.classList.add('d-none');
+                return;
+            }
+
+            // Hiển thị trạng thái đang phân tích
+            sentimentBox.classList.remove('d-none');
+            document.getElementById('sentimentLabel').textContent = 'Đang phân tích...';
+            document.getElementById('sentimentIcon').textContent = '⏳';
+            document.getElementById('sentimentBadge').className = 'badge bg-secondary';
+            document.getElementById('sentimentBadge').textContent = 'Đang xử lý';
+
+            debounceTimer = setTimeout(() => {
+                analyzeSentiment(this.value);
+            }, DEBOUNCE_DELAY);
+        });
+
+        // Hàm gọi API phân tích sentiment
+        async function analyzeSentiment(text) {
+            try {
+                const ratingInput = document.getElementById('ratingValue');
+                const rating = ratingInput ? parseInt(ratingInput.value) : 3;
+
+                const response = await fetch('/api/analyze-sentiment/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ text: text, rating: rating })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    console.error('Sentiment error:', data.error);
+                    return;
+                }
+
+                // Cập nhật UI
+                updateSentimentUI(data);
+
+            } catch (err) {
+                console.error('Sentiment API error:', err);
+            }
+        }
+
+        // Hàm cập nhật giao diện sentiment
+        function updateSentimentUI(data) {
+            const box = document.getElementById('sentimentResultBox');
+            const icon = document.getElementById('sentimentIcon');
+            const label = document.getElementById('sentimentLabel');
+            const score = document.getElementById('sentimentScore');
+            const badge = document.getElementById('sentimentBadge');
+            const method = document.getElementById('sentimentMethod');
+            const message = document.getElementById('sentimentMessage');
+            const keywordsContainer = document.getElementById('sentimentKeywords');
+            const posContainer = document.getElementById('posKeywordsContainer');
+            const negContainer = document.getElementById('negKeywordsContainer');
+
+            // Hiển thị box
+            box.classList.remove('d-none');
+
+            // Cập nhật icon và label
+            icon.textContent = data.icon || '😐';
+            label.textContent = data.label_vi || 'Trung lập';
+            score.textContent = data.score.toFixed(2);
+
+            // Cập nhật badge với màu sắc
+            badge.className = `badge bg-${data.color || 'secondary'}`;
+            badge.textContent = data.label_vi || 'Trung lập';
+
+            // Cập nhật method
+            if (method && data.method) {
+                method.textContent = data.method.replace(/_/g, ' ');
+            }
+
+            // Cập nhật message
+            if (message) {
+                message.textContent = data.message || '';
+            }
+
+            // Cập nhật border color của box
+            box.style.borderColor = data.color === 'success' ? '#198754' :
+                data.color === 'danger' ? '#dc3545' : '#ffc107';
+            box.style.backgroundColor = data.color === 'success' ? '#d1e7dd' :
+                data.color === 'danger' ? '#f8d7da' : '#fff3cd';
+
+            // Cập nhật keywords
+            if (posContainer && negContainer) {
+                posContainer.innerHTML = '';
+                negContainer.innerHTML = '';
+
+                if (data.pos_keywords && data.pos_keywords.length > 0) {
+                    data.pos_keywords.forEach(kw => {
+                        posContainer.innerHTML += `<span class="badge bg-success-subtle text-success me-1 mb-1"><i class="fa-solid fa-plus me-1"></i>${kw}</span>`;
+                    });
+                }
+
+                if (data.neg_keywords && data.neg_keywords.length > 0) {
+                    data.neg_keywords.forEach(kw => {
+                        negContainer.innerHTML += `<span class="badge bg-danger-subtle text-danger me-1 mb-1"><i class="fa-solid fa-minus me-1"></i>${kw}</span>`;
+                    });
+                }
+
+                // Hiển thị container keywords nếu có
+                if ((data.pos_keywords && data.pos_keywords.length > 0) ||
+                    (data.neg_keywords && data.neg_keywords.length > 0)) {
+                    keywordsContainer.classList.remove('d-none');
+                } else {
+                    keywordsContainer.classList.add('d-none');
+                }
+            }
+        }
+    });
+</script>
 
 {% endblock %}

@@ -1,6 +1,7 @@
 import math
 import os
 import urllib.parse
+import json
 from django.db import models
 from django.conf import settings
 from django.shortcuts import render, get_object_or_404, redirect
@@ -16,7 +17,8 @@ from django_ratelimit.decorators import ratelimit
 from users.models import TravelPreference
 from .services import get_weather_forecast, get_route, get_location_coordinates, get_nearby_hotels, get_nearby_restaurants, get_current_weather
 from django.core.paginator import Paginator
-from .models import TourPackage, Category, Destination, SearchHistory, Review, Favorite, TourReview, TourPackage, Booking, FavoriteDestination, RecommendationConfig
+from .models import TourPackage, Category, Destination, SearchHistory, Review, Favorite, TourReview, TourPackage, Booking, FavoriteDestination, RecommendationConfig, ReviewReport
+from django.contrib.contenttypes.models import ContentType
 import bleach
 
 from .cache_utils import get_cache_key, get_or_set_cache
@@ -1535,9 +1537,9 @@ def api_submit_review(request):
             visit_date=parsed_visit_date,
             # travel_types=travel_types,
             # travel_with=travel_with,
-            # sentiment_score=sentiment_score,
-            # positive_keywords=pos_keywords,
-            # negative_keywords=neg_keywords,
+            sentiment_score=sentiment_score,
+            positive_keywords=pos_keywords[:10],  # Giới hạn 10 từ khóa
+            negative_keywords=neg_keywords[:10],
             is_verified=user is not None,  # Verified if logged in
             status=Review.STATUS_APPROVED,  # Auto-approve (có thể đổi thành PENDING)
         )
@@ -1693,8 +1695,6 @@ def api_vote_review(request):
             return JsonResponse({'error': str(e)}, status=500)
     return JsonResponse({'success': False, 'message': 'Yêu cầu không hợp lệ'}, status=400)
     
-from django.contrib.contenttypes.models import ContentType
-from .models import Review, TourReview, ReviewReport
 @require_POST
 @ratelimit(key='ip', rate='5/h', method='POST', block=True)
 def api_report_review(request):
@@ -2020,3 +2020,152 @@ def display_review(self, obj):
         url = reverse(f'admin:{app_label}_{model_name}_change', args=[obj.object_id])
         return format_html('<a href="{}">[{}] {}</a>', url, model_name.upper(), obj.content_object.comment[:50])
     return "N/A"
+
+
+# ==================== SENTIMENT ANALYSIS API ====================
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_analyze_sentiment(request):
+    """
+    API endpoint để phân tích sentiment realtime
+    Input: {"text": "Nội dung đánh giá", "rating": 5}
+    Output: {"score": 0.85, "label": "positive", "pos_keywords": [...], "neg_keywords": [...], ...}
+    """
+    try:
+        # Decode body với encoding utf-8
+        body = request.body.decode('utf-8')
+        data = json.loads(body)
+        text = data.get('text', '').strip()
+        rating = data.get('rating', 3)
+        
+        if not text:
+            return JsonResponse({
+                'score': 0,
+                'label': 'neutral',
+                'label_vi': 'Trung lập',
+                'color': 'warning',
+                'icon': '😐',
+                'pos_keywords': [],
+                'neg_keywords': [],
+                'message': 'Vui lòng nhập nội dung đánh giá'
+            })
+        
+        # Phân tích sentiment
+        score, pos_keywords, neg_keywords, metadata = analyze_sentiment(text, rating)
+        
+        # Xác định label
+        if score > 0.18:
+            label = 'positive'
+            label_vi = 'Tích cực'
+            color = 'success'
+            icon = '😊'
+        elif score < -0.18:
+            label = 'negative'
+            label_vi = 'Tiêu cực'
+            color = 'danger'
+            icon = '😞'
+        else:
+            label = 'neutral'
+            label_vi = 'Trung lập'
+            color = 'warning'
+            icon = '😐'
+        
+        # Tạo message gợi ý
+        if label == 'positive':
+            message = 'Đánh giá của bạn mang tính tích cực! 👍'
+        elif label == 'negative':
+            message = 'Đánh giá của bạn có vẻ tiêu cực. Cảm ơn bạn đã chia sẻ!'
+        else:
+            message = 'Đánh giá của bạn khá trung lập.'
+        
+        return JsonResponse({
+            'score': round(score, 3),
+            'label': label,
+            'label_vi': label_vi,
+            'color': color,
+            'icon': icon,
+            'pos_keywords': pos_keywords[:5],  # Giới hạn 5 từ khóa
+            'neg_keywords': neg_keywords[:5],
+            'message': message,
+            'method': metadata.get('method', 'unknown'),
+            'aspects': metadata.get('aspects', {}),
+            'confidence': metadata.get('confidence', 0)
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        logger.error(f"Sentiment analysis error: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+# ==================== API SUBMIT TOUR REVIEW ====================
+from .models import TourReview
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_submit_tour_review(request):
+    """
+    API endpoint để gửi đánh giá tour với sentiment analysis
+    Input: {"tour_id": 1, "author_name": "Nguyen Van A", "rating": 5, "comment": "Tour rất tuyệt vời!"}
+    """
+    try:
+        body = request.body.decode('utf-8')
+        data = json.loads(body)
+        
+        tour_id = data.get('tour_id')
+        author_name = data.get('author_name', 'Khách')
+        rating = int(data.get('rating', 5))
+        comment = data.get('comment', '').strip()
+        
+        if not tour_id:
+            return JsonResponse({'success': False, 'error': 'Thiếu tour_id'}, status=400)
+        
+        if not comment:
+            return JsonResponse({'success': False, 'error': 'Vui lòng nhập nội dung đánh giá'}, status=400)
+        
+        # Lấy tour
+        try:
+            tour = TourPackage.objects.get(id=tour_id)
+        except TourPackage.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Tour không tồn tại'}, status=404)
+        
+        # Phân tích sentiment
+        score, pos_keywords, neg_keywords, metadata = analyze_sentiment(comment, rating)
+        
+        # Tạo review với sentiment
+        review = TourReview.objects.create(
+            tour=tour,
+            user=request.user if request.user.is_authenticated else None,
+            author_name=author_name,
+            rating=rating,
+            comment=comment,
+            sentiment_score=score,
+            positive_keywords=pos_keywords[:10],  # Giới hạn 10 từ khóa
+            negative_keywords=neg_keywords[:10],
+            is_verified_user=request.user.is_authenticated if request.user else False,
+        )
+        
+        # Cập nhật rating của tour
+        tour.update_rating()
+        
+        return JsonResponse({
+            'success': True,
+            'review_id': review.id,
+            'sentiment': {
+                'score': round(score, 3),
+                'label': 'positive' if score > 0.18 else ('negative' if score < -0.18 else 'neutral'),
+                'pos_keywords': pos_keywords[:5],
+                'neg_keywords': neg_keywords[:5],
+            },
+            'message': 'Đánh giá đã được gửi thành công!'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        logger.error(f"Submit tour review error: {e}")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

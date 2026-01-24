@@ -1,15 +1,15 @@
-﻿"""
+"""
 Unified AI Engine for WebDuLich
-Gá»™p sentiment analysis vÃ  recommendation engine thÃ nh 1 module duy nháº¥t
+Gộp sentiment analysis và recommendation engine thành 1 module duy nhất
 
 Features:
-- PhoBERT sentiment analysis vá»›i fallback rule-based
-- Enhanced rule-based vá»›i JSON keywords
+- PhoBERT sentiment analysis với fallback rule-based
+- Enhanced rule-based với JSON keywords
 - Aspect-based sentiment analysis
 - Negation, intensifier, downtoner handling
 - Sarcasm detection
 - Recommendation scoring algorithm
-- Caching system tÃ­ch há»£p
+- Caching system tích hợp
 - Search functionality
 - Retry mechanism for robustness
 """
@@ -84,42 +84,42 @@ SENTIMENT_DATA, ASPECT_DATA = load_json_keywords()
 
 # ==================== CONSTANTS ====================
 
-# Tá»« phá»§ Ä‘á»‹nh (negation)
+# Từ phủ định (negation)
 NEGATION_WORDS = [
-    'khÃ´ng', 'ko', 'k', 'cháº³ng', 'cháº£', 'Ä‘á»«ng', 'chÆ°a',
-    'khÃ´ng pháº£i', 'khÃ´ng há»', 'khÃ´ng bao giá»', 'cháº³ng bao giá»',
-    'khÃ´ng cÃ²n', 'cháº³ng cÃ²n', 'khÃ´ng thá»ƒ', 'chÆ°a bao giá»',
-    'chÆ°a tá»«ng', 'khÃ´ng Ä‘Æ°á»£c', 'cháº³ng Ä‘Æ°á»£c', 'khÃ´ng cÃ³',
-    'thiáº¿u', 'máº¥t', 'háº¿t', 'khÃ´ng tháº¥y', 'cháº³ng tháº¥y'
+    'không', 'ko', 'k', 'chẳng', 'chả', 'đừng', 'chưa',
+    'không phải', 'không hề', 'không bao giờ', 'chẳng bao giờ',
+    'không còn', 'chẳng còn', 'không thể', 'chưa bao giờ',
+    'chưa từng', 'không được', 'chẳng được', 'không có',
+    'thiếu', 'mất', 'hết', 'không thấy', 'chẳng thấy'
 ]
 
-# Tá»« giáº£m nháº¹ (downtoner)
+# Từ giảm nhẹ (downtoner)
 DOWNTONERS = {
-    'hÆ¡i': 0.6,
-    'khÃ¡': 0.6,
-    'tÆ°Æ¡ng Ä‘á»‘i': 0.6,
-    'cÅ©ng': 0.6,
-    'hÆ¡i hÆ¡i': 0.5
+    'hơi': 0.6,
+    'khá': 0.6,
+    'tương đối': 0.6,
+    'cũng': 0.6,
+    'hơi hơi': 0.5
 }
 
-# Tá»« tÄƒng cÆ°á»ng (intensifier)
+# Từ tăng cường (intensifier)
 INTENSIFIERS_STRONG = {
-    'cá»±c ká»³': 1.4,
-    'cá»±c kÃ¬': 1.4,
-    'siÃªu': 1.4,
-    'vÃ´ cÃ¹ng': 1.4,
-    'cá»±c': 1.4,
-    'cá»±c luÃ´n': 1.4
+    'cực kỳ': 1.4,
+    'cực kì': 1.4,
+    'siêu': 1.4,
+    'vô cùng': 1.4,
+    'cực': 1.4,
+    'cực luôn': 1.4
 }
 
 INTENSIFIERS_MEDIUM = {
-    'ráº¥t': 1.25,
-    'quÃ¡': 1.25,
-    'tháº­t sá»±': 1.25,
-    'thá»±c sá»±': 1.25,
-    'ráº¥t lÃ ': 1.25,
-    'hoÃ n toÃ n': 1.25,
-    'tuyá»‡t Ä‘á»‘i': 1.25
+    'rất': 1.25,
+    'quá': 1.25,
+    'thật sự': 1.25,
+    'thực sự': 1.25,
+    'rất là': 1.25,
+    'hoàn toàn': 1.25,
+    'tuyệt đối': 1.25
 }
 
 # Merge all intensifiers
@@ -128,45 +128,60 @@ INTENSIFIERS = {**INTENSIFIERS_STRONG, **INTENSIFIERS_MEDIUM}
 # Sarcasm indicators
 SARCASM_INDICATORS = [
     'ha', 'haha', 'hihi', 'hehe',
-    ':))', '=))', 'ðŸ™‚ðŸ™‚', 'ðŸ˜', 'ðŸ˜…',
-    'nhá»‰', 'nhá»ƒ', 'nhá»Ÿ', 'nhÃ©'
+    ':))', '=))', '🙂🙂', '😏', '😅',
+    'nhỉ', 'nhể', 'nhở', 'nhé'
 ]
 
-# Contrast words - pháº§n sau thÆ°á»ng quan trá»ng hÆ¡n
+# Contrast words - phần sau thường quan trọng hơn
 CONTRAST_WORDS = [
-    'nhÆ°ng', 'tuy nhiÃªn', 'tuy', 'máº·c dÃ¹', 'dÃ¹', 'song',
-    'tháº¿ nhÆ°ng', 'nhÆ°ng mÃ ', 'tuy váº­y', 'dÃ¹ váº­y', 'dÃ¹ sao'
+    'nhưng', 'tuy nhiên', 'tuy', 'mặc dù', 'dù', 'song',
+    'thế nhưng', 'nhưng mà', 'tuy vậy', 'dù vậy', 'dù sao'
 ]
 
-# Negative behavior patterns - chá»‰ bÃ¡o tiÃªu cá»±c máº¡nh
+# Negative behavior patterns - chỉ báo tiêu cực mạnh
 NEGATIVE_BEHAVIOR_PATTERNS = [
-    ('khÃ´ng', 'quay láº¡i'),
-    ('khÃ´ng', 'recommend'),
-    ('khÃ´ng', 'giá»›i thiá»‡u'),
-    ('khÃ´ng', 'Ä‘á» xuáº¥t'),
-    ('khÃ´ng', 'nÃªn Ä‘i'),
-    ('khÃ´ng', 'Ä‘Ã¡ng'),
-    ('cháº³ng', 'quay láº¡i'),
-    ('sáº½ khÃ´ng', 'quay láº¡i'),
-    ('láº§n sau', 'khÃ´ng'),
-    ('khÃ´ng bao giá»', 'quay láº¡i'),
-    ('khÃ´ng bao giá»', 'Ä‘áº¿n'),
-    ('tháº¥t vá»ng', 'hoÃ n toÃ n'),
-    ('hoÃ n toÃ n', 'tháº¥t vá»ng'),
+    ('không', 'quay lại'),
+    ('không', 'recommend'),
+    ('không', 'giới thiệu'),
+    ('không', 'đề xuất'),
+    ('không', 'nên đi'),
+    ('không', 'đáng'),
+    ('chẳng', 'quay lại'),
+    ('sẽ không', 'quay lại'),
+    ('lần sau', 'không'),
+    ('không bao giờ', 'quay lại'),
+    ('không bao giờ', 'đến'),
+    ('thất vọng', 'hoàn toàn'),
+    ('hoàn toàn', 'thất vọng'),
+    # Pattern thất vọng khi thực tế không như kỳ vọng/hình ảnh
+    ('nhìn hình', 'tới nơi'),
+    ('nhìn hình', 'đến nơi'),
+    ('hình thì', 'thực tế'),
+    ('ảnh thì', 'thực tế'),
+    ('xịn', 'tụt mood'),
+    ('đẹp', 'tụt mood'),
+    ('tới nơi', 'tụt'),
+    ('đến nơi', 'tụt'),
+    ('kỳ vọng', 'thất vọng'),
+    ('mong đợi', 'thất vọng'),
+    ('tưởng', 'thất vọng'),
+    ('tưởng', 'ai ngờ'),
+    ('nhìn', 'khác xa'),
+    ('hình', 'khác xa'),
 ]
 
-# Stopwords tiáº¿ng Viá»‡t
+# Stopwords tiếng Việt
 STOPWORDS = [
-    'lÃ ', 'cá»§a', 'vÃ ', 'cÃ³', 'Ä‘Æ°á»£c', 'trong', 'vá»›i', 'cho', 'tá»«', 'nÃ y', 'Ä‘Ã³',
-    'má»™t', 'cÃ¡c', 'nhá»¯ng', 'Ä‘á»ƒ', 'khi', 'Ä‘Ã£', 'sáº½', 'bá»‹', 'náº¿u', 'nhÆ°', 'thÃ¬',
-    'mÃ ', 'hay', 'hoáº·c', 'nhÆ°ng', 'vÃ¬', 'nÃªn', 'láº¡i', 'cÃ²n', 'Ä‘ang'
+    'là', 'của', 'và', 'có', 'được', 'trong', 'với', 'cho', 'từ', 'này', 'đó',
+    'một', 'các', 'những', 'để', 'khi', 'đã', 'sẽ', 'bị', 'nếu', 'như', 'thì',
+    'mà', 'hay', 'hoặc', 'nhưng', 'vì', 'nên', 'lại', 'còn', 'đang'
 ]
 
 
 # ==================== TEXT NORMALIZATION ====================
 
 class TextNormalizer:
-    """Text normalization vá»›i teencode vÃ  slang mapping"""
+    """Text normalization với teencode và slang mapping"""
     
     def __init__(self):
         self.slang_map = SENTIMENT_DATA.get('slang_map', {})
@@ -175,10 +190,10 @@ class TextNormalizer:
     
     def normalize(self, text: str) -> str:
         """
-        Chuáº©n hÃ³a text:
+        Chuẩn hóa text:
         - Lowercase
         - Map teencode/slang (longest-first matching)
-        - Giá»¯ dáº¥u tiáº¿ng Viá»‡t
+        - Giữ dấu tiếng Việt
         - Normalize whitespace
         """
         if not text:
@@ -208,8 +223,14 @@ class TextNormalizer:
     
     def tokenize(self, text: str) -> List[str]:
         """Tokenize text into words"""
+        # Tách rời các dấu câu khỏi từ để tránh dính token (ví dụ: "ổn," -> "ổn ,")
+        text = re.sub(r'([.,!?])', r' \1 ', text)
+        
+        # Normalize whitespace again after punctuation separation
+        text = re.sub(r'\s+', ' ', text).strip()
+        
         # Keep Vietnamese characters and basic punctuation
-        text = re.sub(r'[^\w\sÃ Ã¡áº¡áº£Ã£Ã¢áº§áº¥áº­áº©áº«Äƒáº±áº¯áº·áº³áºµÃ¨Ã©áº¹áº»áº½Ãªá»áº¿á»‡á»ƒá»…Ã¬Ã­á»‹á»‰Ä©Ã²Ã³á»á»ÃµÃ´á»“á»‘á»™á»•á»—Æ¡á»á»›á»£á»Ÿá»¡Ã¹Ãºá»¥á»§Å©Æ°á»«á»©á»±á»­á»¯á»³Ã½á»µá»·á»¹Ä‘.,!?]', ' ', text)
+        text = re.sub(r'[^\w\sàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ.,!?]', ' ', text)
         tokens = text.split()
         return [t for t in tokens if t]
 
@@ -218,7 +239,7 @@ class TextNormalizer:
 
 class SentimentAnalyzer:
     """
-    Enhanced Sentiment Analyzer vá»›i PhoBERT + Advanced Rule-based fallback
+    Enhanced Sentiment Analyzer với PhoBERT + Advanced Rule-based fallback
     """
     
     def __init__(self):
@@ -242,15 +263,15 @@ class SentimentAnalyzer:
             logger.info("Loading PhoBERT sentiment model...")
             
             # Try to load fine-tuned model first
-            finetuned_path = os.path.join(settings.BASE_DIR, 'travel', 'phobert-travel-sentiment-final')
+            finetuned_path = os.path.join(settings.BASE_DIR, 'travel', 'models', 'phobert-travel-sentiment-final')
             
             if os.path.exists(finetuned_path):
                 model_name = finetuned_path
-                logger.info(f"âœ… Using FINE-TUNED model from: {finetuned_path}")
+                logger.info(f"✅ Using FINE-TUNED model from: {finetuned_path}")
             else:
                 # Fallback to original model
                 model_name = "wonrax/phobert-base-vietnamese-sentiment"
-                logger.info(f"âš ï¸  Fine-tuned model not found, using original: {model_name}")
+                logger.info(f"⚠️  Fine-tuned model not found, using original: {model_name}")
             
             self.tokenizer = AutoTokenizer.from_pretrained(model_name)
             self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
@@ -267,14 +288,14 @@ class SentimentAnalyzer:
     
     def analyze(self, text: str) -> Tuple[float, List[str], List[str], Dict[str, Any]]:
         """
-        PhÃ¢n tÃ­ch sentiment cá»§a text
+        Phân tích sentiment của text
         
         Returns:
             tuple: (sentiment_score, positive_keywords, negative_keywords, metadata)
-                - sentiment_score: float tá»« -1 Ä‘áº¿n 1
-                - positive_keywords: list tá»« khÃ³a tÃ­ch cá»±c
-                - negative_keywords: list tá»« khÃ³a tiÃªu cá»±c
-                - metadata: dict chá»©a thÃ´ng tin phÃ¢n tÃ­ch (aspects, sarcasm_risk, etc.)
+                - sentiment_score: float từ -1 đến 1
+                - positive_keywords: list từ khóa tích cực
+                - negative_keywords: list từ khóa tiêu cực
+                - metadata: dict chứa thông tin phân tích (aspects, sarcasm_risk, etc.)
         """
         if not text or not text.strip():
             return 0.0, [], [], {}
@@ -287,11 +308,11 @@ class SentimentAnalyzer:
         if cached_result is not None:
             return cached_result
         
-        # Load model náº¿u chÆ°a load
+        # Load model nếu chưa load
         if not self.model_loaded:
             self.load_model()
         
-        # Sá»­ dá»¥ng PhoBERT náº¿u cÃ³, fallback vá» rule-based
+        # Sử dụng PhoBERT nếu có, fallback về rule-based
         if self.model_loaded:
             result = self._phobert_analysis(text)
         else:
@@ -314,13 +335,49 @@ class SentimentAnalyzer:
         PhoBERT sentiment analysis with confidence gating and smart combine.
         
         Strategy:
-        - PhoBERT chá»‰ win khi confidence cao
-        - Rule-based win khi cÃ³ keyword máº¡nh hoáº·c PhoBERT khÃ´ng tá»± tin
-        - Combine weighted khi cáº£ hai Ä‘á»u cÃ³ giÃ¡ trá»‹
+        - PhoBERT chỉ win khi confidence cao
+        - Rule-based win khi có keyword mạnh hoặc PhoBERT không tự tin
+        - Combine weighted khi cả hai đều có giá trị
+        - OVERRIDE: Negative behavior patterns force negative score
         """
         try:
             # 1. Get rule-based analysis first (always needed for keywords/aspects)
             rule_score, pos_keywords, neg_keywords, metadata = self._rule_based_analysis(text)
+            
+            # 1.5 CHECK NEGATIVE BEHAVIOR PATTERNS FIRST (CRITICAL!)
+            # These patterns indicate clear disappointment/negative sentiment
+            # and should override PhoBERT's potentially incorrect positive score
+            text_normalized = self.normalizer.normalize(text)
+            negative_pattern_count = 0
+            matched_patterns = []
+            
+            for pattern in NEGATIVE_BEHAVIOR_PATTERNS:
+                if len(pattern) == 2:
+                    word1, word2 = pattern
+                    if word1 in text_normalized and word2 in text_normalized:
+                        idx1 = text_normalized.find(word1)
+                        idx2 = text_normalized.find(word2)
+                        # Check if pattern words appear in order within 40 chars
+                        if idx1 < idx2 and idx2 - idx1 < 40:
+                            negative_pattern_count += 1
+                            matched_patterns.append(f"{word1} {word2}")
+            
+            # If multiple negative patterns detected, FORCE negative score
+            if negative_pattern_count >= 2:
+                # Strong override - this is clearly a negative review
+                override_score = -0.6 - (negative_pattern_count * 0.1)  # More patterns = more negative
+                override_score = max(-1.0, override_score)
+                
+                # Add matched patterns to negative keywords
+                neg_keywords.extend(matched_patterns)
+                neg_keywords = list(set(neg_keywords))  # Remove duplicates
+                
+                metadata['method'] = 'negative_pattern_override'
+                metadata['matched_patterns'] = matched_patterns
+                metadata['pattern_count'] = negative_pattern_count
+                metadata['override_reason'] = 'Multiple disappointment patterns detected'
+                
+                return float(override_score), pos_keywords, neg_keywords, metadata
             
             # 2. Get PhoBERT prediction
             inputs = self.tokenizer(
@@ -349,6 +406,15 @@ class SentimentAnalyzer:
             # This reduces score when neutral is high
             phobert_score = (pos_prob - neg_prob) * (1 - neu_prob * 0.5)
             
+            # 3.5 Apply penalty if ANY negative pattern detected
+            if negative_pattern_count == 1:
+                # Single pattern: apply moderate penalty
+                phobert_score = phobert_score - 0.4
+                if phobert_score > 0:
+                    phobert_score = phobert_score * 0.5  # Reduce positive magnitude
+                neg_keywords.extend(matched_patterns)
+                metadata['pattern_penalty_applied'] = True
+            
             # 4. Calculate confidence (top1 - top2)
             probs_sorted = sorted([pos_prob, neu_prob, neg_prob], reverse=True)
             confidence = probs_sorted[0] - probs_sorted[1]
@@ -369,6 +435,8 @@ class SentimentAnalyzer:
                 'neu': float(neu_prob),
                 'neg': float(neg_prob)
             }
+            if matched_patterns:
+                metadata['matched_patterns'] = matched_patterns
             
             return float(final_score), pos_keywords, neg_keywords, metadata
             
@@ -387,26 +455,26 @@ class SentimentAnalyzer:
         """
         PhoBERT-Primary Combine Strategy (v3.2)
         
-        Chiáº¿n lÆ°á»£c: PhoBERT lÃ  PRIMARY, Rule-based lÃ  CALIBRATION
+        Chiến lược: PhoBERT là PRIMARY, Rule-based là CALIBRATION
         
-        NguyÃªn táº¯c:
-        1. PhoBERT luÃ´n Ä‘Ã³ng vai trÃ² chÃ­nh (55-70% weight)
-        2. Rule-based dÃ¹ng Ä‘á»ƒ calibrate vÃ  xá»­ lÃ½ edge cases
-        3. Mixed sentiment â†’ kÃ©o vá» neutral dá»±a trÃªn PhoBERT
-        4. Neutral soft words â†’ giá»¯ gáº§n neutral (threshold 0.2)
+        Nguyên tắc:
+        1. PhoBERT luôn đóng vai trò chính (55-70% weight)
+        2. Rule-based dùng để calibrate và xử lý edge cases
+        3. Mixed sentiment → kéo về neutral dựa trên PhoBERT
+        4. Neutral soft words → giữ gần neutral (threshold 0.2)
         
         Returns:
             (final_score, method_name)
         """
         total_keywords = num_pos_keywords + num_neg_keywords
         
-        # === CASE 1: Mixed sentiment (cÃ³ cáº£ pos vÃ  neg keywords) ===
-        # ÄÃ¢y lÃ  case quan trá»ng nháº¥t - cáº§n kÃ©o vá» neutral
+        # === CASE 1: Mixed sentiment (có cả pos và neg keywords) ===
+        # Đây là case quan trọng nhất - cần kéo về neutral
         if num_pos_keywords > 0 and num_neg_keywords > 0:
-            # PhoBERT quyáº¿t Ä‘á»‹nh hÆ°á»›ng, nhÆ°ng dampen máº¡nh vá» neutral
+            # PhoBERT quyết định hướng, nhưng dampen mạnh về neutral
             balance = min(num_pos_keywords, num_neg_keywords) / max(num_pos_keywords, num_neg_keywords)
             
-            # Damping máº¡nh hÆ¡n khi balance cao (keywords cÃ¢n báº±ng)
+            # Damping mạnh hơn khi balance cao (keywords cân bằng)
             damping = 0.40 + (balance * 0.30)
             
             # PhoBERT 60%, rule 40%
@@ -414,63 +482,63 @@ class SentimentAnalyzer:
             dampened = combined * (1 - damping)
             return max(-1.0, min(1.0, dampened)), "phobert_mixed_neutral_pull"
         
-        # === CASE 2: Chá»‰ cÃ³ neutral soft keywords (ok, Ä‘Æ°á»£c, táº¡m, á»•n) ===
-        # Rule score tháº¥p (<0.12) thÆ°á»ng lÃ  neutral soft only
+        # === CASE 2: Chỉ có neutral soft keywords (ok, được, tạm, ổn) ===
+        # Rule score thấp (<0.12) thường là neutral soft only
         if total_keywords > 0 and abs(rule_score) < 0.12:
-            # Neutral soft â†’ kÃ©o máº¡nh vá» neutral
-            # PhoBERT 40%, rule 60%, rá»“i dampen máº¡nh
+            # Neutral soft → kéo mạnh về neutral
+            # PhoBERT 40%, rule 60%, rồi dampen mạnh
             combined = 0.40 * phobert_score + 0.60 * rule_score
-            dampened = combined * 0.35  # Giá»¯ 35% magnitude â†’ gáº§n neutral
+            dampened = combined * 0.35  # Giữ 35% magnitude → gần neutral
             return max(-1.0, min(1.0, dampened)), "phobert_neutral_soft_strong_pull"
         
         # === CASE 3: Weak positive keywords (0.12 <= rule < 0.25) ===
-        # CÃ³ keywords nhÆ°ng yáº¿u â†’ dampen vá» neutral hÆ¡n
+        # Có keywords nhưng yếu → dampen về neutral hơn
         if total_keywords > 0 and 0.12 <= abs(rule_score) < 0.25:
-            # PhoBERT 50%, rule 50%, dampen nháº¹
+            # PhoBERT 50%, rule 50%, dampen nhẹ
             combined = 0.50 * phobert_score + 0.50 * rule_score
-            dampened = combined * 0.6  # Giá»¯ 60%
+            dampened = combined * 0.6  # Giữ 60%
             return max(-1.0, min(1.0, dampened)), "phobert_weak_signal_calibrated"
         
-        # === CASE 4: PhoBERT confidence tháº¥p (<0.20) ===
+        # === CASE 4: PhoBERT confidence thấp (<0.20) ===
         if confidence < 0.20:
-            # PhoBERT khÃ´ng cháº¯c â†’ mix vá»›i rule nhiá»u hÆ¡n
+            # PhoBERT không chắc → mix với rule nhiều hơn
             # PhoBERT 45%, rule 55%
             final = 0.45 * phobert_score + 0.55 * rule_score
             return max(-1.0, min(1.0, final)), "phobert_low_conf_rule_assist"
         
         # === CASE 5: PhoBERT high confidence (>0.45) ===
         if confidence >= 0.45:
-            # PhoBERT ráº¥t tá»± tin â†’ 70% PhoBERT, 30% rule
+            # PhoBERT rất tự tin → 70% PhoBERT, 30% rule
             final = 0.70 * phobert_score + 0.30 * rule_score
             return max(-1.0, min(1.0, final)), "phobert_dominant_high_conf"
         
-        # === CASE 6: KhÃ´ng cÃ³ keywords â†’ PhoBERT quyáº¿t Ä‘á»‹nh ===
+        # === CASE 6: Không có keywords → PhoBERT quyết định ===
         if total_keywords == 0:
-            # KhÃ´ng cÃ³ domain signal â†’ tin PhoBERT nhÆ°ng dampen
+            # Không có domain signal → tin PhoBERT nhưng dampen
             dampened = phobert_score * 0.70
             return max(-1.0, min(1.0, dampened)), "phobert_only_no_keywords"
         
-        # === CASE 7: PhoBERT vÃ  Rule Ä‘á»“ng thuáº­n (cÃ¹ng dáº¥u, cÃ¹ng máº¡nh) ===
+        # === CASE 7: PhoBERT và Rule đồng thuận (cùng dấu, cùng mạnh) ===
         if (phobert_score > 0.2 and rule_score > 0.2) or (phobert_score < -0.2 and rule_score < -0.2):
-            # Cáº£ hai Ä‘á»“ng Ã½ máº¡nh â†’ PhoBERT lead, boost
+            # Cả hai đồng ý mạnh → PhoBERT lead, boost
             # PhoBERT 65%, rule 35%
             final = 0.65 * phobert_score + 0.35 * rule_score
             
-            # Boost khi Ä‘á»“ng thuáº­n ráº¥t máº¡nh
+            # Boost khi đồng thuận rất mạnh
             if abs(phobert_score) > 0.5 and abs(rule_score) > 0.5:
                 final = final * 1.15
             
             return max(-1.0, min(1.0, final)), "phobert_rule_strong_agreement"
         
-        # === CASE 8: PhoBERT vÃ  Rule conflict (khÃ¡c dáº¥u) ===
+        # === CASE 8: PhoBERT và Rule conflict (khác dấu) ===
         if (phobert_score > 0.15 and rule_score < -0.15) or (phobert_score < -0.15 and rule_score > 0.15):
-            # Conflict â†’ PhoBERT lead nhÆ°ng dampen máº¡nh
+            # Conflict → PhoBERT lead nhưng dampen mạnh
             # PhoBERT 55%, rule 45%
             final = 0.55 * phobert_score + 0.45 * rule_score
             final = final * 0.65  # Dampen 35%
             return max(-1.0, min(1.0, final)), "phobert_rule_conflict_dampen"
         
-        # === DEFAULT: Balanced mix vá»›i PhoBERT lead ===
+        # === DEFAULT: Balanced mix với PhoBERT lead ===
         # PhoBERT 60%, rule 40%
         final = 0.60 * phobert_score + 0.40 * rule_score
         return max(-1.0, min(1.0, final)), "phobert_primary_balanced"
@@ -527,7 +595,7 @@ class SentimentAnalyzer:
         total_score += negative_behavior_penalty
         
         # If has contrast word and mixed sentiment, weight toward negative
-        # "Ä‘áº¹p nhÆ°ng Ä‘áº¯t" â†’ pháº§n sau (Ä‘áº¯t) quan trá»ng hÆ¡n
+        # "đẹp nhưng đắt" → phần sau (đắt) quan trọng hơn
         if has_contrast and positive_keywords and negative_keywords:
             # Reduce positive impact by 20%
             if total_score > 0:
@@ -580,8 +648,9 @@ class SentimentAnalyzer:
                 if any(pos in matched_positions for pos in range(i, i + keyword_len)):
                     continue
                 
-                # Check if tokens match
-                if ' '.join(tokens[i:i+keyword_len]) == keyword:
+                # Phân tách token hiện tại để so sánh không tính dấu câu nếu cần
+                current_phrase = ' '.join(tokens[i:i+keyword_len])
+                if current_phrase == keyword:
                     # Mark positions as matched
                     for pos in range(i, i + keyword_len):
                         matched_positions.add(pos)
@@ -600,12 +669,12 @@ class SentimentAnalyzer:
                     # Track keywords
                     if modified_score > 0:
                         if is_negated and base_score < 0:
-                            pos_keywords.append(f"khÃ´ng {keyword}")
+                            pos_keywords.append(f"không {keyword}")
                         else:
                             pos_keywords.append(keyword)
                     elif modified_score < 0:
                         if is_negated and base_score > 0:
-                            neg_keywords.append(f"khÃ´ng {keyword}")
+                            neg_keywords.append(f"không {keyword}")
                         else:
                             neg_keywords.append(keyword)
                     
@@ -614,14 +683,14 @@ class SentimentAnalyzer:
                     if aspect:
                         aspect_scores[aspect] += modified_score
         
-        # Process neutral_soft words as weak positive (ok, á»•n, Ä‘Æ°á»£c, táº¡m...)
-        # Score tháº¥p (0.10) Ä‘á»ƒ khÃ´ng lÃ m cÃ¢u mixed thÃ nh positive
+        # Process neutral_soft words as weak positive (ok, ổn, được, tạm...)
+        # Score thấp (0.10) để không làm câu mixed thành positive
         for i, token in enumerate(tokens):
             if i in matched_positions:
                 continue
             if token in self.neutral_soft:
                 # Neutral soft words = very weak positive (0.05)
-                # Gáº§n nhÆ° neutral, chá»‰ hÆ¡i positive má»™t chÃºt
+                # Gần như neutral, chỉ hơi positive một chút
                 soft_score = 0.05
                 
                 # Check for negation before neutral_soft
@@ -630,9 +699,9 @@ class SentimentAnalyzer:
                 is_negated = any(t in NEGATION_WORDS for t in window)
                 
                 if is_negated:
-                    # "khÃ´ng ok" = weak negative
+                    # "không ok" = weak negative
                     sentence_score -= 0.05
-                    neg_keywords.append(f"khÃ´ng {token}")
+                    neg_keywords.append(f"không {token}")
                 else:
                     sentence_score += soft_score
                     pos_keywords.append(token)
@@ -673,12 +742,12 @@ class SentimentAnalyzer:
         # Apply modifications
         if is_negated:
             # Negation: flip sign and reduce magnitude
-            # Special case: "khÃ´ng tá»‡" should be weak positive (but not too strong)
+            # Special case: "không tệ" should be weak positive (but not too strong)
             if base_score < 0:
-                # "khÃ´ng tá»‡" -> weak positive, capped at 0.20
+                # "không tệ" -> weak positive, capped at 0.20
                 modified_score = min(abs(base_score) * 0.5, 0.20)
             else:
-                # "khÃ´ng Ä‘áº¹p" -> negative
+                # "không đẹp" -> negative
                 modified_score = -base_score * 0.8
         else:
             # Apply multiplier
@@ -701,7 +770,7 @@ class SentimentAnalyzer:
     
     
     def _split_sentences(self, text: str) -> List[str]:
-        """TÃ¡ch vÄƒn báº£n thÃ nh cÃ¡c cÃ¢u"""
+        """Tách văn bản thành các câu"""
         sentences = re.split(r'[.!?;,\n]', text)
         return [s.strip() for s in sentences if s.strip()]
 
@@ -711,7 +780,7 @@ class SentimentAnalyzer:
 class RecommendationEngine:
     """
     Recommendation Engine cho destinations
-    Sá»­ dá»¥ng Universal Scoring Engine cho Ä‘iá»ƒm gá»£i Ã½
+    Sử dụng Universal Scoring Engine cho điểm gợi ý
     """
     
     def __init__(self):
@@ -722,7 +791,7 @@ class RecommendationEngine:
     
     def search_destinations(self, query: str, filters: Dict[str, Any]) -> List:
         """
-        TÃ¬m kiáº¿m destinations vá»›i AI scoring
+        Tìm kiếm destinations với AI scoring
         
         Args:
             query: Search query
@@ -766,16 +835,16 @@ class RecommendationEngine:
     
     def calculate_destination_score(self, destination) -> Dict[str, float]:
         """
-        TÃ­nh toÃ¡n Ä‘iá»ƒm sá»‘ tá»•ng há»£p cho destination
-        Sá»­ dá»¥ng Universal Scoring Engine
+        Tính toán điểm số tổng hợp cho destination
+        Sử dụng Universal Scoring Engine
         
         Returns:
-            Dict vá»›i cÃ¡c scores: overall, review, sentiment, popularity
+            Dict với các scores: overall, review, sentiment, popularity
         """
         return self.scoring_engine.calculate_score(destination)
     
     def _calculate_relevance_score(self, destination, query: str, filters: Dict) -> float:
-        """TÃ­nh Ä‘iá»ƒm relevance cho search results"""
+        """Tính điểm relevance cho search results"""
         score = 0.0
         
         # Base recommendation score (50% weight)
@@ -803,9 +872,9 @@ class RecommendationEngine:
         return score
     
     def _calculate_price_score(self, destination) -> float:
-        """TÃ­nh price competitiveness score dá»±a trÃªn phÃ­ vÃ o cá»•ng"""
+        """Tính price competitiveness score dựa trên phí vào cổng"""
         if not destination.entrance_fee:
-            return 10.0  # Miá»…n phÃ­ = Ä‘iá»ƒm cao nháº¥t
+            return 10.0  # Miễn phí = điểm cao nhất
         
         fee = float(destination.entrance_fee)
         
@@ -863,8 +932,8 @@ def analyze_sentiment(text: str, rating: int = None) -> Tuple[float, List[str], 
     # 1. Short review boost (< 8 words with weak positive signals)
     word_count = len(text.split())
     if word_count < 8 and 0 < score < 0.15:
-        # Short review with weak positive â†’ boost slightly
-        if any(kw in ['ok', 'á»•n', 'Ä‘Æ°á»£c', 'táº¡m'] for kw in pos_kw):
+        # Short review with weak positive → boost slightly
+        if any(kw in ['ok', 'ổn', 'được', 'tạm'] for kw in pos_kw):
             score = min(score * 1.5, 0.25)  # Boost to weak positive
             metadata['post_processing'] = 'short_review_boost'
     
@@ -872,23 +941,40 @@ def analyze_sentiment(text: str, rating: int = None) -> Tuple[float, List[str], 
     if rating is not None:
         original_score = score
         
-        if rating == 5 and score < 0.5:
-            # Rating 5 should be strong positive
-            score = max(score, 0.6)
-            metadata['calibrated'] = True
-            metadata['calibration_reason'] = f'rating_5_boost (from {original_score:.3f})'
+        # Only boost/adjust if there's no strong conflict with sentiment
+        # If sentiment is strongly negative (score < -0.3), we should be more cautious
+        
+        if rating == 5:
+            if score < 0.5 and score >= -0.1:
+                # Neutral or weak positive → boost to strong positive
+                score = max(score, 0.6)
+                metadata['calibrated'] = True
+                metadata['calibration_reason'] = f'rating_5_boost (from {original_score:.3f})'
+            elif score < -0.1:
+                # Clear negative sentiment but rating 5 → pull towards neutral but don't force positive
+                # This handles sarcasm or "accidental" 5-star ratings with negative text
+                score = score + 0.3 # Reduce negative intensity but keep it negative
+                metadata['calibrated'] = True
+                metadata['calibration_reason'] = f'rating_5_dampen_conflict (from {original_score:.3f})'
         
         elif rating == 4 and score < 0.15:
-            # Rating 4 should be at least weak positive
-            score = max(score, 0.20)
-            metadata['calibrated'] = True
-            metadata['calibration_reason'] = f'rating_4_boost (from {original_score:.3f})'
+            if score >= -0.2:
+                # Weak negative or neutral → adjust to weak positive
+                score = max(score, 0.20)
+                metadata['calibrated'] = True
+                metadata['calibration_reason'] = f'rating_4_boost (from {original_score:.3f})'
         
         elif rating == 1 and score > -0.5:
-            # Rating 1 should be strong negative
-            score = min(score, -0.6)
-            metadata['calibrated'] = True
-            metadata['calibration_reason'] = f'rating_1_adjust (from {original_score:.3f})'
+            if score <= 0.2:
+                # Weak positive or neutral → adjust to strong negative
+                score = min(score, -0.6)
+                metadata['calibrated'] = True
+                metadata['calibration_reason'] = f'rating_1_adjust (from {original_score:.3f})'
+            elif score > 0.2:
+                # Strong positive text but rating 1 → pull towards neutral
+                score = score - 0.4
+                metadata['calibrated'] = True
+                metadata['calibration_reason'] = f'rating_1_dampen_conflict (from {original_score:.3f})'
     
     return score, pos_kw, neg_kw, metadata
 
@@ -922,62 +1008,60 @@ def calculate_destination_score(destination) -> Dict[str, float]:
 
 def get_similar_destinations(destination, limit: int = 4) -> List:
     """
-    Gá»£i Ã½ Ä‘á»‹a Ä‘iá»ƒm tÆ°Æ¡ng tá»± dá»±a trÃªn:
-    - CÃ¹ng loáº¡i hÃ¬nh du lá»‹ch
-    - CÃ¹ng khu vá»±c
-    - Má»©c giÃ¡ tÆ°Æ¡ng Ä‘Æ°Æ¡ng
-    - Äiá»ƒm Ä‘Ã¡nh giÃ¡ cao
+    Gợi ý địa điểm tương tự dựa trên:
+    - Cùng loại hình du lịch
+    - Cùng khu vực
+    - Mức giá tương đương
+    - Điểm đánh giá cao
     
     Args:
-        destination: Destination hiá»‡n táº¡i
-        limit: Sá»‘ lÆ°á»£ng gá»£i Ã½ tá»‘i Ä‘a
+        destination: Destination hiện tại
+        limit: Số lượng gợi ý tối đa
         
     Returns:
-        List cÃ¡c destination tÆ°Æ¡ng tá»±
+        List các destination tương tự
     """
     from .models import Destination
     from django.db.models import Q, F, Value, FloatField
     from django.db.models.functions import Abs
     
-    # TÃ¬m cÃ¡c Ä‘á»‹a Ä‘iá»ƒm khÃ¡c (khÃ´ng pháº£i Ä‘á»‹a Ä‘iá»ƒm hiá»‡n táº¡i)
+    # Tìm các địa điểm khác (không phải địa điểm hiện tại)
     queryset = Destination.objects.select_related('recommendation').exclude(id=destination.id)
     
     similar = []
     
-    # 1. CÃ¹ng loáº¡i hÃ¬nh du lá»‹ch (Æ°u tiÃªn cao nháº¥t)
-    # Lấy danh sách travel_type IDs của destination hiện tại (ManyToMany)
-    current_type_ids = list(destination.travel_type.values_list('id', flat=True))
-    
-    # Tìm các địa điểm có cùng travel_type
-    if current_type_ids:
-        same_type = queryset.filter(travel_type__id__in=current_type_ids).distinct()
+    # 1. Cùng loại hình du lịch (ưu tiên cao nhất)
+    # travel_type là ManyToManyField, cần lấy danh sách IDs
+    travel_type_ids = list(destination.travel_type.values_list('id', flat=True))
+    if travel_type_ids:
+        same_type = queryset.filter(travel_type__in=travel_type_ids).distinct()
     else:
         same_type = queryset.none()
     
-    # 2. CÃ¹ng khu vá»±c
+    # 2. Cùng khu vực
     same_location = queryset.filter(location=destination.location)
     
-    # Gá»™p vÃ  tÃ­nh Ä‘iá»ƒm tÆ°Æ¡ng Ä‘á»“ng
+    # Gộp và tính điểm tương đồng
     candidates = {}
     
-    # Äiá»ƒm cho cÃ¹ng loáº¡i hÃ¬nh
+    # Điểm cho cùng loại hình
     for dest in same_type[:10]:
         candidates[dest.id] = {'dest': dest, 'score': 50}
     
-    # Äiá»ƒm cho cÃ¹ng khu vá»±c
+    # Điểm cho cùng khu vực
     for dest in same_location[:10]:
         if dest.id in candidates:
             candidates[dest.id]['score'] += 40
         else:
             candidates[dest.id] = {'dest': dest, 'score': 40}
     
-    # ThÃªm Ä‘iá»ƒm recommendation
+    # Thêm điểm recommendation
     for dest_id, data in candidates.items():
         dest = data['dest']
         if hasattr(dest, 'recommendation') and dest.recommendation:
             data['score'] += dest.recommendation.overall_score * 0.1
     
-    # Sáº¯p xáº¿p theo Ä‘iá»ƒm vÃ  láº¥y top
+    # Sắp xếp theo điểm và lấy top
     sorted_candidates = sorted(candidates.values(), key=lambda x: x['score'], reverse=True)
     
     return [c['dest'] for c in sorted_candidates[:limit]]
@@ -985,24 +1069,24 @@ def get_similar_destinations(destination, limit: int = 4) -> List:
 
 def get_personalized_recommendations(user_preferences: Dict, limit: int = 6) -> List:
     """
-    Gá»£i Ã½ cÃ¡ nhÃ¢n hÃ³a dá»±a trÃªn sá»Ÿ thÃ­ch ngÆ°á»i dÃ¹ng
+    Gợi ý cá nhân hóa dựa trên sở thích người dùng
     
     Args:
-        user_preferences: Dict chá»©a sá»Ÿ thÃ­ch
-            - travel_types: List loáº¡i hÃ¬nh yÃªu thÃ­ch
-            - locations: List Ä‘á»‹a Ä‘iá»ƒm yÃªu thÃ­ch
-            - max_price: NgÃ¢n sÃ¡ch tá»‘i Ä‘a
-        limit: Sá»‘ lÆ°á»£ng gá»£i Ã½
+        user_preferences: Dict chứa sở thích
+            - travel_types: List loại hình yêu thích
+            - locations: List địa điểm yêu thích
+            - max_price: Ngân sách tối đa
+        limit: Số lượng gợi ý
         
     Returns:
-        List cÃ¡c destination phÃ¹ há»£p
+        List các destination phù hợp
     """
     from .models import Destination
     from django.db.models import Q
     
     queryset = Destination.objects.select_related('recommendation')
     
-    # Filter theo sá»Ÿ thÃ­ch
+    # Filter theo sở thích
     filters = Q()
     
     travel_types = user_preferences.get('travel_types', [])
@@ -1020,12 +1104,12 @@ def get_personalized_recommendations(user_preferences: Dict, limit: int = 6) -> 
         filters &= loc_filter
     
     max_price = user_preferences.get('max_price')
-    # Bá» filter theo giÃ¡ vÃ¬ Ä‘Ã£ chuyá»ƒn sang entrance_fee
+    # Bỏ filter theo giá vì đã chuyển sang entrance_fee
     
     if filters:
         queryset = queryset.filter(filters)
     
-    # Sáº¯p xáº¿p theo Ä‘iá»ƒm gá»£i Ã½
+    # Sắp xếp theo điểm gợi ý
     queryset = queryset.order_by('-recommendation__overall_score')
     
     return list(queryset[:limit])
@@ -1033,14 +1117,14 @@ def get_personalized_recommendations(user_preferences: Dict, limit: int = 6) -> 
 
 def get_seasonal_recommendations(month: int = None, limit: int = 6) -> List:
     """
-    Gá»£i Ã½ theo mÃ¹a/thá»i Ä‘iá»ƒm trong nÄƒm
+    Gợi ý theo mùa/thời điểm trong năm
     
     Args:
-        month: ThÃ¡ng (1-12), máº·c Ä‘á»‹nh lÃ  thÃ¡ng hiá»‡n táº¡i
-        limit: Sá»‘ lÆ°á»£ng gá»£i Ã½
+        month: Tháng (1-12), mặc định là tháng hiện tại
+        limit: Số lượng gợi ý
         
     Returns:
-        List cÃ¡c destination phÃ¹ há»£p vá»›i mÃ¹a
+        List các destination phù hợp với mùa
     """
     from .models import Destination
     from datetime import datetime
@@ -1050,41 +1134,41 @@ def get_seasonal_recommendations(month: int = None, limit: int = 6) -> List:
     
     queryset = Destination.objects.select_related('recommendation')
     
-    # Gá»£i Ã½ theo mÃ¹a á»Ÿ Viá»‡t Nam
-    if month in [12, 1, 2]:  # MÃ¹a Ä‘Ã´ng - Táº¿t
-        # Æ¯u tiÃªn: Miá»n Báº¯c (hoa Ä‘Ã o), ÄÃ  Láº¡t (hoa mai anh Ä‘Ã o)
+    # Gợi ý theo mùa ở Việt Nam
+    if month in [12, 1, 2]:  # Mùa đông - Tết
+        # Ưu tiên: Miền Bắc (hoa đào), Đà Lạt (hoa mai anh đào)
         queryset = queryset.filter(
-            Q(location__icontains='HÃ  Ná»™i') |
+            Q(location__icontains='Hà Nội') |
             Q(location__icontains='Sa Pa') |
-            Q(location__icontains='ÄÃ  Láº¡t') |
-            Q(travel_type__icontains='NÃºi')
+            Q(location__icontains='Đà Lạt') |
+            Q(travel_type__icontains='Núi')
         )
-    elif month in [3, 4, 5]:  # MÃ¹a xuÃ¢n
-        # Æ¯u tiÃªn: Miá»n Trung, biá»ƒn
+    elif month in [3, 4, 5]:  # Mùa xuân
+        # Ưu tiên: Miền Trung, biển
         queryset = queryset.filter(
-            Q(location__icontains='ÄÃ  Náºµng') |
-            Q(location__icontains='Huáº¿') |
-            Q(location__icontains='Há»™i An') |
-            Q(travel_type__icontains='Biá»ƒn')
+            Q(location__icontains='Đà Nẵng') |
+            Q(location__icontains='Huế') |
+            Q(location__icontains='Hội An') |
+            Q(travel_type__icontains='Biển')
         )
-    elif month in [6, 7, 8]:  # MÃ¹a hÃ¨
-        # Æ¯u tiÃªn: Biá»ƒn, Ä‘áº£o
+    elif month in [6, 7, 8]:  # Mùa hè
+        # Ưu tiên: Biển, đảo
         queryset = queryset.filter(
             Q(location__icontains='Nha Trang') |
-            Q(location__icontains='PhÃº Quá»‘c') |
-            Q(location__icontains='Háº¡ Long') |
-            Q(travel_type__icontains='Biá»ƒn')
+            Q(location__icontains='Phú Quốc') |
+            Q(location__icontains='Hạ Long') |
+            Q(travel_type__icontains='Biển')
         )
-    else:  # MÃ¹a thu (9, 10, 11)
-        # Æ¯u tiÃªn: TÃ¢y NguyÃªn, miá»n Báº¯c
+    else:  # Mùa thu (9, 10, 11)
+        # Ưu tiên: Tây Nguyên, miền Bắc
         queryset = queryset.filter(
-            Q(location__icontains='ÄÃ  Láº¡t') |
-            Q(location__icontains='HÃ  Ná»™i') |
-            Q(location__icontains='Ninh BÃ¬nh') |
-            Q(travel_type__icontains='NÃºi')
+            Q(location__icontains='Đà Lạt') |
+            Q(location__icontains='Hà Nội') |
+            Q(location__icontains='Ninh Bình') |
+            Q(travel_type__icontains='Núi')
         )
     
-    # Sáº¯p xáº¿p theo Ä‘iá»ƒm
+    # Sắp xếp theo điểm
     queryset = queryset.order_by('-recommendation__overall_score')
     
     return list(queryset[:limit])
@@ -1092,30 +1176,30 @@ def get_seasonal_recommendations(month: int = None, limit: int = 6) -> List:
 
 def get_personalized_for_user(user, limit: int = 6) -> List:
     """
-    Gá»£i Ã½ cÃ¡ nhÃ¢n hÃ³a dá»±a trÃªn sá»Ÿ thÃ­ch Ä‘Ã£ lÆ°u cá»§a user
+    Gợi ý cá nhân hóa dựa trên sở thích đã lưu của user
     
     Args:
         user: User object
-        limit: Sá»‘ lÆ°á»£ng gá»£i Ã½
+        limit: Số lượng gợi ý
         
     Returns:
-        List cÃ¡c destination phÃ¹ há»£p vá»›i sá»Ÿ thÃ­ch user
+        List các destination phù hợp với sở thích user
     """
     from .models import Destination
     from users.models import TravelPreference
     from django.db.models import Q
     
-    # Láº¥y sá»Ÿ thÃ­ch cá»§a user
+    # Lấy sở thích của user
     preferences = TravelPreference.objects.filter(user=user)
     
     if not preferences.exists():
-        # Náº¿u chÆ°a cÃ³ sá»Ÿ thÃ­ch, tráº£ vá» top destinations
+        # Nếu chưa có sở thích, trả về top destinations
         return list(
             Destination.objects.select_related('recommendation')
             .order_by('-recommendation__overall_score')[:limit]
         )
     
-    # Láº¥y danh sÃ¡ch travel_type vÃ  location yÃªu thÃ­ch
+    # Lấy danh sách travel_type và location yêu thích
     travel_types = list(preferences.values_list('travel_type', flat=True).distinct())
     locations = list(preferences.values_list('location', flat=True).distinct())
     
@@ -1124,7 +1208,7 @@ def get_personalized_for_user(user, limit: int = 6) -> List:
     
     filters = Q()
     
-    # Filter theo loáº¡i hÃ¬nh yÃªu thÃ­ch
+    # Filter theo loại hình yêu thích
     if travel_types:
         type_filter = Q()
         for t in travel_types:
@@ -1133,7 +1217,7 @@ def get_personalized_for_user(user, limit: int = 6) -> List:
         if type_filter:
             filters |= type_filter
     
-    # Filter theo Ä‘á»‹a Ä‘iá»ƒm yÃªu thÃ­ch
+    # Filter theo địa điểm yêu thích
     if locations:
         loc_filter = Q()
         for loc in locations:
@@ -1145,9 +1229,7 @@ def get_personalized_for_user(user, limit: int = 6) -> List:
     if filters:
         queryset = queryset.filter(filters)
     
-    # Sáº¯p xáº¿p theo Ä‘iá»ƒm gá»£i Ã½
+    # Sắp xếp theo điểm gợi ý
     queryset = queryset.order_by('-recommendation__overall_score')
     
     return list(queryset[:limit])
-
-

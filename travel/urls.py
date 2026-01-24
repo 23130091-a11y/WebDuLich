@@ -33,6 +33,9 @@ urlpatterns = [
     path('api/review/', views.api_submit_review, name='api_submit_review'),
     path('api/review/vote/', views.api_vote_review, name='api_vote_review'),
     path('api/review/report/', views.api_report_review, name='api_report_review'),
+    
+    # Sentiment Analysis API
+    path('api/analyze-sentiment/', views.api_analyze_sentiment, name='api_analyze_sentiment'),
 
     #profile account
     path('accountProfile/', views.account_profile, name='profile'),

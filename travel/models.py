@@ -323,6 +323,11 @@ class TourReview(models.Model):
     is_verified_user = models.BooleanField(default=False, verbose_name="Tài khoản đã xác minh")
     is_verified_purchase = models.BooleanField(default=False, verbose_name="Khách đã trải nghiệm tour")
     
+    # Sentiment Analysis - Phân tích cảm xúc
+    sentiment_score = models.FloatField(default=0.0, verbose_name="Điểm cảm xúc (-1 đến 1)")
+    positive_keywords = models.JSONField(default=list, blank=True, verbose_name="Từ khóa tích cực")
+    negative_keywords = models.JSONField(default=list, blank=True, verbose_name="Từ khóa tiêu cực")
+    
     # Thêm trạng thái để Admin có thể ẩn/hiện nhận xét
     STATUS_CHOICES = [
         ('pending', 'Chờ duyệt'),
