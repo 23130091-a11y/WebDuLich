@@ -398,7 +398,7 @@
                                     </div>
                                 </h6>
                                 
-
+                                {% if user.is_authenticated %}
                                 <form id="reviewFormSubmit">
                                     <input type="hidden" id="destinationId" value="{{ destination.id }}">
                                     <div class="row g-3">
