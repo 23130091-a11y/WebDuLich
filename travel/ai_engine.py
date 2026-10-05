@@ -261,30 +261,38 @@ class SentimentAnalyzer:
         
         try:
             logger.info("Loading PhoBERT sentiment model...")
-            
+
             # Try to load fine-tuned model first
-            finetuned_path = os.path.join(settings.BASE_DIR, 'travel', 'models', 'phobert-travel-sentiment-final')
-            
+            finetuned_path = os.path.join(settings.BASE_DIR, 'travel', 'phobert-travel-sentiment-final')
+
             if os.path.exists(finetuned_path):
-                model_name = finetuned_path
-                logger.info(f"✅ Using FINE-TUNED model from: {finetuned_path}")
-            else:
-                # Fallback to original model
-                model_name = "wonrax/phobert-base-vietnamese-sentiment"
-                logger.info(f"⚠️  Fine-tuned model not found, using original: {model_name}")
-            
-            self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-            self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
-            self.model.to(self.device)
-            self.model.eval()
-            
+                try:
+                    self._load_from(finetuned_path)
+                    logger.info(f"✅ Using FINE-TUNED model from: {finetuned_path}")
+                    self.model_loaded = True
+                    logger.info(f"PhoBERT model loaded successfully on {self.device}")
+                    return
+                except Exception as e:
+                    # Weights hỏng/thiếu (vd: Git LFS pointer chưa pull) — không
+                    # bỏ cuộc, vẫn còn model public trên HF hub làm fallback.
+                    logger.error(f"Fine-tuned model failed to load: {e}")
+
+            self._load_from("wonrax/phobert-base-vietnamese-sentiment")
+            logger.info("✅ Using ORIGINAL model from HF hub (wonrax/phobert-base-vietnamese-sentiment)")
             self.model_loaded = True
             logger.info(f"PhoBERT model loaded successfully on {self.device}")
-            
+
         except Exception as e:
             logger.error(f"Failed to load PhoBERT model: {e}")
             logger.warning("Will use rule-based sentiment analysis")
             self.model_loaded = False
+
+    def _load_from(self, model_name: str):
+        """Load tokenizer + model từ đường dẫn/HF hub và setup inference mode."""
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
+        self.model.to(self.device)
+        self.model.eval()
     
     def analyze(self, text: str) -> Tuple[float, List[str], List[str], Dict[str, Any]]:
         """

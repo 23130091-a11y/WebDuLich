@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from django.contrib.auth.password_validation import validate_password
+
 from .models import User, TravelPreference
 
 class UserSerializer(serializers.ModelSerializer):
@@ -7,6 +9,12 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'password', 'avatar') #
+
+    def validate_password(self, value):
+        # Chạy bộ validator Django (độ dài, mật khẩu phổ biến, toàn số...)
+        # — trước đây chỉ check min_length nên "123456" vẫn đăng ký được.
+        validate_password(value)
+        return value
 
     def create(self, validated_data):
         # Tự tạo username nếu không có

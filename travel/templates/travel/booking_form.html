@@ -9,42 +9,54 @@
                 <div class="card-body p-4">
                     <h2 class="fw-bold mb-4">Thông tin đặt Tour</h2>
                     
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+                        </div>
+                    {% endif %}
+
                     <form method="POST" id="bookingForm">
                         {% csrf_token %}
-                        
+
                         <div class="row g-3">
                             <div class="col-md-12">
                                 <label class="form-label fw-bold">Họ và tên</label>
                                 {{ form.full_name }}
+                                {% for error in form.full_name.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Số điện thoại</label>
                                 {{ form.phone_number }}
+                                {% for error in form.phone_number.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Email</label>
                                 {{ form.email }}
+                                {% for error in form.email.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                             </div>
-                            
+
                             <div class="col-md-12">
                                 <label class="form-label fw-bold">Ngày khởi hành dự kiến</label>
                                 {{ form.departure_date }}
+                                {% for error in form.departure_date.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Số người lớn</label>
                                 {{ form.number_of_adults }}
+                                {% for error in form.number_of_adults.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                                 <small class="text-muted">Giá: {{ tour.price|floatformat:0 }}đ / người</small>
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Số trẻ em (Dưới 12 tuổi)</label>
                                 {{ form.number_of_children }}
+                                {% for error in form.number_of_children.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                                 <small class="text-muted">Giá: 70% giá người lớn</small>
                             </div>
-                            
+
                             <div class="col-md-12">
                                 <label class="form-label fw-bold">Yêu cầu đặc biệt</label>
                                 {{ form.special_requests }}

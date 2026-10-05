@@ -196,6 +196,22 @@
             return `hsl(${hue}, 65%, 50%)`;
         }
 
+        // Đọc cookie (dùng cho X-CSRFToken khi gọi API session-based)
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== "") {
+                const cookies = document.cookie.split(";");
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === name + "=") {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
         // Hàm cập nhật giao diện Header dựa trên trạng thái đăng nhập
         function updateHeaderUI() {
             const access = localStorage.getItem("access");
@@ -263,6 +279,7 @@
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
+                                "X-CSRFToken": getCookie("csrftoken") || ""
                             },
                             body: JSON.stringify({ refresh: refreshToken || "" })
                         });

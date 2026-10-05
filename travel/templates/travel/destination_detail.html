@@ -908,19 +908,23 @@ document.addEventListener('DOMContentLoaded', function() {
     // Marker điểm đến
     L.marker([{{ destination.latitude }}, {{ destination.longitude }}])
         .addTo(map)
-        .bindPopup('<b>{{ destination.name }}</b><br>{{ destination.location }}')
+        .bindPopup('<b>{{ destination.name|escapejs }}</b><br>{{ destination.location|escapejs }}')
         .openPopup();
 
     // Vẽ đường đi nếu có
     {% if route_info and from_coords %}
-    // Marker điểm xuất phát
+    // Marker điểm xuất phát — from_location là input user (query param), phải escapejs
     L.marker([{{ from_coords.lat }}, {{ from_coords.lon }}])
         .addTo(map)
-        .bindPopup('<b>Điểm xuất phát</b><br>{{ from_location }}');
+        .bindPopup('<b>Điểm xuất phát</b><br>{{ from_location|escapejs }}');
 
     // Vẽ đường đi
     {% if route_info.geometry %}
-    const routeCoords = {{ route_info.geometry|safe }};
+    {{ route_info.geometry|json_script:"route-coords" }}
+    let routeCoords = [];
+    try {
+        routeCoords = JSON.parse(document.getElementById('route-coords').textContent);
+    } catch (e) { console.error("Lỗi parse route:", e); }
     const routeLine = routeCoords.map(coord => [coord[1], coord[0]]);
     L.polyline(routeLine, { color: 'blue', weight: 4, opacity: 0.7 }).addTo(map);
 
@@ -961,26 +965,30 @@ document.addEventListener('DOMContentLoaded', function() {
             const container = document.getElementById(elementId);
             if (!container) return;
 
-            // Lấy dữ liệu từ Django context
+            // Lấy dữ liệu từ Django context (json_script render ngay dưới)
             let nearbyData;
             try {
-                nearbyData = (type === 'hotel') ?
-                    JSON.parse('{{ nearby_hotels_json|safe }}') :
-                    JSON.parse('{{ nearby_restaurants_json|safe }}');
+                const el = document.getElementById(
+                    type === 'hotel' ? 'nearby-hotels' : 'nearby-restaurants');
+                if (!el) return;
+                nearbyData = JSON.parse(el.textContent);
             } catch (e) {
                 console.error("Lỗi parse JSON:", e);
                 return;
             }
 
+            // Escape HTML cho mọi giá trị chèn vào DOM (chống XSS từ data API)
+            const esc = s => String(s ?? '').replace(/[&<>"']/g,
+                c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
             let htmlHeader = `
-            <button onclick="openMapModal('${nearbyData.google_maps_url}')" 
+            <button onclick="openMapModal('${esc(nearbyData.google_maps_url)}')"
                     class="btn btn-sm ${type === 'hotel' ? 'btn-outline-primary' : 'btn-outline-danger'} w-100 mb-3 shadow-sm">
-                <i class="fa-solid fa-map-location-dot me-2"></i> Xem ${categoryName} trên bản đồ
+                <i class="fa-solid fa-map-location-dot me-2"></i> Xem ${esc(categoryName)} trên bản đồ
             </button>
             <div class="d-flex flex-wrap gap-2 mb-2">
                 ${nearbyData.suggestions.map(tip => `
-                    <a href="${tip.url}" target="_blank" class="btn btn-xs btn-light border" style="font-size: 0.75rem;">
-                        ${tip.text}
+                    <a href="${esc(tip.url)}" target="_blank" rel="noopener" class="btn btn-xs btn-light border" style="font-size: 0.75rem;">
+                        ${esc(tip.text)}
                     </a>
                 `).join('')}
             </div>
@@ -1008,11 +1016,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         listHtml += `
                         <div class="list-group-item px-0 border-0 d-flex justify-content-between align-items-center">
-                            <div style="cursor:pointer" class="flex-grow-1" onclick="openMapModal('${itemUrl}')">
-                                <div class="fw-bold small" style="font-size: 0.85rem;">${item.name}</div>
-                                <div class="text-muted" style="font-size: 0.7rem;">${(item.distance / 1000).toFixed(1)} km</div>
+                            <div style="cursor:pointer" class="flex-grow-1" onclick="openMapModal('${esc(itemUrl)}')">
+                                <div class="fw-bold small" style="font-size: 0.85rem;">${esc(item.name)}</div>
+                                <div class="text-muted" style="font-size: 0.7rem;">${esc((item.distance / 1000).toFixed(1))} km</div>
                             </div>
-                            <button onclick="openMapModal('${itemUrl}')" class="btn btn-link btn-sm p-0 text-danger">
+                            <button onclick="openMapModal('${esc(itemUrl)}')" class="btn btn-link btn-sm p-0 text-danger">
                                 <i class="fa-solid fa-location-arrow"></i>
                             </button>
                         </div>
@@ -1132,9 +1140,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (isSpamming('comment', 30)) return;
 
             const submitBtn = document.getElementById('submitReviewBtn');
-            const originalText = submitBtn.innerHTML;
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang gửi...';
+            const spinner = document.createElement('i');
+            spinner.className = 'fa-solid fa-spinner fa-spin me-2';
+            const btnLabel = document.createTextNode('Đang gửi...');
+            const savedNodes = [...submitBtn.childNodes];
+            submitBtn.replaceChildren(spinner, btnLabel);
+            const restoreBtn = () => submitBtn.replaceChildren(...savedNodes);
 
             const formData = {
                 destination_id: document.getElementById('destinationId').value,
@@ -1158,7 +1170,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!response.ok) {
                     showError(data.error || "Có lỗi xảy ra");
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
+                    restoreBtn();
                     return;
                 }
 
@@ -1192,32 +1204,35 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
 
                     // 2. CHÈN NHẬN XÉT MỚI VÀO DANH SÁCH PHÍA DƯỚI (Không cần F5)
+                    // DOM API thuần (không innerHTML) — textContent tự escape, chống XSS.
                     const reviewContainer = document.getElementById('reviewsList');
                     if (reviewContainer) {
-                        const now = new Date();
-                        const timeStr = "Vừa xong";
-                        const starsHtml = '★'.repeat(formData.rating) + '☆'.repeat(5 - formData.rating);
-
-                        const newReviewHtml = `
-                        <div class="review-item mb-4 pb-4 border-bottom shadow-sm p-3 rounded bg-light" style="border-left: 5px solid #ffc107; animation: fadeIn 0.5s;">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h6 class="fw-bold mb-0"><i class="fa-solid fa-user-circle me-2"></i>${formData.author_name}</h6>
-                                <small class="text-muted">${timeStr}</small>
-                            </div>
-                            <div class="text-warning mb-2">${starsHtml}</div>
-                            <p class="mb-0 text-dark">${formData.comment}</p>
-                            <div class="mt-2">
-                                <small class="text-muted"><i class="fa-regular fa-thumbs-up me-1"></i>Hữu ích (0)</small>
-                            </div>
-                        </div>
-                    `;
-                        // Chèn vào đầu danh sách
-                        reviewContainer.insertAdjacentHTML('afterbegin', newReviewHtml);
+                        const rating = Math.min(5, Math.max(1, parseInt(formData.rating) || 5));
+                        const item = document.createElement('div');
+                        item.className = 'review-item mb-4 pb-4 border-bottom shadow-sm p-3 rounded bg-light';
+                        item.style.borderLeft = '5px solid #ffc107';
+                        const head = document.createElement('div');
+                        head.className = 'd-flex justify-content-between align-items-center mb-2';
+                        const who = document.createElement('h6');
+                        who.className = 'fw-bold mb-0';
+                        who.textContent = formData.author_name;
+                        const when = document.createElement('small');
+                        when.className = 'text-muted';
+                        when.textContent = 'Vừa xong';
+                        head.append(who, when);
+                        const stars = document.createElement('div');
+                        stars.className = 'text-warning mb-2';
+                        stars.textContent = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+                        const body = document.createElement('p');
+                        body.className = 'mb-0 text-dark';
+                        body.textContent = formData.comment;
+                        item.append(head, stars, body);
+                        reviewContainer.prepend(item);
                     }
 
                     // 3. THÔNG BÁO THÀNH CÔNG VÀ ẨN FORM
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
+                    restoreBtn();
 
                     // Hiển thị thông báo thành công
                     const successMsg = document.getElementById('reviewSuccessMsg');
@@ -1243,7 +1258,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (err) {
                 showError('Lỗi kết nối: ' + err.message);
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
+                restoreBtn();
             }
         });
     } // End if (form)
@@ -1337,43 +1352,40 @@ document.addEventListener('DOMContentLoaded', function() {
     {% if destination.latitude and destination.longitude %}
     (async function loadNearbyPlaces() {
         try {
+            const esc2 = s => String(s ?? '').replace(/[&<>"']/g,
+                c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
             const locationName = encodeURIComponent('{{ destination.location }}');
             const response = await fetch(`/api/nearby/?lat={{ destination.latitude }}&lon={{ destination.longitude }}&location=${locationName}`);
             const data = await response.json();
 
-            // Render hotels
-            const hotelsContainer = document.getElementById('nearbyHotels');
-            if (data.hotels) {
-                let hotelsHtml = `
-                    <a href="${data.hotels.google_maps_url}" target="_blank" class="btn btn-outline-primary btn-sm w-100 mb-3">
-                        <i class="fa-solid fa-map-location-dot me-1"></i> Tìm trên Google Maps
-                    </a>
-                    <p class="small text-muted mb-2">Hoặc tìm trên:</p>
-                    <div class="d-flex flex-wrap gap-2">
-                `;
-                data.hotels.suggestions.forEach(s => {
-                    hotelsHtml += `<a href="${s.url}" target="_blank" class="btn btn-outline-secondary btn-sm">${s.text}</a>`;
+            // Render hotels/restaurants — DOM API thuần (không innerHTML).
+            // Chỉ chấp nhận URL maps/đối tác http(s) — chặn javascript: URL.
+            const safeUrl = u => /^https?:\/\//i.test(String(u || '')) ? String(u) : '#';
+            const renderNearby = (containerId, info, btnClass) => {
+                const box = document.getElementById(containerId);
+                if (!box || !info) return;
+                box.replaceChildren();
+                const mapLink = document.createElement('a');
+                mapLink.href = safeUrl(info.google_maps_url);
+                mapLink.target = '_blank'; mapLink.rel = 'noopener';
+                mapLink.className = `btn ${btnClass} btn-sm w-100 mb-3`;
+                mapLink.textContent = 'Tìm trên Google Maps';
+                const hint = document.createElement('p');
+                hint.className = 'small text-muted mb-2';
+                hint.textContent = 'Hoặc tìm trên:';
+                const wrap = document.createElement('div');
+                wrap.className = 'd-flex flex-wrap gap-2';
+                (info.suggestions || []).forEach(s => {
+                    const a = document.createElement('a');
+                    a.href = safeUrl(s.url); a.target = '_blank'; a.rel = 'noopener';
+                    a.className = 'btn btn-outline-secondary btn-sm';
+                    a.textContent = s.text;
+                    wrap.append(a);
                 });
-                hotelsHtml += '</div>';
-                hotelsContainer.innerHTML = hotelsHtml;
-            }
-
-            // Render restaurants
-            const restaurantsContainer = document.getElementById('nearbyRestaurants');
-            if (data.restaurants) {
-                let restaurantsHtml = `
-                    <a href="${data.restaurants.google_maps_url}" target="_blank" class="btn btn-outline-danger btn-sm w-100 mb-3">
-                        <i class="fa-solid fa-map-location-dot me-1"></i> Tìm trên Google Maps
-                    </a>
-                    <p class="small text-muted mb-2">Hoặc tìm trên:</p>
-                    <div class="d-flex flex-wrap gap-2">
-                `;
-                data.restaurants.suggestions.forEach(s => {
-                    restaurantsHtml += `<a href="${s.url}" target="_blank" class="btn btn-outline-secondary btn-sm">${s.text}</a>`;
-                });
-                restaurantsHtml += '</div>';
-                restaurantsContainer.innerHTML = restaurantsHtml;
-            }
+                box.append(mapLink, hint, wrap);
+            };
+            renderNearby('nearbyHotels', data.hotels, 'btn-outline-primary');
+            renderNearby('nearbyRestaurants', data.restaurants, 'btn-outline-danger');
         } catch (err) {
             console.error('Error loading nearby places:', err);
             document.getElementById('nearbyHotels').innerHTML = '<p class="text-muted small mb-0">Không thể tải dữ liệu.</p>';
@@ -1382,6 +1394,7 @@ document.addEventListener('DOMContentLoaded', function() {
     })();
     {% endif %}
 </script>
-
+{{ nearby_hotels|json_script:"nearby-hotels" }}
+{{ nearby_restaurants|json_script:"nearby-restaurants" }}
 
 {% endblock %}

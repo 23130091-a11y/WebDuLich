@@ -6,7 +6,7 @@ Cải thiện v2: Thêm dry-run, progress tracking, và thống kê
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from travel.models import Destination, Review
-from travel.ai_module import analyze_sentiment
+from travel.ai_engine import analyze_sentiment
 import random
 
 
@@ -133,8 +133,8 @@ class Command(BaseCommand):
                         # Tên người đánh giá
                         author_name = random.choice(vietnamese_names)
 
-                        # Phân tích sentiment
-                        sentiment_score, pos_keywords, neg_keywords = analyze_sentiment(comment)
+                        # Phân tích sentiment (trả về 4 giá trị: score, pos, neg, meta)
+                        sentiment_score, pos_keywords, neg_keywords, _ = analyze_sentiment(comment)
 
                         Review.objects.create(
                             destination=dest,

@@ -875,6 +875,10 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
+    // Escape chuỗi trước khi nhúng vào innerHTML (chống XSS từ dữ liệu DB/API)
+    function esc(value) {
+        return String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+    }
     document.addEventListener('DOMContentLoaded', function () {
         // Lấy đối tượng form và nút phía trên
         const reviewFormEl = document.getElementById('reviewForm');
@@ -921,7 +925,7 @@
                 attribution: '© OpenStreetMap'
             }).addTo(map);
             L.marker([lat, lon]).addTo(map)
-                .bindPopup("<b>Điểm tập trung:</b><br>{{ tour.meeting_point|default:tour.name }}")
+                .bindPopup("<b>Điểm tập trung:</b><br>{{ tour.meeting_point|default:tour.name|escapejs }}")
                 .openPopup();
             setTimeout(() => { map.invalidateSize(); }, 400);
         }
@@ -980,11 +984,11 @@
                         div.className = 'list-group-item list-group-item-action mb-2 border-0 shadow-sm rounded';
                         div.innerHTML = `
                         <div class="d-flex justify-content-between align-items-center">
-                            <div style="cursor:pointer" class="item-info" onclick="openMapModal('${itemGMapUrl}')">
-                                <div class="fw-bold small">${item.name}</div>
-                                <small class="text-muted">${item.address || 'Đang cập nhật...'}</small>
+                            <div style="cursor:pointer" class="item-info" onclick="openMapModal('${esc(itemGMapUrl)}')">
+                                <div class="fw-bold small">${esc(item.name)}</div>
+                                <small class="text-muted">${esc(item.address || 'Đang cập nhật...')}</small>
                             </div>
-                            <button onclick="openMapModal('${itemGMapUrl}')" class="btn btn-sm btn-light text-danger border">
+                            <button onclick="openMapModal('${esc(itemGMapUrl)}')" class="btn btn-sm btn-light text-danger border">
                                 <i class="fa-solid fa-location-dot"></i>
                             </button>
                         </div>
@@ -992,7 +996,7 @@
 
                         if (typeof map !== 'undefined' && map) {
                             L.circleMarker([iLat, iLon], { radius: 5, color: type === 'hotel' ? 'blue' : 'red' }).addTo(map)
-                                .bindPopup(item.name);
+                                .bindPopup(esc(item.name));
                         }
                         container.appendChild(div);
                     });
@@ -1476,13 +1480,13 @@
 
                 if (data.pos_keywords && data.pos_keywords.length > 0) {
                     data.pos_keywords.forEach(kw => {
-                        posContainer.innerHTML += `<span class="badge bg-success-subtle text-success me-1 mb-1"><i class="fa-solid fa-plus me-1"></i>${kw}</span>`;
+                        posContainer.innerHTML += `<span class="badge bg-success-subtle text-success me-1 mb-1"><i class="fa-solid fa-plus me-1"></i>${esc(kw)}</span>`;
                     });
                 }
 
                 if (data.neg_keywords && data.neg_keywords.length > 0) {
                     data.neg_keywords.forEach(kw => {
-                        negContainer.innerHTML += `<span class="badge bg-danger-subtle text-danger me-1 mb-1"><i class="fa-solid fa-minus me-1"></i>${kw}</span>`;
+                        negContainer.innerHTML += `<span class="badge bg-danger-subtle text-danger me-1 mb-1"><i class="fa-solid fa-minus me-1"></i>${esc(kw)}</span>`;
                     });
                 }
 

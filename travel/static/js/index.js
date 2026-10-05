@@ -36,9 +36,9 @@ function displaySearchHistory(history) {
         const countBadge = item.search_count > 1 ? `<span class="search-count">${item.search_count} lần</span>` : '';
         historyItem.innerHTML = `
             <i class="fa-solid fa-search text-muted"></i>
-            <span>${item.query}</span>
+            <span>${esc(item.query)}</span>
             ${countBadge}
-            <button type="button" class="btn-close delete-history" data-query="${item.query}" title="Xóa"></button>
+            <button type="button" class="btn-close delete-history" data-query="${esc(item.query)}" title="Xóa"></button>
         `;
         historyItem.querySelector('.delete-history').addEventListener('click', (e) => {
             e.preventDefault();
@@ -73,6 +73,46 @@ if (clearAllHistoryBtn) {
             .catch(err => console.error('Error clearing history:', err));
         }
     });
+}
+
+// Escape chuỗi trước khi nhúng vào innerHTML — dữ liệu user/DB không được
+// tin tưởng (self-XSS qua search query, tên địa điểm, email...).
+function esc(value) {
+    return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+}
+
+// Gọi API kèm Bearer token; khi 401 → refresh access token rồi retry đúng 1 lần;
+// refresh cũng thất bại → logout (access token chỉ sống 15 phút).
+async function authFetch(url, options = {}) {
+    const doFetch = () => fetch(url, {
+        ...options,
+        headers: { ...(options.headers || {}), 'Authorization': `Bearer ${localStorage.getItem('access')}` }
+    });
+    let res = await doFetch();
+    if (res.status === 401) {
+        const refresh = localStorage.getItem('refresh');
+        if (refresh) {
+            try {
+                const r = await fetch('/auth/token/refresh/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refresh })
+                });
+                if (r.ok) {
+                    const data = await r.json();
+                    localStorage.setItem('access', data.access);
+                    return await doFetch();
+                }
+            } catch (e) { console.error('Token refresh error:', e); }
+        }
+        logout();
+    }
+    return res;
 }
 
 function getCsrfToken() {
@@ -117,7 +157,7 @@ function setupEmailSuggestions() {
         input.addEventListener('focus', () => {
             const emails = getRecentEmails();
             if (emails.length > 0) {
-                suggestionDiv.innerHTML = emails.map(email => `<div class="email-suggestion-item" style="padding:10px 15px;cursor:pointer;border-bottom:1px solid #f0f0f0;"><i class="fa-solid fa-clock-rotate-left text-muted me-2"></i>${email}</div>`).join('');
+                suggestionDiv.innerHTML = emails.map(email => `<div class="email-suggestion-item" style="padding:10px 15px;cursor:pointer;border-bottom:1px solid #f0f0f0;"><i class="fa-solid fa-clock-rotate-left text-muted me-2"></i>${esc(email)}</div>`).join('');
                 suggestionDiv.style.display = 'block';
                 suggestionDiv.querySelectorAll('.email-suggestion-item').forEach(item => {
                     item.addEventListener('click', () => { input.value = item.textContent.trim(); suggestionDiv.style.display = 'none'; });
@@ -223,8 +263,8 @@ function displayQuickSuggestions(results = [], query, tours = []) {
             const div = document.createElement('div');
             div.className = 'suggestion-item';
             div.innerHTML = `
-                <span class="suggestion-name">${item.name}</span>
-                <span class="suggestion-location">${item.location}</span>
+                <span class="suggestion-name">${esc(item.name)}</span>
+                <span class="suggestion-location">${esc(item.location)}</span>
             `;
             div.addEventListener('click', () => { window.location.href = `/destination/${item.id}/`; });
             quickSuggestions.appendChild(div);
@@ -243,7 +283,7 @@ function displayQuickSuggestions(results = [], query, tours = []) {
             div.className = 'suggestion-item';
             const price = item.price ? new Intl.NumberFormat('vi-VN').format(item.price) + 'đ' : '';
             div.innerHTML = `
-                <span class="suggestion-name">${item.name}</span>
+                <span class="suggestion-name">${esc(item.name)}</span>
                 <span class="suggestion-price">${price}</span>
             `;
             div.addEventListener('click', () => { window.location.href = `/tour/${item.slug}/`; });
@@ -338,7 +378,7 @@ const authAlert = document.getElementById('authAlert');
 function showAlert(message, type = 'danger') {
     if (!authAlert) return;
     authAlert.className = `alert alert-${type}`;
-    authAlert.innerHTML = `<i class="fa-solid fa-${type === 'danger' ? 'exclamation-circle' : 'check-circle'} me-2"></i>${message}`;
+    authAlert.innerHTML = `<i class="fa-solid fa-${type === 'danger' ? 'exclamation-circle' : 'check-circle'} me-2"></i>${esc(message)}`;
     authAlert.classList.remove('d-none');
     setTimeout(() => authAlert.classList.add('d-none'), 5000);
 }
@@ -462,9 +502,9 @@ if (savePreferencesBtn) {
         const accessToken = localStorage.getItem('access');
         if (!accessToken) { showAlert('Vui lòng đăng nhập lại'); return; }
         try {
-            const response = await fetch('/auth/preferences', {
+            const response = await authFetch('/auth/preferences', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() || '' },
                 body: JSON.stringify({ travelTypes, locations })
             });
             if (response.status === 401) { showAlert('Phiên đăng nhập đã hết hạn'); logout(); return; }
@@ -534,16 +574,16 @@ function checkAuthStatus() {
 
 async function logout() {
     const refresh = localStorage.getItem('refresh');
-    if (refresh) {
-        await fetch('/auth/logout', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ refresh })
-        });
-    }
+    // Endpoint đúng là /auth/api/logout/ — /auth/logout không tồn tại (404).
+    // Request session-based nên bắt buộc X-CSRFToken (SessionAuthentication).
+    await fetch('/auth/api/logout/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() || '' },
+        body: JSON.stringify({ refresh: refresh || '' })
+    });
     localStorage.removeItem('access');
     localStorage.removeItem('refresh');
-    localStorage.removeItem('user_info');
+    localStorage.removeItem('user');
     window.location.href = '/';
 }
 

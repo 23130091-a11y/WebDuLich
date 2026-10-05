@@ -858,6 +858,10 @@
 {% comment %}
 <!-- DISABLED: Using index.js displayQuickSuggestions() instead -->
 <script>
+    // Escape chuỗi trước khi nhúng vào innerHTML (chống XSS từ dữ liệu DB/API)
+    function esc(value) {
+        return String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+    }
     // ==================== AUTOCOMPLETE CHO THANH TÌM KIẾM ====================
     class DestinationAutocomplete {
         constructor(inputId, suggestionsId, options = {}) {
@@ -1202,9 +1206,9 @@
             modal.innerHTML = `
     <div class="modal-content">
         <div class="close-icon"><i class="fa-solid fa-xmark"></i></div>
-        <img src="${imgSrc}" alt="${title}">
-        <h3>${title}</h3>
-        <p>${desc}</p>
+        <img src="${esc(imgSrc)}" alt="${esc(title)}">
+        <h3>${esc(title)}</h3>
+        <p>${esc(desc)}</p>
         <button class="close-btn">Đóng</button>
     </div>
     `;

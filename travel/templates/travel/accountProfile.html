@@ -247,6 +247,10 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+// Escape chuỗi trước khi nhúng vào innerHTML (chống XSS — DRF errors echo input)
+function esc(value) {
+    return String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+}
 document.addEventListener("DOMContentLoaded", function () {
     const access = localStorage.getItem("access");
     const userRaw = localStorage.getItem("user");
@@ -290,22 +294,45 @@ function stringToColor(str){
 
 <!--Load-lưu profile-->
 <script>
+// Gọi API kèm Bearer token; khi 401 → thử refresh access token rồi retry đúng 1 lần.
+// Refresh cũng thất bại → clear localStorage và về trang chủ (hết: im lặng treo trang).
+async function authFetch(url, options = {}) {
+    const doFetch = () => fetch(url, {
+        ...options,
+        headers: { ...(options.headers || {}), "Authorization": `Bearer ${localStorage.getItem("access")}` }
+    });
+    let res = await doFetch();
+    if (res.status === 401) {
+        const refresh = localStorage.getItem("refresh");
+        if (refresh) {
+            try {
+                const r = await fetch("/auth/token/refresh/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ refresh })
+                });
+                if (r.ok) {
+                    const data = await r.json();
+                    localStorage.setItem("access", data.access);
+                    return await doFetch();
+                }
+            } catch (e) { console.error("Token refresh error:", e); }
+        }
+        localStorage.clear();
+        window.location.href = "/";
+    }
+    return res;
+}
+
 async function loadProfile() {
-    const token = localStorage.getItem("access");
-    if (!token) {
-        // alert("Bạn chưa đăng nhập");
+    if (!localStorage.getItem("access")) {
         window.location.href = "/";
         return;
     }
 
-    const res = await fetch("/api/profile/", {
-        headers: {
-            "Authorization": `Bearer ${token}`
-        }
-    });
+    const res = await authFetch("/api/profile/");
 
     if (!res.ok) {
-        // alert("Token hết hạn");
         return;
     }
 
@@ -436,11 +463,10 @@ form.addEventListener("submit", async (e) => {
     };
 
     try {
-        const res = await fetch("/api/profile/", {
+        const res = await authFetch("/api/profile/", {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`,
                 "X-CSRFToken": csrfToken
             },
             body: JSON.stringify(payload)
@@ -472,8 +498,8 @@ form.addEventListener("submit", async (e) => {
 
                 for (const [key, value] of Object.entries(errorData)) {
 
-                    const fieldName = key.charAt(0).toUpperCase() + key.slice(1);
-                    errorMessage += `<b>${fieldName}:</b> ${value}<br/>`;
+                    const fieldName = esc(key.charAt(0).toUpperCase() + key.slice(1));
+                    errorMessage += `<b>${fieldName}:</b> ${esc(Array.isArray(value) ? value.join(', ') : value)}<br/>`;
                 }
             } catch (e) {
                 // Nếu server không trả về JSON mà trả về text lỗi (HTML lỗi)
@@ -569,11 +595,10 @@ form.addEventListener("submit", async (e) => {
         const  csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
         try{
-            const res = await fetch("/api/change-password/", {
+            const res = await authFetch("/api/change-password/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
                     "X-CSRFToken": csrfToken
                 },
                 body: JSON.stringify({

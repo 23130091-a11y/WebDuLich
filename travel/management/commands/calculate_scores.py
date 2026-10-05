@@ -2,8 +2,8 @@
 # Cải thiện v2: Thêm options và thống kê chi tiết
 
 from django.core.management.base import BaseCommand
-from travel.models import Destination, Review, RecommendationScore
-from travel.ai_module import recalculate_all_scores
+from travel.models import Destination
+from travel.views import update_destination_scores
 
 
 class Command(BaseCommand):
@@ -40,8 +40,20 @@ class Command(BaseCommand):
         quiet = options.get('quiet', False)
 
         self.stdout.write('🔄 Bắt đầu tính toán điểm gợi ý...\n')
-        
-        results = recalculate_all_scores()
+
+        # Tính lại RecommendationScore cho từng destination qua hàm dùng chung
+        # với view submit review (trước đây gọi recalculate_all_scores() từ
+        # travel.ai_module — module đã bị xoá, command luôn crash ImportError).
+        results = []
+        for dest in Destination.objects.all():
+            rec = update_destination_scores(dest)
+            if rec is not None:
+                results.append({
+                    'destination': dest.name,
+                    'score': rec.overall_score or 0,
+                })
+                if not quiet:
+                    self.stdout.write(f'  ✓ {dest.name}: {rec.overall_score or 0:.2f} điểm\n')
         
         # Lọc theo min_reviews nếu có
         if min_reviews > 0:

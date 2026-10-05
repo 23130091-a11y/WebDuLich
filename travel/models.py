@@ -1,12 +1,9 @@
-# D:\LT_Python\PyWeb\DoAnWeb\WebDuLich\travel\models.py
-from linecache import cache
-from django.conf import settings
-from django.db import models
 import requests
-from taggit.managers import TaggableManager
-from django.utils.text import slugify
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 from django.db.models import Q
+from django.utils.text import slugify
 
 from travel.services.nearby_service import get_nearby_hotels
 from travel.services.nearby_service import get_nearby_restaurants
@@ -30,7 +27,6 @@ class Category(models.Model):
     class Meta:
         verbose_name = "Categories"
         verbose_name_plural = "Categories"
-        ordering = ['name']
         ordering = ['order', 'name']
 
     def save(self, *args, **kwargs):
@@ -307,7 +303,11 @@ class TourReview(models.Model):
     tour = models.ForeignKey(TourPackage, on_delete=models.CASCADE, related_name='reviews')
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True) # Cho phép khách ẩn danh hoặc đã đăng nhập
     author_name = models.CharField(max_length=100, verbose_name="Tên người đánh giá")
-    rating = models.IntegerField(default=5)
+    rating = models.IntegerField(
+        default=5,
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        verbose_name="Điểm (1-5)",
+    )
     comment = models.TextField(verbose_name="Nội dung đánh giá")
     created_at = models.DateTimeField(auto_now_add=True)
     
@@ -317,7 +317,6 @@ class TourReview(models.Model):
     is_verified = models.BooleanField(default=False)
 
     reports = GenericRelation('ReviewReport', related_query_name='tour_review')
-    not_helpful_count = models.PositiveIntegerField(default=0, verbose_name="Không hữu ích")
 
     # Trạng thái xác minh
     is_verified_user = models.BooleanField(default=False, verbose_name="Tài khoản đã xác minh")
@@ -338,6 +337,15 @@ class TourReview(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        constraints = [
+            # Một user chỉ review một tour một lần (khách ẩn danh không ràng buộc).
+            # Chống spam review nhân bản — guard chống rating manipulation.
+            models.UniqueConstraint(
+                fields=['tour', 'user'],
+                condition=Q(user__isnull=False),
+                name='uniq_tourreview_tour_user',
+            ),
+        ]
 
     def update_rating(self):
         reviews = self.reviews.all()
@@ -471,6 +479,7 @@ class Review(models.Model):
     rating = models.IntegerField(
         choices=[(i, i) for i in range(1, 6)],
         default=5,
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
         verbose_name="Đánh giá (1-5 sao)"
     )
     comment = models.TextField(
@@ -532,6 +541,15 @@ class Review(models.Model):
         verbose_name = "Đánh giá"
         verbose_name_plural = "Đánh giá"
         ordering = ['-created_at']
+        constraints = [
+            # Một user chỉ review một địa điểm một lần (khách ẩn danh không ràng buộc).
+            # Chống spam review nhân bản — guard chống rating manipulation.
+            models.UniqueConstraint(
+                fields=['destination', 'user'],
+                condition=Q(user__isnull=False) & Q(destination__isnull=False),
+                name='uniq_review_destination_user',
+            ),
+        ]
         indexes = [
             models.Index(fields=['destination', '-created_at'], name='idx_review_dest_date'),
             models.Index(fields=['created_at'], name='idx_review_created'),
@@ -718,10 +736,19 @@ class Favorite(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("user", "tour")
+        # unique_together cũ không bỏ được case tour NULL (NULL != NULL trong SQL),
+        # chuyển sang UniqueConstraint có condition.
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'tour'],
+                condition=Q(tour__isnull=False),
+                name='uniq_favorite_user_tour',
+            ),
+        ]
 
     def __str__(self):
-        return f"{self.user} thích {self.tour.name}"
+        tour_name = self.tour.name if self.tour else '(không có tour)'
+        return f"{self.user} thích {tour_name}"
 
 
 class FavoriteDestination(models.Model):

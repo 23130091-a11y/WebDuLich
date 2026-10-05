@@ -2,11 +2,12 @@ import math
 import os
 import urllib.parse
 import json
-from django.db import models
+from django.db import models, IntegrityError, transaction
 from django.conf import settings
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.db.models import Q, Max, Count, F, Min
+from django.db.models.functions import Greatest
 from django.utils.text import slugify
 from .ai_engine import analyze_sentiment
 from django.views.decorators.cache import never_cache
@@ -24,11 +25,19 @@ import bleach
 from .cache_utils import get_cache_key, get_or_set_cache
 from django.views.decorators.http import require_http_methods, require_POST
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout as auth_logout
 from django.db.models import Avg, Count
 import logging
 
 # Khởi tạo logger cho file hiện tại
 logger = logging.getLogger(__name__)
+
+
+@require_POST
+def logout_view(request):
+    """Logout qua form POST trong base.html (session-based, không phải JWT API)."""
+    auth_logout(request)
+    return redirect('travel:home')
 
 # View hiển thị tất cả tour với phân trang
 def all_tours(request):
@@ -36,11 +45,11 @@ def all_tours(request):
     query = request.GET.get('q', '').strip()
     category_filter = request.GET.get('category', '').strip()
     location_filter = request.GET.get('location', '').strip()
-    
+
     tours_list = TourPackage.objects.filter(is_active=True).select_related(
         'destination', 'category', 'destination__recommendation'
     ).prefetch_related('reviews').order_by('-created_at')
-    
+
     # Áp dụng bộ lọc tìm kiếm
     if query:
         tours_list = tours_list.filter(
@@ -50,14 +59,18 @@ def all_tours(request):
             Q(category__name__icontains=query) |
             Q(details__icontains=query)
         )
-    
+
     if category_filter:
         tours_list = tours_list.filter(category__slug=category_filter)
-    
+
     if location_filter:
         tours_list = tours_list.filter(destination__location__icontains=location_filter)
-    
-    # Tính sentiment cho mỗi tour
+
+    # Tính sentiment cho mỗi tour — cache theo tour id + số review để không
+    # chạy lại AI mỗi request (trước đây mỗi review chạy 1 lần inference).
+    # ponytail: key theo review count, edit/xoá review không đổi count → stale
+    # tối đa = TTL cache; dùng signal update khi cần realtime.
+    from django.core.cache import cache as _cache
     tours_with_sentiment = []
     for tour in tours_list:
         tour_data = {
@@ -65,36 +78,42 @@ def all_tours(request):
             'sentiment_info': None,
             'aspect_summary': {}
         }
-        
+
         # Lấy reviews của tour
         reviews = tour.reviews.all()
-        if reviews.exists():
+        n_reviews = len(reviews)
+        if n_reviews:
+            ck = f'tour_sentiment_v1:{tour.id}:{n_reviews}'
+            cached = _cache.get(ck)
+            if cached is not None:
+                tours_with_sentiment.append({'tour': tour, **cached})
+                continue
             total_sentiment = 0
             all_pos_keywords = []
             all_neg_keywords = []
             aspect_scores = {}
-            
+
             for review in reviews:
                 # Phân tích sentiment cho mỗi review
                 score, pos_kw, neg_kw, metadata = analyze_sentiment(review.comment or '', review.rating)
                 total_sentiment += score
                 all_pos_keywords.extend(pos_kw)
                 all_neg_keywords.extend(neg_kw)
-                
+
                 # Thu thập aspect scores
                 if 'aspects' in metadata:
                     for aspect, aspect_score in metadata['aspects'].items():
                         if aspect not in aspect_scores:
                             aspect_scores[aspect] = []
                         aspect_scores[aspect].append(aspect_score)
-            
+
             avg_sentiment = total_sentiment / len(reviews) if reviews else 0
-            
+
             # Tính điểm trung bình cho mỗi aspect
             aspect_summary = {}
             for aspect, scores in aspect_scores.items():
                 aspect_summary[aspect] = sum(scores) / len(scores) if scores else 0
-            
+
             tour_data['sentiment_info'] = {
                 'score': round(avg_sentiment, 2),
                 'label': 'Tích cực' if avg_sentiment > 0.2 else ('Tiêu cực' if avg_sentiment < -0.2 else 'Trung lập'),
@@ -103,18 +122,20 @@ def all_tours(request):
                 'top_negative': list(set(all_neg_keywords))[:3],
             }
             tour_data['aspect_summary'] = aspect_summary
-        
+            _cache.set(ck, {'sentiment_info': tour_data['sentiment_info'],
+                             'aspect_summary': aspect_summary}, 3600)
+
         tours_with_sentiment.append(tour_data)
-    
+
     # Lấy danh sách categories và locations cho bộ lọc
     all_categories = Category.objects.all()
     all_locations = Destination.objects.values_list('location', flat=True).distinct()
-    
+
     # Phân trang
     paginator = Paginator(tours_with_sentiment, 12)
     page_number = request.GET.get('page')
     tours = paginator.get_page(page_number)
-    
+
     context = {
         'tours': tours,
         'total_tours': paginator.count,
@@ -130,8 +151,13 @@ def all_tours(request):
 #accountProfile
 from django.shortcuts import render
 from django.contrib.auth import update_session_auth_hash
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 
+# ensure_csrf_cookie: trang dùng JS đọc cookie csrftoken cho fetch POST
+# (profile, đổi mật khẩu) — không render token thì cookie có thể chưa tồn tại.
+@ensure_csrf_cookie
+@login_required
 def account_profile(request):
     return render(request, 'travel/accountProfile.html')
 
@@ -160,21 +186,25 @@ def api_profile(request):
             "profession": profile.profession,
         })
 
-    # PUT – cập nhật
-    user.first_name = request.data.get("first_name", "")
-    user.last_name = request.data.get("last_name", "")
-    user.save()
+    # PUT – cập nhật (validate qua form có sẵn, tránh 500 khi birthday rác)
+    from .forms import ProfileUpdateForm
+    form = ProfileUpdateForm(request.data, instance=profile)
+    if not form.is_valid():
+        return Response({'errors': dict(getattr(form, 'errors', {}))}, status=status.HTTP_400_BAD_REQUEST)
+    form.save()
 
-    profile.phone = request.data.get("phone", "")
-    profile.birthday = request.data.get("birthday") or None
-    profile.profession = request.data.get("profession", "")
-    profile.save()
+    user.first_name = request.data.get("first_name", "")[:150]
+    user.last_name = request.data.get("last_name", "")[:150]
+    user.save(update_fields=['first_name', 'last_name'])
 
     return Response({"success": True})
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
+@ratelimit(key='user', rate='10/h', method='POST', block=True)
 def change_password_api(request):
+    from django.contrib.auth.password_validation import validate_password
+    from django.core.exceptions import ValidationError
     user = request.user
     old_password = request.data.get("old_password", "")
     new_password = request.data.get("new_password", "")
@@ -184,6 +214,11 @@ def change_password_api(request):
             {'message': 'Mật khẩu hiện tại không chính xác.'},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+    try:
+        validate_password(new_password, user)
+    except ValidationError as e:
+        return Response({'message': ' '.join(str(m) for m in e.messages)}, status=status.HTTP_400_BAD_REQUEST)
 
     user.set_password(new_password)
     user.save()
@@ -296,11 +331,14 @@ MAP_THE_LOAI_TO_TAGS = {
 from django.db.models import Q, Count
 from users.models import TravelPreference # Import ở đầu file
 
+# ensure_csrf_cookie: JS trên trang đọc cookie csrftoken cho fetch POST
+# (toggle favorite, review) — đảm bảo cookie luôn được set khi vào trang.
+@ensure_csrf_cookie
 def home(request):
     """Trang chủ đầy đủ: Ảnh static, Cache, Gợi ý AI Destination & Tour"""
     categories = Category.objects.all()
     category_slug = request.GET.get('category')
-    viewed_history = request.session.get('viewed_history', [])
+    viewed_history = request.session.get('viewed_destinations', [])
 
     # --- 1. LẤY ẢNH STATIC (Giữ nguyên logic của bạn) ---
     def get_static_images():
@@ -465,21 +503,21 @@ def home(request):
         from collections import defaultdict
 
         now = timezone.now()
-        
+
         # Lấy lịch sử tìm kiếm 7 ngày gần đây
         last_7_days = now - timedelta(days=7)
-        
+
         # Lấy tất cả search history trong 7 ngày
         search_records = SearchHistory.objects.filter(created_at__gte=last_7_days)
-        
+
         # Tính điểm với trọng số thời gian (tìm kiếm gần đây hơn = điểm cao hơn)
         # Trọng số: Hôm nay = 3x, 1-2 ngày = 2x, 3-7 ngày = 1x
         keyword_scores = defaultdict(float)
-        
+
         for record in search_records:
             query = record.query.lower().strip()
             days_ago = (now - record.created_at).days
-            
+
             # Tính trọng số dựa trên thời gian
             if days_ago == 0:  # Hôm nay
                 weight = 3.0
@@ -487,12 +525,12 @@ def home(request):
                 weight = 2.0
             else:  # 3-7 ngày trước
                 weight = 1.0
-            
+
             keyword_scores[query] += weight
-        
+
         # Sắp xếp theo điểm giảm dần, lấy top 20 keywords
         sorted_keywords = sorted(keyword_scores.items(), key=lambda x: x[1], reverse=True)[:20]
-        
+
         if not sorted_keywords:
             # Fallback: Dùng Popularity Score nếu không có search history
             return list(
@@ -501,23 +539,23 @@ def home(request):
                 .filter(recommendation__isnull=False)
                 .order_by('-recommendation__popularity_score')[:8]
             )
-        
+
         # Tính điểm trending cho mỗi destination
         destination_scores = defaultdict(float)
         all_destinations = Destination.objects.select_related('recommendation').all()
-        
+
         for dest in all_destinations:
             dest_name_lower = dest.name.lower()
             dest_location_lower = (dest.location or '').lower()
-            
+
             for keyword, score in sorted_keywords:
                 # Kiểm tra keyword có trong tên hoặc location không
                 if keyword in dest_name_lower or keyword in dest_location_lower:
                     destination_scores[dest.id] = max(destination_scores[dest.id], score)
-        
+
         # Sắp xếp destinations theo điểm trending
         sorted_dest_ids = sorted(destination_scores.items(), key=lambda x: x[1], reverse=True)[:8]
-        
+
         # Lấy destination objects theo thứ tự điểm
         if sorted_dest_ids:
             dest_id_order = [d[0] for d in sorted_dest_ids]
@@ -526,7 +564,7 @@ def home(request):
             trending.sort(key=lambda d: dest_id_order.index(d.id))
         else:
             trending = []
-        
+
         # Nếu ít kết quả, bổ sung bằng top popularity
         if len(trending) < 8:
             fill_ids = [d.id for d in trending]
@@ -538,7 +576,7 @@ def home(request):
                 .order_by('-recommendation__popularity_score')[:(8 - len(trending))]
             )
             trending = trending + others
-            
+
         return trending
 
     # Cache 30 phút (1800 giây)
@@ -600,25 +638,26 @@ def goi_y_theo_the_loai(request):
     if not tags:
         return JsonResponse({"message": "Không tìm thấy thẻ tương ứng"}, status=200)
 
-    # 1. Tạo Q object để lọc OR trên các tags
+    # 1. Tạo Q object để lọc OR: tags của TourPackage là JSONField (list of str),
+    #    không lọc qua tags__name (dead lookup) — dùng tên và mô tả.
     q_tags = Q()
     for t in tags:
-        q_tags |= Q(tags__name__icontains=t) | Q(name__icontains=t)
+        q_tags |= Q(name__icontains=t) | Q(details__icontains=t)
 
-    # 2. Truy vấn ORM: lọc theo Q object, sắp xếp theo rating của TourPackage
-    qs = TourPackage.objects.filter(q_tags).order_by('-rating')[:100]
+    # 2. Truy vấn ORM: lọc theo Q object, sắp xếp theo điểm trung bình
+    qs = TourPackage.objects.filter(q_tags).order_by('-average_rating')[:100]
 
     # 3. Chuẩn bị dữ liệu trả về Json
     results = []
     for a in qs:
-        tags_list = list(a.tags.all().values_list('name', flat=True)) if hasattr(a, 'tags') else []
+        tags_list = a.tags if isinstance(a.tags, list) else []
         results.append({
             "DiemDenID": a.id,
             "TenDiaDiem": a.name,
             "MoTa": a.details,
             "URL_AnhDaiDien": a.image_main.url if a.image_main else None,
             "ChiPhi_TB": a.price,
-            "Diem_ChuyenMon": a.rating,
+            "Diem_ChuyenMon": a.average_rating,
             "KhuVuc": a.destination.name if a.destination else None,
             "TheLoai_Tags": tags_list
         })
@@ -631,19 +670,19 @@ from django.db.models import Max, F
 
 def category_detail(request, slug):
     category = get_object_or_404(Category, slug=slug)
-    
+
     # Query gốc: Sửa select_related để không gọi field 'overall_score'
     base_results = TourPackage.objects.filter(
-        category=category, 
+        category=category,
         is_active=True
     ).select_related('destination', 'destination__recommendation')
 
     # --- DỮ LIỆU ĐỂ HIỂN THỊ CÁC NÚT BẤM (UI) ---
     list_destinations = base_results.values_list('destination__name', flat=True).distinct().order_by('destination__name')
-    
+
     price_stats = base_results.aggregate(max_p=Max('price'))
     max_price_db = price_stats['max_p'] or 10000000
-    
+
     all_tags_raw = base_results.values_list('tags', flat=True)
     # Xử lý để tránh lỗi nếu tags là None
     unique_tags = sorted(list(set(tag for sublist in all_tags_raw if sublist for tag in sublist)))
@@ -697,22 +736,25 @@ def category_detail(request, slug):
 
 
 # --- 4. VIEW CHI TIẾT TOUR ---
-from django.core.paginator import Paginator 
+from django.core.paginator import Paginator
 
+# ensure_csrf_cookie: JS trên trang đọc cookie csrftoken cho fetch POST
+# (review, vote, report, sentiment) — đảm bảo cookie luôn được set khi vào trang.
+@ensure_csrf_cookie
 def tour_detail(request, tour_slug):
     tour = get_object_or_404(TourPackage, slug=tour_slug)
-    
+
     # 1. Lấy danh sách review liên quan đến tour này
     # 'reviews' là related_name đặt trong ForeignKey của Model TourReview
     all_reviews = tour.reviews.all().order_by('-created_at')
-    
+
     # 2. Thêm phân trang (5 nhận xét mỗi trang)
     paginator = Paginator(all_reviews, 5)
     page_number = request.GET.get('reviews_page')
     page_obj = paginator.get_page(page_number)
-    
+
     # Lấy dữ liệu từ hàm trong Model
-    nearby_data = tour.get_nearby_data() 
+    nearby_data = tour.get_nearby_data()
 
     reported_ids = []
     if request.user.is_authenticated:
@@ -724,7 +766,7 @@ def tour_detail(request, tour_slug):
             content_type=ct,
             object_id__in=[r.id for r in page_obj]
         ).values_list('object_id', flat=True)
-    
+
     related_tours = TourPackage.objects.filter(
         (Q(category=tour.category) | Q(destination=tour.destination)),
         is_active=True
@@ -732,9 +774,9 @@ def tour_detail(request, tour_slug):
 
     context = {
         'tour': tour,
-        'weather_info': nearby_data.get('weather'), 
+        'weather_info': nearby_data.get('weather'),
         'related_tours': related_tours,
-        
+
         # 3. Đưa dữ liệu review vào context để Template nhận được
         'reviews': page_obj,
         'total_reviews': all_reviews.count(),
@@ -751,33 +793,33 @@ from .forms import BookingForm
 @login_required
 def book_tour(request, tour_id):
     tour = get_object_or_404(TourPackage, id=tour_id)
-    
+
     if request.method == 'POST':
         form = BookingForm(request.POST)
         if form.is_valid():
             booking = form.save(commit=False)
             booking.user = request.user
             booking.tour = tour
-            
+
             # --- LOGIC TÍNH TOÁN CHI TIẾT ---
             adult_price = tour.price
             child_price = adult_price * Decimal('0.7')
-            
+
             subtotal_adult = booking.number_of_adults * adult_price
             subtotal_child = booking.number_of_children * child_price
             subtotal = subtotal_adult + subtotal_child
-            
+
             # Thuế VAT 10%
             tax = subtotal * Decimal('0.1')
-            
+
             # Gán tổng tiền cuối cùng vào model
             booking.total_price = subtotal + tax
             booking.status = 'pending'         # Chờ xác nhận đơn
             booking.payment_status = 'unpaid'  # Chờ thanh toán tiền
-            
+
             # Khi gọi save(), booking_code sẽ tự sinh nhờ hàm save() trong Model
             booking.save()
-            
+
             return redirect('travel:booking_payment', booking_id=booking.id)
     else:
         # Tự động điền thông tin user hiện tại vào form
@@ -786,23 +828,23 @@ def book_tour(request, tour_id):
             'email': request.user.email
         }
         form = BookingForm(initial=initial_data)
-        
+
     return render(request, 'travel/booking_form.html', {'form': form, 'tour': tour})
 
 @login_required
 def booking_payment(request, booking_id):
     # Lấy thông tin booking, đảm bảo đúng user đang đăng nhập
     booking = get_object_or_404(Booking, id=booking_id, user=request.user)
-    
+
     # 1. Lấy giá gốc từ Tour đã lưu trong booking
     adult_price = booking.tour.price
     child_price = adult_price * Decimal('0.7')
-    
+
     # 2. Tính toán các hạng mục để hiển thị lên bảng hóa đơn
     subtotal_adult = booking.number_of_adults * adult_price
     subtotal_child = booking.number_of_children * child_price
     subtotal = subtotal_adult + subtotal_child
-    
+
     # 3. Tính thuế (phải khớp với lúc lưu trong book_tour)
     tax = subtotal * Decimal('0.1')
     total_price = subtotal + tax
@@ -821,12 +863,12 @@ def booking_payment(request, booking_id):
 @login_required
 def booking_success(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id, user=request.user)
-    
+
     # Đánh dấu là khách đã báo thanh toán (để Admin dễ lọc đơn)
     if booking.payment_status == 'unpaid':
-        booking.payment_status = 'processing' 
+        booking.payment_status = 'processing'
         booking.save()
-        
+
     return render(request, 'travel/booking_success.html', {'booking': booking})
 
 from django.contrib.auth.decorators import login_required
@@ -835,7 +877,7 @@ from django.contrib.auth.decorators import login_required
 def booking_history(request):
     # Lấy danh sách booking của user, dùng select_related('tour') để tối ưu truy vấn (tránh N+1 query)
     bookings = Booking.objects.filter(user=request.user).select_related('tour').order_by('-created_at')
-    
+
     context = {
         'bookings': bookings,
     }
@@ -847,6 +889,7 @@ import json
 from django.shortcuts import get_object_or_404
 
 @require_POST
+@ratelimit(key='user', rate='10/h', method='POST', block=True)
 def api_submit_tour_review(request):
     if not request.user.is_authenticated:
         return JsonResponse({'success': False, 'error': 'Vui lòng đăng nhập để đánh giá'}, status=403)
@@ -860,43 +903,49 @@ def api_submit_tour_review(request):
         user = request.user
 
         # --- LOGIC XÁC MINH (VERIFICATION) ---
-        
-        # Kiểm tra "Khách hàng thực tế": 
+
+        # Kiểm tra "Khách hàng thực tế":
         # Tìm đơn hàng khớp User + Tour + Trạng thái đã hoàn thành
         is_verified_purchase = Booking.objects.filter(
-            user=user, 
-            tour=tour, 
+            user=user,
+            tour=tour,
             status='completed', # Đã đi tour xong
             payment_status='paid' # Đã thanh toán tiền
         ).exists()
 
         # Xử lý tên tác giả
-        author_name = data.get('author_name', '').strip()
+        author_name = bleach.clean(data.get('author_name', '').strip())[:100]
         if not author_name or author_name == 'Khách':
             author_name = user.get_full_name() or user.username
-        
+
         # Kiểm tra "Tài khoản chính chủ"
-        is_verified_user = False
-        if user.is_active: 
-            is_verified_user = True
-            # Nếu bạn có logic profile.is_verified thì thêm vào đây:
-            # if hasattr(user, 'profile') and user.profile.is_verified:
-            #     is_verified_user = True
+        is_verified_user = bool(user.is_active)
+
+        # Rating bắt buộc trong khoảng 1-5 — không tin client
+        try:
+            rating = int(data.get('rating', 5))
+        except (TypeError, ValueError):
+            rating = 5
+        rating = max(1, min(5, rating))
 
         # --- LƯU REVIEW ---
-        review = TourReview.objects.create(
-            tour=tour,
-            user=user,
-            author_name=author_name,
-            rating=int(data.get('rating', 5)),
-            comment=data.get('comment', '').strip(),
-            is_verified_purchase=is_verified_purchase,
-            is_verified_user=is_verified_user,
-            status='published'
-        )
+        try:
+            review = TourReview.objects.create(
+                tour=tour,
+                user=user,
+                author_name=author_name,
+                rating=rating,
+                comment=bleach.clean(data.get('comment', '').strip())[:2000],
+                is_verified_purchase=is_verified_purchase,
+                is_verified_user=is_verified_user,
+                status='published'
+            )
+        except IntegrityError:
+            # Unique constraint uniq_tourreview_tour_user: user đã review tour này
+            return JsonResponse({'success': False, 'error': 'Bạn đã đánh giá tour này rồi'}, status=409)
 
         # Cập nhật điểm và tổng số review cho TourPackage
-        tour.update_rating() 
+        tour.update_rating()
 
         return JsonResponse({
             'success': True,
@@ -909,8 +958,10 @@ def api_submit_tour_review(request):
         })
 
     except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=400)
-    
+        logger.error("Lỗi submit tour review: %s", e, exc_info=True)
+        # Không trả str(e) cho client — có thể lộ cấu trúc nội bộ
+        return JsonResponse({'success': False, 'error': 'Có lỗi xảy ra, vui lòng thử lại'}, status=400)
+
 # List destination (chưa dùng tới)
 def destination_list(request):
     from django.db.models import F
@@ -929,13 +980,16 @@ def destination_list(request):
 # Thanh
 
 def get_client_ip(request):
-    """Lấy IP của client"""
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
+    """Lấy IP thật của client. Chỉ tin XFF khi TRUST_X_FORWARDED_FOR=True
+    (chạy sau proxy mình kiểm soát); lấy entry PHẢI nhất do chính proxy
+    mình append — entry trái nhất attacker tự ghi được."""
+    if getattr(settings, 'TRUST_X_FORWARDED_FOR', False):
+        xff = request.META.get('HTTP_X_FORWARDED_FOR', '')
+        if xff:
+            ip = xff.split(',')[-1].strip()
+            if ip:
+                return ip
+    return request.META.get('REMOTE_ADDR')
 
 def save_user_preference(user, destination):
     from users.models import TravelPreference
@@ -963,11 +1017,11 @@ def search(request):
     min_rating = request.GET.get('min_rating', '').strip()
     max_price = request.GET.get('max_price', '').strip()
     search_type = request.GET.get('search_type', 'all').strip()  # all, destination, tour
-    
+
     # New parameters for distance calculation
     from_location = request.GET.get('from_location', '').strip()
     travel_date = request.GET.get('travel_date', '').strip()
-    
+
     # Xử lý trường hợp người dùng nhập "Điểm đến-Điểm xuất phát" vào ô tìm kiếm
     # VD: "Hà Giang-Hà Nội" -> query="Hà Giang", from_location="Hà Nội" (nếu chưa có)
     if query and '-' in query and not from_location:
@@ -975,25 +1029,25 @@ def search(request):
         if len(parts) == 2 and parts[0] and parts[1]:
             query = parts[0]  # Phần đầu là điểm đến
             from_location = parts[1]  # Phần sau là điểm xuất phát
-    
+
     # Import distance helper functions
     from .services.distance_helper import (
-        get_location_coordinates_safe, 
+        get_location_coordinates_safe,
         calculate_distances_for_results,
         parse_travel_date
     )
-    
+
     # Import search variants helper
     from .utils_helpers.text_utils import get_search_variants
-    
+
     # Get coordinates for from_location
     from_coords = None
     if from_location:
         from_coords = get_location_coordinates_safe(from_location)
-    
+
     # Parse travel_date
     parsed_travel_date = parse_travel_date(travel_date)
-    
+
     # Get search variants for better matching
     search_variants = get_search_variants(query) if query else []
 
@@ -1081,7 +1135,7 @@ def search(request):
             pass
 
     tour_qs = tour_qs.distinct().order_by('-recommendation__overall_score')
-    
+
     # Filter tours by travel_date if provided
     if parsed_travel_date:
         # Filter tours that are available on the travel_date
@@ -1106,7 +1160,7 @@ def search(request):
     # Phân trang cho tours
     tour_paginator = Paginator(tour_qs, 6)
     tour_page_obj = tour_paginator.get_page(request.GET.get('tour_page', 1))
-    
+
     # Calculate distances for results if from_location is provided
     distance_info = {}
     if from_coords:
@@ -1141,7 +1195,7 @@ def destination_detail(request, destination_id):
     destination = get_object_or_404(
         Destination.objects.prefetch_related('travel_type'),
         id=destination_id
-    ) 
+    )
 
     # Lưu lịch sử xem vào session (cho gợi ý cá nhân hóa)
     viewed_history = request.session.get('viewed_destinations', [])
@@ -1265,36 +1319,45 @@ def api_search(request):
     if not query:
         return JsonResponse({'results': [], 'tours': []})
 
-    cache_key = get_cache_key('api_search_v3', query=query.lower()[:5])
+    cache_key = get_cache_key('api_search_v3', query=query.lower())
 
     def perform_search():
         from .utils_helpers import normalize_search_text, calculate_search_score
 
         # ===== TÌM KIẾM DESTINATION =====
+        # Lọc ORM trước (icontains theo query + variants) rồi mới score bằng
+        # Python — trước đây duyệt toàn bộ bảng mỗi request (O(N) Python).
+        # ponytail: 50/batch đủ cho autocomplete; tăng khi có Meilisearch.
+        from .utils_helpers.text_utils import get_search_variants
+        _variants = get_search_variants(query)[:5] or [query]
+        _q = Q()
+        for _v in _variants:
+            _q |= Q(name__icontains=_v) | Q(location__icontains=_v)
         destinations = (
             Destination.objects
+            .filter(_q)
             .select_related('recommendation')
-            .prefetch_related('travel_type')
+            .prefetch_related('travel_type')[:50]
         )
 
         destination_results = []
         for dest in destinations:
             # Tính điểm tìm kiếm (bao gồm fuzzy match)
             search_score = calculate_search_score(
-                query, 
-                dest.name, 
+                query,
+                dest.name,
                 location=dest.location,
                 description=dest.description
             )
-            
+
             if search_score > 0:
                 # Xử lý trường hợp không có recommendation
                 try:
                     rec = dest.recommendation
                     rec_score = round(rec.overall_score, 1) if rec else 0
-                except:
+                except RecommendationScore.DoesNotExist:
                     rec_score = 0
-                    
+
                 destination_results.append({
                     'id': dest.id,
                     'name': dest.name,
@@ -1308,10 +1371,15 @@ def api_search(request):
                 })
 
         # ===== TÌM KIẾM TOUR =====
+        _tq = Q()
+        for _v in _variants:
+            _tq |= (Q(name__icontains=_v) | Q(destination__name__icontains=_v)
+                    | Q(destination__location__icontains=_v))
         tours = (
             TourPackage.objects
             .filter(is_active=True)
-            .select_related('destination', 'category', 'recommendation')
+            .filter(_tq)
+            .select_related('destination', 'category', 'recommendation')[:50]
         )
 
         tour_results = []
@@ -1319,7 +1387,7 @@ def api_search(request):
             # Tính điểm tìm kiếm cho tour
             # Thêm category vào search scope
             cat_name = tour.category.name if tour.category else ""
-            
+
             # Combine fields for broader match
             # Priority: Name > Category > Location > Description
             search_score = calculate_search_score(
@@ -1328,7 +1396,7 @@ def api_search(request):
                 location=tour.destination.name if tour.destination else None,
                 description=f"{cat_name} {tour.details}" # Include category in description for scoring
             )
-            
+
             # Boost score if category matches explicitly
             if cat_name:
                 from .utils_helpers import normalize_search_text
@@ -1342,9 +1410,9 @@ def api_search(request):
                 try:
                     rec = tour.recommendation
                     rec_score = round(rec.overall_score, 1) if rec else 0
-                except:
+                except RecommendationScore.DoesNotExist:
                     rec_score = 0
-                    
+
                 tour_results.append({
                     'id': tour.id,
                     'name': tour.name,
@@ -1375,7 +1443,7 @@ def api_search(request):
         }
 
     results = get_or_set_cache(cache_key, perform_search, timeout=settings.CACHE_TTL['search'])
-    
+
     return JsonResponse({
         'results': results.get('destinations', []),
         'tours': results.get('tours', []),
@@ -1399,7 +1467,7 @@ if travel_type_obj:
     review.travel_types.add(travel_type_obj)
 """
 @require_POST
-#@ratelimit(key='ip', rate='10/h', method='POST', block=True)
+@ratelimit(key='user', rate='10/h', method='POST', block=True)
 def api_submit_review(request):
     """
     API gửi đánh giá - Enhanced User-Generated Content
@@ -1408,11 +1476,11 @@ def api_submit_review(request):
     # Kiểm tra đăng nhập
     if not request.user.is_authenticated:
         return JsonResponse({'success': False, 'error': 'Vui lòng đăng nhập để đánh giá'}, status=403)
-    
+
     import json
     import logging
     logger = logging.getLogger(__name__)
-    
+
     # Parse data từ cả form và JSON
     if request.content_type == 'application/json':
         try:
@@ -1421,31 +1489,31 @@ def api_submit_review(request):
             return JsonResponse({'error': 'Invalid JSON data'}, status=400)
     else:
         data = request.POST
-    
+
     destination_id = data.get('destination_id')
     author_name = data.get('author_name', '').strip()
     rating = data.get('rating')
     comment = data.get('comment', '').strip()
-    
+
     # Optional fields for richer reviews
     visit_date = data.get('visit_date', '')
     travel_type = data.get('travel_type', '')
     travel_with = data.get('travel_with', '')
-    
+
     # Validation
     if not destination_id or not rating:
         return JsonResponse({'error': 'Vui lòng điền đầy đủ thông tin'}, status=400)
-    
+
     # Sanitize inputs để tránh XSS
     author_name = bleach.clean(author_name)[:100]
     comment = bleach.clean(comment)[:2000]  # Tăng limit cho comment chi tiết hơn
     travel_type = bleach.clean(travel_type)[:50]
     travel_with = bleach.clean(travel_with)[:50]
-    
+
     # Get client info
     client_ip = get_client_ip(request)
     user_agent = request.META.get('HTTP_USER_AGENT', '')[:500]
-    
+
     # Xử lý user authentication
     user = None
     if request.user.is_authenticated:
@@ -1455,41 +1523,42 @@ def api_submit_review(request):
             author_name = user.username or user.email.split('@')[0]
     elif not author_name:
         author_name = 'Khách'
-    
+
     # Validate author name
     if len(author_name) < 2:
         return JsonResponse({'error': 'Tên phải có ít nhất 2 ký tự'}, status=400)
-    
+
     try:
         destination = Destination.objects.get(id=int(destination_id))
         rating = int(rating)
-        
+
         if rating < 1 or rating > 5:
             return JsonResponse({'error': 'Đánh giá phải từ 1 đến 5 sao'}, status=400)
-        
+
         # Spam detection - kiểm tra nhiều điều kiện
         # 1. Cùng IP, cùng destination trong 5 phút (giảm từ 1 giờ)
+        from django.utils import timezone
         recent_review_ip = Review.objects.filter(
             destination=destination,
             user_ip=client_ip,
-            created_at__gte=datetime.now() - timedelta(minutes=5)
+            created_at__gte=timezone.now() - timedelta(minutes=5)
         ).exists()
-        
+
         # 2. Cùng user (nếu đã đăng nhập), cùng destination trong 5 phút (giảm từ 24 giờ)
         recent_review_user = False
         if user:
             recent_review_user = Review.objects.filter(
                 destination=destination,
                 user=user,
-                created_at__gte=datetime.now() - timedelta(minutes=5)
+                created_at__gte=timezone.now() - timedelta(minutes=5)
             ).exists()
-        
+
         if recent_review_ip or recent_review_user:
             return JsonResponse({
                 'error': 'Bạn đã đánh giá địa điểm này gần đây. Vui lòng đợi 5 phút trước khi gửi đánh giá mới.',
                 'code': 'DUPLICATE_REVIEW'
             }, status=429)
-        
+
         # Content quality check (only if comment is provided)
         if comment:
             # Kiểm tra spam patterns (links, repeated chars, etc.)
@@ -1505,7 +1574,7 @@ def api_submit_review(request):
                         'error': 'Nội dung không hợp lệ. Vui lòng không đăng link hoặc spam.',
                         'code': 'SPAM_DETECTED'
                     }, status=400)
-        
+
         # Phân tích sentiment (nếu có comment)
         sentiment_score = 0.0
         pos_keywords = []
@@ -1516,51 +1585,58 @@ def api_submit_review(request):
             except Exception as e:
                 logger.warning(f"Sentiment analysis failed: {e}")
                 # Continue without sentiment if analysis fails
-        
+
         # Parse visit_date
         parsed_visit_date = None
         if visit_date:
             try:
                 parsed_visit_date = datetime.strptime(visit_date, '%Y-%m-%d').date()
             except ValueError:
-                pass  # Ignore invalid date
-        
-        # Tạo review với đầy đủ thông tin
-        review = Review.objects.create(
-            destination=destination,
-            author_name=author_name,
-            rating=rating,
-            comment=comment,
-            user=user,
-            user_ip=client_ip,
-            user_agent=user_agent,
-            visit_date=parsed_visit_date,
-            # travel_types=travel_types,
-            # travel_with=travel_with,
-            sentiment_score=sentiment_score,
-            positive_keywords=pos_keywords[:10],  # Giới hạn 10 từ khóa
-            negative_keywords=neg_keywords[:10],
-            is_verified=user is not None,  # Verified if logged in
-            status=Review.STATUS_APPROVED,  # Auto-approve (có thể đổi thành PENDING)
-        )
-        
-        # Cập nhật điểm gợi ý cho destination (wrap trong try-catch để không ảnh hưởng response)
-        rec = None
-        try:
-            rec = update_destination_scores(destination)
-        except Exception as e:
-            logger.warning(f"Failed to update destination scores: {e}")
-        
+                logger.debug("visit_date không hợp lệ: %s", visit_date)
 
-        # Lưu preference nếu user đã đăng nhập
-        if user:
+        # Create review + cập nhật điểm + lưu preference phải all-or-nothing:
+        # không atomic thì failure giữa chừng để lại điểm/review lệch nhau.
+        with transaction.atomic():
+            # Tạo review với đầy đủ thông tin
             try:
-                save_user_preference(user, destination)
+                review = Review.objects.create(
+                    destination=destination,
+                    author_name=author_name,
+                    rating=rating,
+                    comment=comment,
+                    user=user,
+                    user_ip=client_ip,
+                    user_agent=user_agent,
+                    visit_date=parsed_visit_date,
+                    # travel_types=travel_types,
+                    # travel_with=travel_with,
+                    sentiment_score=sentiment_score,
+                    positive_keywords=pos_keywords[:10],  # Giới hạn 10 từ khóa
+                    negative_keywords=neg_keywords[:10],
+                    is_verified=user is not None,  # Verified if logged in
+                    status=Review.STATUS_APPROVED,  # Auto-approve (có thể đổi thành PENDING)
+                )
+            except IntegrityError:
+                # Unique constraint uniq_review_destination_user: user đã review
+                # địa điểm này rồi (window 5 phút ở trên chỉ là lớp 1).
+                return JsonResponse({'success': False, 'error': 'Bạn đã đánh giá địa điểm này rồi'}, status=409)
+
+            # Cập nhật điểm gợi ý cho destination (wrap trong try-catch để không ảnh hưởng response)
+            rec = None
+            try:
+                rec = update_destination_scores(destination)
             except Exception as e:
-                logger.warning(f"Failed to save user preference: {e}")
-        
+                logger.warning(f"Failed to update destination scores: {e}")
+
+            # Lưu preference nếu user đã đăng nhập
+            if user:
+                try:
+                    save_user_preference(user, destination)
+                except Exception as e:
+                    logger.warning(f"Failed to save user preference: {e}")
+
         logger.info(f"New review #{review.id} for {destination.name} by {author_name}")
-        
+
         # Tính stats_data an toàn
         try:
             stats_data = {
@@ -1578,20 +1654,22 @@ def api_submit_review(request):
                 'positive_review_ratio': 0
             }
 
-        print(f"ID Địa điểm: {destination.id} | Điểm mới: {rec.avg_rating if rec else 'N/A'} | Đã lưu vào DB chưa: {rec.pk is not None if rec else False}")
+        logger.info("Review mới cho destination %s | điểm: %s | rec_pk: %s",
+                      destination.id, rec.avg_rating if rec else 'N/A',
+                      rec.pk is not None if rec else False)
 
         return JsonResponse({
             'success': True,
             'message': 'Cảm ơn bạn đã đánh giá!',
             'new_stats': stats_data
         })
-                
+
     except Destination.DoesNotExist:
         return JsonResponse({'error': 'Không tìm thấy địa điểm'}, status=404)
-    except ValueError as e:
+    except (ValueError, TypeError):
         return JsonResponse({'error': 'Dữ liệu không hợp lệ'}, status=400)
     except Exception as e:
-        logger.error(f"Error submitting review: {str(e)}", exc_info=True)
+        logger.error("Error submitting review: %s", e, exc_info=True)
         return JsonResponse({'error': 'Có lỗi xảy ra. Vui lòng thử lại sau.'}, status=500)
 
 
@@ -1600,9 +1678,10 @@ def api_submit_review(request):
 def api_vote_review(request):
     """API vote review hữu ích cho cả Tour và Địa điểm"""
     import json
+
     from django.db.models import Q
-    from .models import Review, TourReview, ReviewVote
-    import traceback
+
+    from .models import Review, ReviewVote, TourReview
 
     if request.method == 'POST':
 
@@ -1639,46 +1718,53 @@ def api_vote_review(request):
             vote_query = Q(user_ip=client_ip)
             if user:
                 vote_query |= Q(user=user)
-            
+
             existing_vote = ReviewVote.objects.filter(vote_query, **vote_filter).first()
 
-            # 4. Xử lý logic cập nhật hoặc tạo mới
-            if existing_vote:
-                old_type = existing_vote.vote_type
-                if old_type == vote_type:
-                    return JsonResponse({
-                        'success': True,
-                        'message': 'Bạn đã đánh giá nội dung này rồi',
-                        'helpful_count': review.helpful_count,
-                        'not_helpful_count': review.not_helpful_count,
-                    })
+            # 4. Xử lý logic cập nhật hoặc tạo mới — atomic + F() để counter
+            # không mất update khi hai vote xảy ra đồng thời (read-modify-write).
+            target_qs = TourReview.objects.filter(pk=review.pk) if is_tour else Review.objects.filter(pk=review.pk)
+            with transaction.atomic():
+                if existing_vote:
+                    old_type = existing_vote.vote_type
+                    if old_type == vote_type:
+                        return JsonResponse({
+                            'success': True,
+                            'message': 'Bạn đã đánh giá nội dung này rồi',
+                            'helpful_count': review.helpful_count,
+                            'not_helpful_count': review.not_helpful_count,
+                        })
 
-                # Đổi loại vote (từ Helpful sang Not Helpful hoặc ngược lại)
-                existing_vote.vote_type = vote_type
-                existing_vote.save()
+                    # Đổi loại vote (từ Helpful sang Not Helpful hoặc ngược lại)
+                    existing_vote.vote_type = vote_type
+                    existing_vote.save()
 
-                if old_type == 'helpful':
-                    review.helpful_count = max(0, review.helpful_count - 1)
-                    review.not_helpful_count += 1
+                    if old_type == 'helpful':
+                        target_qs.update(
+                            helpful_count=Greatest(F('helpful_count') - 1, 0),
+                            not_helpful_count=F('not_helpful_count') + 1,
+                        )
+                    else:
+                        target_qs.update(
+                            not_helpful_count=Greatest(F('not_helpful_count') - 1, 0),
+                            helpful_count=F('helpful_count') + 1,
+                        )
                 else:
-                    review.not_helpful_count = max(0, review.not_helpful_count - 1)
-                    review.helpful_count += 1
-            else:
-                # Tạo mới ReviewVote
-                create_params = {
-                    'user': user,
-                    'user_ip': client_ip,
-                    'vote_type': vote_type,
-                    **vote_filter # Tự động điền review=review hoặc tour_review=review
-                }
-                ReviewVote.objects.create(**create_params)
+                    # Tạo mới ReviewVote
+                    create_params = {
+                        'user': user,
+                        'user_ip': client_ip,
+                        'vote_type': vote_type,
+                        **vote_filter # Tự động điền review=review hoặc tour_review=review
+                    }
+                    ReviewVote.objects.create(**create_params)
 
-                if vote_type == 'helpful':
-                    review.helpful_count += 1
-                else:
-                    review.not_helpful_count += 1
+                    if vote_type == 'helpful':
+                        target_qs.update(helpful_count=F('helpful_count') + 1)
+                    else:
+                        target_qs.update(not_helpful_count=F('not_helpful_count') + 1)
 
-            review.save()
+            review.refresh_from_db()
 
             return JsonResponse({
                 'success': True,
@@ -1690,11 +1776,10 @@ def api_vote_review(request):
         except (Review.DoesNotExist, TourReview.DoesNotExist):
             return JsonResponse({'error': 'Nhận xét không tồn tại'}, status=404)
         except Exception as e:
-            print("---------- LỖI CHI TIẾT ĐÂY RỒI ----------")
-            traceback.print_exc()
-            return JsonResponse({'error': str(e)}, status=500)
+            logger.error("Lỗi vote review #%s: %s", review_id, e, exc_info=True)
+            return JsonResponse({'error': 'Có lỗi xảy ra, vui lòng thử lại'}, status=500)
     return JsonResponse({'success': False, 'message': 'Yêu cầu không hợp lệ'}, status=400)
-    
+
 @require_POST
 @ratelimit(key='ip', rate='5/h', method='POST', block=True)
 def api_report_review(request):
@@ -1715,7 +1800,7 @@ def api_report_review(request):
         # Xử lý ép kiểu is_tour vì từ POST data nó có thể là string "true"/"false"
         is_tour_raw = data.get('is_tour', False)
         is_tour = is_tour_raw in [True, 'true', '1', 'True']
-        
+
         reason = data.get('reason')
         description = data.get('description', '')
 
@@ -1736,7 +1821,7 @@ def api_report_review(request):
             else:
                 # Nếu khách, check theo IP và đảm bảo record đó cũng là của khách (user is null)
                 user_check = Q(reporter_ip=client_ip, reporter_user__isnull=True)
-            
+
             if ReviewReport.objects.filter(report_query & user_check).exists():
                 return JsonResponse({'success': True, 'message': 'Bạn đã báo cáo đánh giá này rồi'})
 
@@ -1750,27 +1835,32 @@ def api_report_review(request):
                 description=bleach.clean(description)[:500] if description else ""
             )
 
-            # 4. Cập nhật đếm và ẩn (Sử dụng F expression để tránh race condition nếu cần)
-            if hasattr(review_obj, 'report_count'):
-                review_obj.report_count += 1
-                # Ngưỡng tự động ẩn
-                if review_obj.report_count >= 3:
-                    # Kiểm tra xem Model có thuộc tính status không trước khi gán
-                    if hasattr(TargetModel, 'STATUS_PENDING'):
-                        review_obj.status = TargetModel.STATUS_PENDING
-                    else:
-                        review_obj.status = 'pending' # Hoặc 'hidden' tùy bạn đặt
-                review_obj.save()
+            # 4. Cập nhật đếm và ẩn — F() expression để 2 report đồng thời
+            # không ghi đè nhau (review_obj.report_count += 1 đọc-cũ-ghi-mới
+            # sẽ mất 1 report khi race).
+            from django.db.models import F
+            TargetModel.objects.filter(pk=review_obj.pk).update(
+                report_count=F('report_count') + 1)
+            review_obj.refresh_from_db(fields=['report_count'])
+            # Ngưỡng tự động ẩn
+            if review_obj.report_count >= 3:
+                # Kiểm tra xem Model có thuộc tính status không trước khi gán
+                if hasattr(TargetModel, 'STATUS_PENDING'):
+                    review_obj.status = TargetModel.STATUS_PENDING
+                else:
+                    review_obj.status = 'pending'  # Hoặc 'hidden' tùy bạn đặt
+                review_obj.save(update_fields=['status', 'report_count'])
 
             return JsonResponse({'success': True, 'message': 'Cảm ơn bạn đã báo cáo!'})
 
         except (TargetModel.DoesNotExist, ValueError, TypeError):
             return JsonResponse({'error': 'Đánh giá không tồn tại hoặc ID không hợp lệ'}, status=404)
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-        
+            logger.error("Lỗi report review #%s: %s", review_id, e, exc_info=True)
+            return JsonResponse({'error': 'Có lỗi xảy ra, vui lòng thử lại'}, status=500)
+
     return JsonResponse({'success': False, 'message': 'Yêu cầu không hợp lệ'}, status=400)
-    
+
 # Sửa tính điểm
 def update_destination_scores(destination):
     """Cập nhật điểm gợi ý và TRẢ VỀ bản ghi RecommendationScore"""
@@ -1790,14 +1880,14 @@ def update_destination_scores(destination):
             total_reviews=Count('id'),
             avg_sentiment=Avg('sentiment_score')
         )
-        
+
         avg_rating = stats['avg_rating'] or 0
         total_reviews = stats['total_reviews'] or 0
         avg_sentiment = stats['avg_sentiment'] or 0
-        
+
         positive_reviews = reviews.filter(rating__gte=4).count()
         positive_ratio = (positive_reviews / total_reviews * 100) if total_reviews > 0 else 0
-        
+
         # Công thức tính Overall Score
         # review_score = (avg_rating / 5) * 100
         # sentiment_score = ((avg_sentiment + 1) / 2) * 100
@@ -1822,9 +1912,13 @@ def update_destination_scores(destination):
                 'positive_review_ratio': positive_ratio
             }
         )
-        
-        destination.rating = avg_rating
-        destination.save(update_fields=['rating'])
+
+        # Chỉ sync avg_rating khi đã có review — tránh ghi đè 0 vào destination trống.
+        # Lỗi cũ: save(update_fields=['rating']) nhưng field đã đổi tên thành avg_rating
+        # → ValueError bị nuốt silent, avg_rating không bao giờ được cập nhật.
+        if total_reviews > 0:
+            destination.avg_rating = avg_rating
+            destination.save(update_fields=['avg_rating'])
         return recommendation
     except Exception as e:
         import logging
@@ -1832,12 +1926,16 @@ def update_destination_scores(destination):
         # Nếu lỗi, lấy bản ghi cũ để trả về, tránh trả về None
         rec = RecommendationScore.objects.filter(destination=destination).first()
         return rec
-    
+
 @ratelimit(key='ip', rate='30/m', method='GET', block=True)
 def api_search_history(request):
     """API lấy lịch sử tìm kiếm theo IP (không cần đăng nhập)"""
     client_ip = get_client_ip(request)
-    limit = int(request.GET.get('limit', 10))
+    # limit phải là số hợp lệ — ?limit=abc không được phép 500
+    try:
+        limit = max(1, min(int(request.GET.get('limit', 10)), 50))
+    except (TypeError, ValueError):
+        limit = 10
 
     # Lấy lịch sử tìm kiếm gần đây theo IP (unique queries)
     history = SearchHistory.objects.filter(
@@ -1868,7 +1966,7 @@ def api_delete_search_history(request):
             data = json.loads(request.body)
             query = data.get('query', '').strip()
             delete_all = data.get('delete_all', False)
-        except:
+        except (json.JSONDecodeError, AttributeError):
             query = ''
             delete_all = False
     else:
@@ -1953,7 +2051,7 @@ def toggle_tour_favorite(request, tour_id):
 @login_required
 def toggle_destination_favorite(request, destination_id):
     destination_obj = get_object_or_404(Destination, id=destination_id)
-    
+
     # Lấy hoặc tạo mới bản ghi yêu thích
     favorite, created = FavoriteDestination.objects.get_or_create(
         user=request.user,
@@ -1963,7 +2061,7 @@ def toggle_destination_favorite(request, destination_id):
     if not created:
         # Nếu đã tồn tại từ trước (không phải vừa tạo mới) -> Xóa đi
         favorite.delete()
-    
+
     # Quay lại trang trước đó người dùng đang đứng
     return redirect(request.META.get('HTTP_REFERER', 'travel:home'))
 
@@ -2009,38 +2107,32 @@ def favorite_list(request):
     })
 
 
-from django.utils.html import format_html
-from django.urls import reverse
-
-def display_review(self, obj):
-    if obj.content_object:
-        # Tạo URL admin cho model tương ứng (tourreview hoặc review)
-        app_label = obj.content_type.app_label
-        model_name = obj.content_type.model
-        url = reverse(f'admin:{app_label}_{model_name}_change', args=[obj.object_id])
-        return format_html('<a href="{}">[{}] {}</a>', url, model_name.upper(), obj.content_object.comment[:50])
-    return "N/A"
+# NOTE: display_review() chết đã xoá — hàm cũ lấy `self` nhưng nằm ở module
+# level, không view/template/admin nào dùng. Link admin cho ReviewReport
+# xem trực tiếp qua GenericFK trong admin site.
 
 
 # ==================== SENTIMENT ANALYSIS API ====================
-from django.views.decorators.csrf import csrf_exempt
-import json
 
-@csrf_exempt
-@require_http_methods(["POST"])
+@ratelimit(key='ip', rate='10/m', method='POST', block=True)
 def api_analyze_sentiment(request):
     """
     API endpoint để phân tích sentiment realtime
     Input: {"text": "Nội dung đánh giá", "rating": 5}
     Output: {"score": 0.85, "label": "positive", "pos_keywords": [...], "neg_keywords": [...], ...}
+
+    Public (guest preview trước khi gửi review) nhưng bị rate-limit và
+    giới hạn độ dài text vì mỗi request chạy 1 lần PhoBERT inference.
     """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Chỉ hỗ trợ POST'}, status=405)
     try:
         # Decode body với encoding utf-8
         body = request.body.decode('utf-8')
         data = json.loads(body)
-        text = data.get('text', '').strip()
+        text = data.get('text', '').strip()[:1000]
         rating = data.get('rating', 3)
-        
+
         if not text:
             return JsonResponse({
                 'score': 0,
@@ -2052,10 +2144,10 @@ def api_analyze_sentiment(request):
                 'neg_keywords': [],
                 'message': 'Vui lòng nhập nội dung đánh giá'
             })
-        
+
         # Phân tích sentiment
         score, pos_keywords, neg_keywords, metadata = analyze_sentiment(text, rating)
-        
+
         # Xác định label
         if score > 0.18:
             label = 'positive'
@@ -2072,7 +2164,7 @@ def api_analyze_sentiment(request):
             label_vi = 'Trung lập'
             color = 'warning'
             icon = '😐'
-        
+
         # Tạo message gợi ý
         if label == 'positive':
             message = 'Đánh giá của bạn mang tính tích cực! 👍'
@@ -2080,7 +2172,7 @@ def api_analyze_sentiment(request):
             message = 'Đánh giá của bạn có vẻ tiêu cực. Cảm ơn bạn đã chia sẻ!'
         else:
             message = 'Đánh giá của bạn khá trung lập.'
-        
+
         return JsonResponse({
             'score': round(score, 3),
             'label': label,
@@ -2094,78 +2186,29 @@ def api_analyze_sentiment(request):
             'aspects': metadata.get('aspects', {}),
             'confidence': metadata.get('confidence', 0)
         })
-        
+
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
     except Exception as e:
-        logger.error(f"Sentiment analysis error: {e}")
-        return JsonResponse({'error': str(e)}, status=500)
+        logger.error("Sentiment analysis error: %s", e, exc_info=True)
+        return JsonResponse({'error': 'Có lỗi xảy ra khi phân tích'}, status=500)
+
+
+def health(request):
+    """Health check cho Railway/monitor — 200 khi DB reachable."""
+    from django.db import connection
+    try:
+        with connection.cursor() as cur:
+            cur.execute('SELECT 1')
+    except Exception:
+        return JsonResponse({'status': 'unhealthy'}, status=503)
+    return JsonResponse({'status': 'ok'})
 
 
 # ==================== API SUBMIT TOUR REVIEW ====================
-from .models import TourReview
+# Lưu ý: đây là bản duy nhất của api_submit_tour_review (ở phía trên file).
+# Bản sao cũ ở đây đã bị XÓA — nó dùng @csrf_exempt, không rate-limit,
+# không sanitize comment và trả str(e) cho client. Python cho phép định
+# nghĩa trùng tên (bản dưới đè bản trên), nên nếu copy-paste lại function
+# này, URL /api/tour_review/ sẽ âm thầm trỏ về bản không an toàn.
 
-@csrf_exempt
-@require_http_methods(["POST"])
-def api_submit_tour_review(request):
-    """
-    API endpoint để gửi đánh giá tour với sentiment analysis
-    Input: {"tour_id": 1, "author_name": "Nguyen Van A", "rating": 5, "comment": "Tour rất tuyệt vời!"}
-    """
-    try:
-        body = request.body.decode('utf-8')
-        data = json.loads(body)
-        
-        tour_id = data.get('tour_id')
-        author_name = data.get('author_name', 'Khách')
-        rating = int(data.get('rating', 5))
-        comment = data.get('comment', '').strip()
-        
-        if not tour_id:
-            return JsonResponse({'success': False, 'error': 'Thiếu tour_id'}, status=400)
-        
-        if not comment:
-            return JsonResponse({'success': False, 'error': 'Vui lòng nhập nội dung đánh giá'}, status=400)
-        
-        # Lấy tour
-        try:
-            tour = TourPackage.objects.get(id=tour_id)
-        except TourPackage.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Tour không tồn tại'}, status=404)
-        
-        # Phân tích sentiment
-        score, pos_keywords, neg_keywords, metadata = analyze_sentiment(comment, rating)
-        
-        # Tạo review với sentiment
-        review = TourReview.objects.create(
-            tour=tour,
-            user=request.user if request.user.is_authenticated else None,
-            author_name=author_name,
-            rating=rating,
-            comment=comment,
-            sentiment_score=score,
-            positive_keywords=pos_keywords[:10],  # Giới hạn 10 từ khóa
-            negative_keywords=neg_keywords[:10],
-            is_verified_user=request.user.is_authenticated if request.user else False,
-        )
-        
-        # Cập nhật rating của tour
-        tour.update_rating()
-        
-        return JsonResponse({
-            'success': True,
-            'review_id': review.id,
-            'sentiment': {
-                'score': round(score, 3),
-                'label': 'positive' if score > 0.18 else ('negative' if score < -0.18 else 'neutral'),
-                'pos_keywords': pos_keywords[:5],
-                'neg_keywords': neg_keywords[:5],
-            },
-            'message': 'Đánh giá đã được gửi thành công!'
-        })
-        
-    except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
-    except Exception as e:
-        logger.error(f"Submit tour review error: {e}")
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)

@@ -1,12 +1,12 @@
-from django.urls import path, include
+from django.urls import include, path
+
 from . import views
-from django.contrib.auth import views as auth_views
 
 app_name = 'travel'
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('category-detail/', views.category_detail, name='category_filter'), 
+    path('category-detail/', views.category_detail, name='category_filter'),
     path('api/goi-y-theo-the-loai/', views.goi_y_theo_the_loai, name='goi_y_theo_the_loai'),
     path('tour/<slug:tour_slug>/', views.tour_detail, name='tour_detail'),
     path('category/<slug:slug>/', views.category_detail, name='category_detail'),
@@ -15,7 +15,7 @@ urlpatterns = [
     path('search/', views.search, name='search'),
 
     path('api/tour/<int:tour_id>/review/', views.api_submit_review, name='api_submit_review'),
-    
+
     path('api/tour_review/', views.api_submit_tour_review, name='api_submit_tour_review'),
 
     # Thêm route cho destination detail
@@ -33,7 +33,7 @@ urlpatterns = [
     path('api/review/', views.api_submit_review, name='api_submit_review'),
     path('api/review/vote/', views.api_vote_review, name='api_vote_review'),
     path('api/review/report/', views.api_report_review, name='api_report_review'),
-    
+
     # Sentiment Analysis API
     path('api/analyze-sentiment/', views.api_analyze_sentiment, name='api_analyze_sentiment'),
 
@@ -45,19 +45,21 @@ urlpatterns = [
     # Url danh sách yêu thích
     path('favorites/', views.favorite_list, name='favorite_list'),
 
+    # Logout session-based cho form POST trong base.html (JWT logout riêng ở /auth/api/logout/)
+    path('logout/', views.logout_view, name='logout'),
+
     # Url yêu thích tour (id)
     path('favorite/toggle-destination/<int:destination_id>/', views.toggle_destination_favorite, name='toggle_destination_favorite'),
     path('favorite/toggle-tour/<int:tour_id>/', views.toggle_tour_favorite, name='toggle_tour_favorite'),
     path("api/favorites/tours/", views.api_favorite_tours, name="api_favorite_tours"),
-    path("favorites/", views.favorite_list, name="favorite_list"),
+    path('health/', views.health, name='health'),
 
     # URL hiển thị tất cả tour
     path('tours/', views.all_tours, name='all_tours'),
 
     # Booking URLs
     path('book-tour/<int:tour_id>/', views.book_tour, name='book_tour'),
-    path('payment/<int:booking_id>/', views.booking_payment, name='booking_payment'), 
+    path('payment/<int:booking_id>/', views.booking_payment, name='booking_payment'),
     path('booking-history/', views.booking_history, name='booking_history'),
     path('success/<int:booking_id>/', views.booking_success, name='booking_success'),
-
 ]

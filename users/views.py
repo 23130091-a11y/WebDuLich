@@ -1,19 +1,26 @@
+from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.db import transaction
 from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import TravelPreference
 from .serializers import UserSerializer
 
-from rest_framework_simplejwt.tokens import RefreshToken
 
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth import authenticate, get_user_model, login, logout 
+class RegisterThrottle(AnonRateThrottle):
+    """Chặn tạo account hàng loạt (review/vote spam farm)."""
+    scope = 'register'
+
 
 # Create your views here.
-class RegisterView(APIView) :
+class RegisterView(APIView):
+    throttle_classes = [RegisterThrottle]
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -40,7 +47,13 @@ class RegisterView(APIView) :
 
 User = get_user_model()
 
+class LoginThrottle(AnonRateThrottle):
+    """Giới hạn 10 lần đăng nhập sai/đúng mỗi IP mỗi phút — chống brute force."""
+    scope = 'login'
+
 class LoginView(APIView):
+    throttle_classes = [LoginThrottle]
+
     def post(self, request):
         email = request.data.get("email")
         password = request.data.get("password")
@@ -51,19 +64,13 @@ class LoginView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        try:
-            user_obj = User.objects.get(email=email)
-        except User.DoesNotExist:
-            raise AuthenticationFailed("Email hoặc mật khẩu không đúng")
-
-        user = authenticate(
-            username=user_obj.email,   # KEY POINT
-            password=password
-        )
+        # authenticate() nhận username=email trực tiếp (USERNAME_FIELD='email'),
+        # không lookup trước để tránh lộ user tồn tại qua timing.
+        user = authenticate(username=email, password=password)
 
         if user is None:
             raise AuthenticationFailed("Email hoặc mật khẩu không đúng")
-        
+
         login(request, user)
 
         refresh = RefreshToken.for_user(user)
@@ -95,21 +102,23 @@ def save_preferences(request):
             status=400
         )
 
-    # Xóa cũ
-    TravelPreference.objects.filter(user=user).delete()
+    # Xóa cũ + tạo mới trong 1 transaction — failure giữa chừng không được
+    # để lại user với zero preferences.
+    with transaction.atomic():
+        TravelPreference.objects.filter(user=user).delete()
 
-    # Tạo mới (loại trùng)
-    objs = [
-        TravelPreference(
-            user=user,
-            travel_type=t.strip(),
-            location=loc.strip()
-        )
-        for t in set(travel_types)
-        for loc in set(locations)
-    ]
+        # Tạo mới (loại trùng)
+        objs = [
+            TravelPreference(
+                user=user,
+                travel_type=t.strip(),
+                location=loc.strip()
+            )
+            for t in set(travel_types)
+            for loc in set(locations)
+        ]
 
-    TravelPreference.objects.bulk_create(objs)
+        TravelPreference.objects.bulk_create(objs)
 
     return Response({"detail": "Preferences saved"})
 
@@ -133,19 +142,21 @@ def save_preferences(request):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def logout_view(request):
     """Logout user - xóa Django session và blacklist JWT token"""
     # Xóa Django session
     logout(request)
-    
+
     # Blacklist JWT token nếu có
     refresh_token = request.data.get("refresh", "")
     if refresh_token:
         try:
             token = RefreshToken(refresh_token)
             token.blacklist()
-        except Exception as e:
+        except Exception:
             # Token có thể đã hết hạn hoặc không hợp lệ - vẫn cho logout
-            pass
-    
+            import logging
+            logging.getLogger(__name__).debug("Blacklist refresh token thất bại")
+
     return Response({"detail": "Đăng xuất thành công"}, status=status.HTTP_200_OK)

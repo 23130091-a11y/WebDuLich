@@ -5,7 +5,9 @@ from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # Đường dẫn admin lấy từ settings (env ADMIN_URL_PATH ở production)
+    # — không dùng /admin/ mặc định để giảm rủi ro bot scan login admin.
+    path(settings.ADMIN_URL_PATH, admin.site.urls),
     path('', include('travel.urls')),  # Trang home của travel
     path('auth/', include('users.urls')),
 

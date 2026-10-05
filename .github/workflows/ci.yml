@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      USE_LOCAL_DB: "true"
+      DJANGO_DEBUG: "true"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # gitleaks cần toàn bộ history để scan
+
+      - name: Secret scan (gitleaks)
+        # Chặn push chứa secret mới (API key, password, private key...)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pip-audit
+
+      - name: Security audit (dependencies)
+        run: pip-audit --desc on
+
+      - name: Detect missing migrations
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: System check
+        run: python manage.py check
+
+      - name: Run tests
+        run: python manage.py test

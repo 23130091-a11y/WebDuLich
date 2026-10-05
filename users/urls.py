@@ -1,4 +1,5 @@
 from django.urls import path
+from rest_framework_simplejwt.views import TokenRefreshView
 
 from .views import RegisterView, LoginView, save_preferences, logout_view
 
@@ -12,4 +13,7 @@ urlpatterns = [
     # path('preferences/save', save_preferences, name='save_preferences'), # POST
     # Logout
     path("api/logout/", logout_view, name="logout"),
+    # Refresh access token (access 15 phút — frontend phải gọi khi 401).
+    # Config trong settings.SIMPLE_JWT: ROTATE_REFRESH_TOKENS + blacklist.
+    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 ]
